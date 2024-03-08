@@ -37,9 +37,10 @@ ParkingSystem* init();
 void printParkingLots(ParkingSystem* system);
 int parkingExists(ParkingSystem* sys, char* name);
 void addParking(ParkingSystem *system, ParkingNode *parking);
+void removeParking(ParkingSystem *system, char *name);
 void createParkingLot(ParkingSystem *system, char *name, char *maxCapacity, char *billingValue15, char *billingValueAfter1Hour, char *maxDailyValue);
 void commandP(ParkingSystem* system, Buffer* buffer);
-
+void commandR(ParkingSystem* system, Buffer* buffer);
 
 #endif // PROJECT_H
 

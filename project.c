@@ -60,6 +60,37 @@ void addParking(ParkingSystem *system, ParkingNode *parking) {
     system->numParkingLots++;
 }
 
+void removeParking(ParkingSystem *system, char *name) {
+    if (system->head == NULL) {
+        return;
+    }
+
+    ParkingNode *current = system->head;
+    ParkingNode *prev = NULL;
+    while (current != NULL) {
+        if (strcmp(current->parking->name, name) == 0) {
+            // If the node to be removed is the head of the list
+            if (prev == NULL) {
+                system->head = current->next;
+            } else {
+                prev->next = current->next;
+            }
+
+            // If the node to be removed is not the last node in the list
+            if (current->next != NULL) {
+                current->next->prev = prev;
+            }
+
+            free(current->parking);
+            free(current);
+            system->numParkingLots--;
+            return;
+        }
+        prev = current;
+        current = current->next;
+    }
+}
+
 
 void createParkingLot(ParkingSystem *system, char *name, char *maxCapacity, char *billingValue15, char *billingValueAfter1Hour, char *maxDailyValue) {
     ParkingNode *newParking = (ParkingNode *)malloc(sizeof(ParkingLot));
@@ -82,9 +113,21 @@ void createParkingLot(ParkingSystem *system, char *name, char *maxCapacity, char
 
     strcpy(newParking->parking->name, name);
     newParking->parking->maxCapacity = atoi(maxCapacity);
-    newParking->parking->billingValue15 = atof(billingValue15);
-    newParking->parking->billingValueAfter1Hour = atof(billingValueAfter1Hour);
-    newParking->parking->maxDailyValue = atof(maxDailyValue);
+    double value15 = newParking->parking->billingValue15 = atof(billingValue15);
+    double valueAfter1Hour = newParking->parking->billingValueAfter1Hour = atof(billingValueAfter1Hour);
+    double maxDaily = newParking->parking->maxDailyValue = atof(maxDailyValue);
+
+        // Check for invalid costs
+    if (value15 <= 0 || valueAfter1Hour <= 0 || maxDaily <= 0 || value15 >= valueAfter1Hour || valueAfter1Hour >= maxDaily) {
+        fprintf(stderr, "invalid cost.\n");
+        return;
+    }
+
+    if (newParking->parking->maxCapacity <= 0) {
+        fprintf(stderr, "invalid capacity.\n");
+        free(newParking);
+        return;
+    }
 
     printf("Parking lot %s created\n", name);
 
@@ -106,18 +149,33 @@ void commandP(ParkingSystem* system, Buffer* buffer) {
         
         // Checks if the parking lot already exists
         if ((exists = parkingExists(system, name)) == 1) {
-            fprintf(stderr, "Parking lot already exists\n");
+            fprintf(stderr, "parking already exists.\n");
 
         } else {
 
-            // If the parking lot does not exist, create it
-            maxCapacity = nextWord(buffer);
-            billingValue15 = nextWord(buffer);
-            billingValueAfter1Hour = nextWord(buffer);
-            maxDailyValue = nextWord(buffer);
-            createParkingLot(system, name, maxCapacity, billingValue15, billingValueAfter1Hour, maxDailyValue);
+            if (system->numParkingLots < MAX_PARKING_LOTS) {
+                // If the parking lot does not exist, create it
+                maxCapacity = nextWord(buffer);
+                billingValue15 = nextWord(buffer);
+                billingValueAfter1Hour = nextWord(buffer);
+                maxDailyValue = nextWord(buffer);
+                createParkingLot(system, name, maxCapacity, billingValue15, billingValueAfter1Hour, maxDailyValue);
+            } else {
+                fprintf(stderr, "too many parks.\n");
+            }    
         }
     }
+}
+
+void commandR(ParkingSystem* system, Buffer* buffer) {
+    char* name;
+
+    name = nextWord(buffer);
+    
+    if (parkingExists(system, name)) {
+        removeParking(system, name);
+    }
+
 }
 
 
@@ -171,6 +229,12 @@ int main() {
             // Shows revenue of a parking lot
             case 'f':
                 buffer->index = 2;
+
+                break;
+
+             case 'r':
+                buffer->index = 2;
+                commandR(system, buffer);
 
                 break;
             default:
