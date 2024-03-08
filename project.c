@@ -76,11 +76,12 @@ char *nextWord(Buffer *buffer) {
 void printParkingLots(ParkingSystem* system) {
     ParkingNode *current = system->head;
     while (current != NULL) {
-        printf("Parking lot: %s\n", current->parking->name);
-        printf("Max capacity: %d\n", current->parking->maxCapacity);
-        printf("Billing value for 15 minutes: %.2f\n", current->parking->billingValue15);
-        printf("Billing value after 1 hour: %.2f\n", current->parking->billingValueAfter1Hour);
-        printf("Max daily value: %.2f\n", current->parking->maxDailyValue);
+        printf("p %s %d %.2f %.2f %.2f\n", 
+            current->parking->name, 
+            current->parking->maxCapacity, 
+            current->parking->billingValue15, 
+            current->parking->billingValueAfter1Hour, 
+            current->parking->maxDailyValue);
         current = current->next;
     }
 }
@@ -104,14 +105,14 @@ void addParking(ParkingSystem *system, ParkingNode *parking) {
         parking->next = NULL;
     } else {
         ParkingNode *current = system->head;
-        while (current->next != NULL) {
+        while (current->parking != NULL) {
             current = current->next;
         }
         current->next = parking;
         parking->prev = current;
         parking->next = NULL;
     }
-
+    system->numParkingLots++;
 }
 
 void createParkingLot(ParkingSystem *system, char *name, char *maxCapacity, char *billingValue15, char *billingValueAfter1Hour, char *maxDailyValue) {
