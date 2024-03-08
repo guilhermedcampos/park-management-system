@@ -99,13 +99,12 @@ int parkingExists(ParkingSystem* sys, char* name) {
 
 void addParking(ParkingSystem *system, ParkingNode *parking) {
     // Iterate through the list to find an empty spot
-    if (system->numParkingLots == 0) {
+    if (system->head == NULL) {
         system->head = parking;
-        parking->prev = NULL;
         parking->next = NULL;
     } else {
         ParkingNode *current = system->head;
-        while (current->parking != NULL) {
+        while (current->next != NULL) {
             current = current->next;
         }
         current->next = parking;
@@ -114,6 +113,7 @@ void addParking(ParkingSystem *system, ParkingNode *parking) {
     }
     system->numParkingLots++;
 }
+
 
 void createParkingLot(ParkingSystem *system, char *name, char *maxCapacity, char *billingValue15, char *billingValueAfter1Hour, char *maxDailyValue) {
     ParkingNode *newParking = (ParkingNode *)malloc(sizeof(ParkingLot));
@@ -151,7 +151,6 @@ void commandP(ParkingSystem* system, Buffer* buffer) {
     int exists = 0;
 
     name = nextWord(buffer);
-    printf("n: %s\n", name);
 
     if (name == NULL) {
         // If there are no more arguments, list the parking lots
