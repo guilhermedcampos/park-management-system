@@ -1,2 +1,8 @@
+#ifndef CONSTANTS_H
+#define CONSTANTS_H
+
 #define MAX_PARKING_LOTS 20
 #define BUFSIZE 8192
+#define REGISTRATION_LENGTH 8
+
+#endif // CONSTANTS_H

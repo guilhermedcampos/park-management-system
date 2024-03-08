@@ -2,8 +2,9 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "constants.h"
 #include "project.h"
+#include "constants.h"
+#include "projectaux.h"
 
 int bufferIndex = 0;
 
@@ -16,61 +17,6 @@ ParkingSystem* init() {
     system->head = NULL;
     system->numParkingLots = 0;
     return system;
-}
-
-
-/*
- * Reads the input from the user and inserts it into the buffer.
- */
-Buffer *getBuffer(Buffer *buffer) {
-    char c;
-    int count;
-
-    memset(buffer->buffer, 0, BUFSIZE);
-    buffer->index = 0;
-
-    for (count = 0; (c = getchar()) != '\n'; count++) {
-        buffer->buffer[count] = c;
-    }
-
-    return buffer;
-}
-
-
-char *nextWord(Buffer *buffer) {
-    int i = 0;
-    char *next_word = (char *)malloc(strlen(buffer->buffer) * sizeof(char));
-
-    if (next_word == NULL) {
-        exit(1);
-    }
-
-    while (buffer->buffer[buffer->index] == ' ' || buffer->buffer[buffer->index] == '\n') {
-        buffer->index++;
-    }
-
-    if (buffer->buffer[buffer->index] == '"') {
-        buffer->index++;
-        while (buffer->buffer[buffer->index] != '"') {
-            next_word[i] = buffer->buffer[buffer->index];
-            i++, buffer->index++;
-        }
-        buffer->index++;
-    } else {
-        while (buffer->buffer[buffer->index] != ' ' && buffer->buffer[buffer->index] != '\n' &&
-               buffer->buffer[buffer->index] != '\0') {
-            next_word[i] = buffer->buffer[buffer->index];
-            i++, buffer->index++;
-        }
-    }
-    next_word[i] = '\0';
-
-    if (i == 0) {
-        free(next_word);
-        return NULL;
-    } else {
-        return next_word;
-    }
 }
 
 void printParkingLots(ParkingSystem* system) {
@@ -173,6 +119,7 @@ void commandP(ParkingSystem* system, Buffer* buffer) {
         }
     }
 }
+
 
 int main() {
     // Initializes the buffer
