@@ -6,6 +6,32 @@
 #include <string.h>
 #include <stdlib.h>
 
+int isValidEntry(ParkingSystem *system, char *name, char *reg, char *time) {
+    Park *park = parkExists(system, name);
+
+    if (park == NULL) {
+        fprintf(stderr, "no such parking.\n");
+        return -1;
+    }
+
+    if (isParkFull(system, name) == 1){
+        fprintf(stderr, "parking is full.\n");
+        return -1;
+    }
+
+    if (isValidRegistration(reg) == -1) {
+        fprintf(stderr, "invalid licence plate.\n");
+        return -1; 
+    } 
+
+    if (atoi(time) < 0) {
+        fprintf(stderr, "invalid time.\n");
+        return -1;
+    }
+
+    return 1;
+}
+
 int isValidRegistration(char *reg) {
     // Check if the length of the registration is valid
     if (strlen(reg) != REGISTRATION_LENGTH) {
@@ -51,7 +77,18 @@ int isValidRegistration(char *reg) {
     }
 
     // If all checks pass, the registration is valid
-    return 0;
+    return 1;
+}
+
+Vehicle *getVehicle(ParkingSystem *system, char *reg) {
+    VehicleNode *current = system->vehicles;
+    while (current != NULL) {
+        if (strcmp(current->vehicle->registration, reg) == 0) {
+            return current->vehicle;
+        }
+        current = current->next;
+    }
+    return NULL;
 }
 
 /*

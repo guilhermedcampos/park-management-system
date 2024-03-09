@@ -5,19 +5,33 @@
 
 
 typedef struct Vehicle {
-    char registration[REGISTRATION_LENGTH + 1];
+    char *parkName;
+    char *registration;
+    char *entryTime;
+    char *exitTime;
+    char *entryDate;
+    char *exitDate;
+    int isParked;
 } Vehicle;
 
-typedef struct ParkingLot {
-    char name[256];
+typedef struct VehicleNode {
+    Vehicle *vehicle;
+    struct VehicleNode *next;
+    struct VehicleNode *prev;
+} VehicleNode;
+
+typedef struct Park {
+    char *name;
     int maxCapacity;
+    int currentLots;
     double billingValue15;
     double billingValueAfter1Hour;
     double maxDailyValue;
-} ParkingLot;
+    char **regs;
+} Park;
 
 typedef struct ParkingNode {
-    ParkingLot *parking;
+    Park *parking;
     struct ParkingNode *next;
     struct ParkingNode *prev;
 } ParkingNode;
@@ -30,17 +44,23 @@ typedef struct Buffer {
 
 typedef struct ParkingSystem {
     ParkingNode *head;
-    int numParkingLots;
+    VehicleNode *vehicles;
+    int numParks;
 } ParkingSystem;
 
 ParkingSystem* init();
-void printParkingLots(ParkingSystem* system);
-int parkingExists(ParkingSystem* sys, char* name);
-void addParking(ParkingSystem *system, ParkingNode *parking);
-void removeParking(ParkingSystem *system, char *name);
-void createParkingLot(ParkingSystem *system, char *name, char *maxCapacity, char *billingValue15, char *billingValueAfter1Hour, char *maxDailyValue);
+void printParks(ParkingSystem* system);
+Park* parkExists(ParkingSystem* sys, char* name);
+int isParkFull(ParkingSystem* sys, char* name);
+void addPark(ParkingSystem *system, ParkingNode *parking);
+int createVehicle(ParkingSystem *system, char *reg);
+void createPark(ParkingSystem *system, char *name, char *maxCapacity, char *billingValue15, char *billingValueAfter1Hour, char *maxDailyValue);
+void removePark(ParkingSystem *system, char *name);
+int enterPark(Park *p, Vehicle *v, char *date, char *time);
+void createPark(ParkingSystem *system, char *name, char *maxCapacity, char *billingValue15, char *billingValueAfter1Hour, char *maxDailyValue);
 void commandP(ParkingSystem* system, Buffer* buffer);
 void commandR(ParkingSystem* system, Buffer* buffer);
+void commandE(ParkingSystem* system, Buffer* buffer);
 
 #endif // PROJECT_H
 
