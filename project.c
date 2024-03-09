@@ -260,6 +260,9 @@ int enterPark(Park *p, Vehicle *v, char *date, char *time) {
     strcpy(v->entryDate, date);
     strcpy(v->entryTime, time);
 
+    p->currentLots++;
+    p->regs[p->currentLots] = v->registration;
+
     return 0;
 }
 
