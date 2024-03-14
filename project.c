@@ -132,25 +132,41 @@ void createPark(ParkingSystem *system, char *name, char *maxCapacity, char *bill
         exit(1);
     }
 
+    // Allocate memory for the name field and copy the string
+    newParking->parking->name = (char *)malloc(strlen(name) + 1);
+    if (newParking->parking->name == NULL) {
+        fprintf(stderr, "Memory allocation failed\n");
+        free(newParking->parking);
+        free(newParking);
+        exit(1);
+    }
+    strcpy(newParking->parking->name, name);
+
     newParking->next = NULL;
     newParking->prev = NULL;
 
-
-    strcpy(newParking->parking->name, name);
+    // Assign other fields
     newParking->parking->maxCapacity = atoi(maxCapacity);
     newParking->parking->currentLots = 0;
-    double value15 = newParking->parking->billingValue15 = atof(billingValue15);
-    double valueAfter1Hour = newParking->parking->billingValueAfter1Hour = atof(billingValueAfter1Hour);
-    double maxDaily = newParking->parking->maxDailyValue = atof(maxDailyValue);
+    newParking->parking->billingValue15 = atof(billingValue15);
+    newParking->parking->billingValueAfter1Hour = atof(billingValueAfter1Hour);
+    newParking->parking->maxDailyValue = atof(maxDailyValue);
 
-        // Check for invalid costs
-    if (value15 <= 0 || valueAfter1Hour <= 0 || maxDaily <= 0 || value15 >= valueAfter1Hour || valueAfter1Hour >= maxDaily) {
-        fprintf(stderr, "invalid cost.\n");
+    // Check for invalid costs
+    if (newParking->parking->billingValue15 <= 0 || newParking->parking->billingValueAfter1Hour <= 0 ||
+        newParking->parking->maxDailyValue <= 0 || newParking->parking->billingValue15 >= newParking->parking->billingValueAfter1Hour ||
+        newParking->parking->billingValueAfter1Hour >= newParking->parking->maxDailyValue) {
+        fprintf(stderr, "Invalid cost.\n");
+        free(newParking->parking->name);
+        free(newParking->parking);
+        free(newParking);
         return;
     }
 
     if (newParking->parking->maxCapacity <= 0) {
-        fprintf(stderr, "invalid capacity.\n");
+        fprintf(stderr, "Invalid capacity.\n");
+        free(newParking->parking->name);
+        free(newParking->parking);
         free(newParking);
         return;
     }
@@ -158,8 +174,8 @@ void createPark(ParkingSystem *system, char *name, char *maxCapacity, char *bill
     printf("Parking lot %s created\n", name);
 
     addPark(system, newParking);
-
 }
+
 
 int createVehicle(ParkingSystem *system, char *reg) {
     VehicleNode *newVehicle = (VehicleNode *)malloc(sizeof(VehicleNode));
@@ -197,15 +213,11 @@ void commandP(ParkingSystem* system, Buffer* buffer) {
     if (name == NULL) {
         // If there are no more arguments, list the parking lots
         printParks(system);
-
     } else {
-        
         // Checks if the parking lot already exists
         if (parkExists(system, name) != NULL) {
             fprintf(stderr, "parking already exists.\n");
-
         } else {
-
             if (system->numParks < MAX_PARKING_LOTS) {
                 // If the parking lot does not exist, create it
                 maxCapacity = nextWord(buffer);
