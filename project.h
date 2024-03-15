@@ -3,6 +3,17 @@
 
 #include "constants.h"
 
+typedef struct date {
+    int day;
+    int month;
+    int year;
+} Date;
+
+typedef struct time {
+    int hour;
+    int minute;
+} Time;
+
 
 typedef struct Vehicle {
     char *parkName;
@@ -27,7 +38,6 @@ typedef struct Park {
     double billingValue15;
     double billingValueAfter1Hour;
     double maxDailyValue;
-    char **regs;
 } Park;
 
 typedef struct ParkingNode {
