@@ -47,7 +47,6 @@ void printParks(ParkingSystem* system) {
 Park* parkExists(ParkingSystem* sys, char* name) {
     ParkingNode *current = sys->head;
     while (current != NULL) {
-        printf("park: %s, name: %s\n", current->parking->name, name);
         if (strcmp(current->parking->name, name) == 0) {
             return current->parking;
         }
@@ -173,7 +172,7 @@ void createPark(ParkingSystem *system, char *name, char *maxCapacity, char *bill
         return;
     }
 
-    printf("Parking lot %s created\n", name);
+    printf("t: Parking lot %s created\n", name);
 
     addPark(system, newParking);
 }
@@ -209,10 +208,8 @@ int createVehicle(ParkingSystem *system, char *reg) {
 
     newVehicle->vehicle->parkName = NULL;
     newVehicle->vehicle->isParked = 1;
-    newVehicle->vehicle->entryDate = NULL;
-    newVehicle->vehicle->entryTime = NULL;
-    newVehicle->vehicle->exitDate = NULL;
-    newVehicle->vehicle->exitTime = NULL;
+    newVehicle->vehicle->date = NULL;
+    newVehicle->vehicle->time = NULL;
 
     return 0;
 }
@@ -265,7 +262,7 @@ void commandE(ParkingSystem* system, Buffer* buffer) {
     time = nextWord(buffer);
 
     // Check if the entry is valid (park exists, park is not full, registration is valid, time is valid)
-    if (isValidEntry(system, name, reg, time)) {
+    if (isValidEntry(system, name, reg, date, time)) {
         printf("t: Entry valida\n");
         Park *park = parkExists(system, name);
         Vehicle *vehicle = getVehicle(system, reg);
@@ -283,8 +280,8 @@ void commandE(ParkingSystem* system, Buffer* buffer) {
 
 int enterPark(Park *p, Vehicle *v, char *date, char *time) {
     v->parkName = p->name;
-    strcpy(v->entryDate, date);
-    strcpy(v->entryTime, time);
+    v->date = createDateStruct(date);
+    v->time = createTimeStruct(time);
 
     p->currentLots++;
 
@@ -331,8 +328,9 @@ int main() {
             // Registers the exit of a vehicle
             case 's':
                 buffer->index = 2;
-                
 
+                commandS(system, buffer);
+                
                 break;
 
             // Lists the entries and exits of a vehicle

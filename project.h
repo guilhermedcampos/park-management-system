@@ -18,10 +18,8 @@ typedef struct time {
 typedef struct Vehicle {
     char *parkName;
     char *registration;
-    char *entryTime;
-    char *exitTime;
-    char *entryDate;
-    char *exitDate;
+    Date *date;
+    Time *time;
     int isParked;
 } Vehicle;
 

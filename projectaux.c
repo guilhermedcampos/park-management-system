@@ -6,7 +6,44 @@
 #include <string.h>
 #include <stdlib.h>
 
-int isValidEntry(ParkingSystem *system, char *name, char *reg, char *time) {
+int isValidTime(Time *time) {
+    if (time->hour < 0 || time->hour > 23) {
+        return -1;
+    }
+    if (time->minute < 0 || time->minute > 59) {
+        return -1;
+    }
+    return 1;
+}
+
+int isValidDate(Date *date) {
+    if (date->day < 1 || date->day > 31) {
+        return -1;
+    }
+    if (date->month < 1 || date->month > 12) {
+        return -1;
+    }
+    if (date->year < 0) {
+        return -1;
+    }
+
+    // Check if it's February 29th and it's not a leap year
+    if (date->month == 2 && date->day == 29 && !isLeapYear(date->year)) {
+        return -1;
+    }
+
+    return 1;
+}
+
+int isLeapYear(int year) {
+    if ((year % 4 == 0 && year % 100 != 0) || year % 400 == 0) {
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+int isValidEntry(ParkingSystem *system, char *name, char *reg, char *date, char *time) {
     Park *park = parkExists(system, name);
 
     if (park == NULL) {
@@ -24,8 +61,16 @@ int isValidEntry(ParkingSystem *system, char *name, char *reg, char *time) {
         return -1; 
     } 
 
-    if (atoi(time) < 0) {
+    Time *t = createTimeStruct(time);
+    Date *d = createDateStruct(date);
+
+    if (isValidTime(t) == -1) {
         fprintf(stderr, "invalid time.\n");
+        return -1;
+    }
+
+    if (isValidDate(d) == -1) {
+        fprintf(stderr, "invalid date.\n");
         return -1;
     }
 
@@ -107,6 +152,37 @@ Buffer *getBuffer(Buffer *buffer) {
     return buffer;
 }
 
+Date *createDateStruct(char *date) {
+    Date *d = (Date *)malloc(sizeof(Date));
+    if (d == NULL) {
+        exit(1);
+    }
+
+    char *day = strtok(date, "-");
+    char *month = strtok(NULL, "-");
+    char *year = strtok(NULL, "-");
+
+    d->day = atoi(day);
+    d->month = atoi(month);
+    d->year = atoi(year);
+
+    return d;
+}
+
+Time *createTimeStruct(char *time) {
+    Time *t = (Time *)malloc(sizeof(Time));
+    if (t == NULL) {
+        exit(1);
+    }
+
+    char *hour = strtok(time, ":");
+    char *minute = strtok(NULL, ":");
+
+    t->hour = atoi(hour);
+    t->minute = atoi(minute);
+
+    return t;
+}
 
 char *nextWord(Buffer *buffer) {
     int i = 0;
