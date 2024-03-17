@@ -14,6 +14,10 @@ typedef struct time {
     int minute;
 } Time;
 
+typedef struct log {
+    
+} Log;
+
 
 typedef struct Vehicle {
     char *parkName;
@@ -69,6 +73,7 @@ void createPark(ParkingSystem *system, char *name, char *maxCapacity, char *bill
 void commandP(ParkingSystem* system, Buffer* buffer);
 void commandR(ParkingSystem* system, Buffer* buffer);
 void commandE(ParkingSystem* system, Buffer* buffer);
+void commandS(ParkingSystem* system, Buffer* buffer);
 
 #endif // PROJECT_H
 

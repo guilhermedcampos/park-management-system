@@ -77,6 +77,44 @@ int isValidEntry(ParkingSystem *system, char *name, char *reg, char *date, char 
     return 1;
 }
 
+int isValidExit(ParkingSystem *system, char *name, char *reg, char *date, char *time) {
+    Park *park = parkExists(system, name);
+    Vehicle *v = getVehicle(system, reg);
+
+    if (park == NULL) {
+        fprintf(stderr, "no such parking.\n");
+        return -1;
+    }
+
+    if (v == NULL) {
+        return -1;
+    }
+
+    if (!isValidRegistration(reg)) {
+        fprintf(stderr, "invalid licence plate.");
+        return -1;
+    }
+
+    if (!isVehicleInPark(system, reg, name)) {
+        fprintf(stderr, "invalid vehicle exit.");
+    }
+
+    Time *t = createTimeStruct(time);
+    Date *d = createDateStruct(date);
+
+    if (isValidTime(t) == -1) {
+        fprintf(stderr, "invalid date.\n");
+        return -1;
+    }
+
+    if (isValidDate(d) == -1) {
+        fprintf(stderr, "invalid date.\n");
+        return -1;
+    }
+
+    return 1;
+}
+
 int isValidRegistration(char *reg) {
 
     // Check if the length of the registration is valid
@@ -124,6 +162,13 @@ int isValidRegistration(char *reg) {
     return 1;
 }
 
+int isVehicleInPark(ParkingSystem *system, char *reg, char *name) {
+    Vehicle *v = getVehicle(system, reg);
+    if ((strcmp(v->parkName, name) == 0) && v->isParked) {
+        return 1;
+    }
+    return 0;
+}
 Vehicle *getVehicle(ParkingSystem *system, char *reg) {
     VehicleNode *current = system->vehicles;
     while (current != NULL) {

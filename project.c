@@ -288,6 +288,41 @@ int enterPark(Park *p, Vehicle *v, char *date, char *time) {
     return 0;
 }
 
+int exitPark(Park *p, Vehicle *v, char *date, char *time) {
+    v->parkName = NULL;
+    v->date = createDateStruct(date);
+    v->time = createTimeStruct(time);
+    v->isParked = 0;
+
+    p->currentLots--;
+    return 0;
+}
+
+void commandS(ParkingSystem* system, Buffer* buffer) {
+    char *name, *reg, *date, *time;
+
+    name = nextWord(buffer);
+    reg = nextWord(buffer);
+    date = nextWord(buffer);
+    time = nextWord(buffer);
+
+    // Check if the exit is valid (registration is valid, time is valid)
+    if (isValidExit(system, name, reg, date, time)) {
+        Park *park = parkExists(system, name);
+        Vehicle *vehicle = getVehicle(system, reg);
+        if (vehicle == NULL) {
+            fprintf(stderr, "invalid license plate.\n");
+            return;
+        } else {
+            if (vehicle->isParked == 0) {
+                fprintf(stderr, "invalid vehicle exit.\n");
+                return;
+            }
+            exitPark(park, vehicle, date, time);
+        }
+    }
+}
+
 
 int main() {
     // Initializes the buffer
