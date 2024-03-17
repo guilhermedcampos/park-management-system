@@ -33,6 +33,7 @@ int isValidEntry(ParkingSystem *system, char *name, char *reg, char *time) {
 }
 
 int isValidRegistration(char *reg) {
+
     // Check if the length of the registration is valid
     if (strlen(reg) != REGISTRATION_LENGTH) {
         return -1;
@@ -41,6 +42,8 @@ int isValidRegistration(char *reg) {
     // Initialize counts for letters and digits
     int letterCount = 0;
     int digitCount = 0;
+    int letterGroup = 0;
+    int digitGroup = 0;
 
     // Iterate through each character in the registration
     for (int i = 0; i < REGISTRATION_LENGTH; i++) {
@@ -49,19 +52,15 @@ int isValidRegistration(char *reg) {
         // Check if the current character is a letter (uppercase)
         if (cur >= 'A' && cur <= 'Z') {
             letterCount++;
-
-            // Check if the next character is also a letter (a pair cannot contain a mix of letters and digits)
-            if (i < REGISTRATION_LENGTH - 1 && reg[i + 1] >= 'A' && reg[i + 1] <= 'Z') {
-                return -1;
+            if (!letterGroup) {
+                letterGroup = 1;
             }
         }
         // Check if the current character is a digit
         else if (cur >= '0' && cur <= '9') {
             digitCount++;
-
-            // Check if the next character is also a digit (a pair cannot contain a mix of letters and digits)
-            if (i < REGISTRATION_LENGTH - 1 && reg[i + 1] >= '0' && reg[i + 1] <= '9') {
-                return -1;
+            if (!digitGroup) {
+                digitGroup = 1;
             }
         }
         // Check if the current character is a hyphen

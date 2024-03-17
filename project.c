@@ -47,6 +47,7 @@ void printParks(ParkingSystem* system) {
 Park* parkExists(ParkingSystem* sys, char* name) {
     ParkingNode *current = sys->head;
     while (current != NULL) {
+        printf("park: %s, name: %s\n", current->parking->name, name);
         if (strcmp(current->parking->name, name) == 0) {
             return current->parking;
         }
@@ -54,6 +55,7 @@ Park* parkExists(ParkingSystem* sys, char* name) {
     }
     return NULL;
 }
+
 /* Returns 1 if full, 0 if not full */
 int isParkFull(ParkingSystem* sys, char* name) {
     ParkingNode *current = sys->head;
@@ -194,9 +196,19 @@ int createVehicle(ParkingSystem *system, char *reg) {
 
     newVehicle->next = NULL;
     newVehicle->prev = NULL;
+
+    // Allocate memory for the registration field and copy the string
+    newVehicle->vehicle->registration = (char *)malloc(strlen(reg) + 1);
+    if (newVehicle->vehicle->registration == NULL) {
+        fprintf(stderr, "Memory allocation failed\n");
+        free(newVehicle->vehicle);
+        free(newVehicle);
+        exit(1);
+    }
+    strcpy(newVehicle->vehicle->registration, reg);
+
     newVehicle->vehicle->parkName = NULL;
     newVehicle->vehicle->isParked = 1;
-    strcpy(newVehicle->vehicle->registration, reg);
     newVehicle->vehicle->entryDate = NULL;
     newVehicle->vehicle->entryTime = NULL;
     newVehicle->vehicle->exitDate = NULL;
@@ -204,6 +216,7 @@ int createVehicle(ParkingSystem *system, char *reg) {
 
     return 0;
 }
+
 
 void commandP(ParkingSystem* system, Buffer* buffer) {   
     char *name, *maxCapacity, *billingValue15, *billingValueAfter1Hour, *maxDailyValue;
@@ -252,7 +265,8 @@ void commandE(ParkingSystem* system, Buffer* buffer) {
     time = nextWord(buffer);
 
     // Check if the entry is valid (park exists, park is not full, registration is valid, time is valid)
-    if (isValidEntry(system, reg, date, time)) {
+    if (isValidEntry(system, name, reg, time)) {
+        printf("t: Entry valida\n");
         Park *park = parkExists(system, name);
         Vehicle *vehicle = getVehicle(system, reg);
         if (vehicle == NULL) {
@@ -273,7 +287,6 @@ int enterPark(Park *p, Vehicle *v, char *date, char *time) {
     strcpy(v->entryTime, time);
 
     p->currentLots++;
-    //p->regs[p->currentLots] = v->registration;
 
     return 0;
 }
