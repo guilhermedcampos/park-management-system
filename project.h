@@ -85,7 +85,7 @@ void removePark(ParkingSystem *system, char *name);
 int enterPark(ParkingSystem *system, Park *p, Vehicle *v, char *date, char *time);
 int exitPark(ParkingSystem *system, Park *p, Vehicle *v, char *date, char *time);
 void createPark(ParkingSystem *system, char *name, char *maxCapacity, char *billingValue15, char *billingValueAfter1Hour, char *maxDailyValue);
-Log *createLog(ParkingSystem *system, Date *date, Time *time, char *reg, char *name, int type);
+Log *changeLog(ParkingSystem *system, Date *date, Time *time, char *reg, char *name, int type);
 void addLog(ParkingSystem *system, Log *log);
 void commandP(ParkingSystem* system, Buffer* buffer);
 void commandR(ParkingSystem* system, Buffer* buffer);

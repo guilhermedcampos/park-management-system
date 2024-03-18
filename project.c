@@ -262,7 +262,7 @@ void commandE(ParkingSystem* system, Buffer* buffer) {
     time = nextWord(buffer);
 
     // Check if the entry is valid (park exists, park is not full, registration is valid, time is valid)
-    if (isValidEntry(system, name, reg, date, time)) {
+    if (isValidRequest(system, name, reg, date, time)) {
         printf("t: Entry valida\n");
         Park *park = parkExists(system, name);
         Vehicle *vehicle = getVehicle(system, reg);
@@ -284,7 +284,7 @@ int enterPark(ParkingSystem *sys, Park *p, Vehicle *v, char *date, char *time) {
     v->time = createTimeStruct(time);
 
     p->currentLots++;
-    createLog(sys, v->date, v->time, v->registration, p->name, 0);
+    changeLog(sys, v->date, v->time, v->registration, p->name, 0);
     return 0;
 }
 
@@ -295,11 +295,11 @@ int exitPark(ParkingSystem *system, Park *p, Vehicle *v, char *date, char *time)
     v->isParked = 0;
 
     p->currentLots--;
-    createLog(system, v->date, v->time, v->registration, p->name, 1);
+    changeLog(system, v->date, v->time, v->registration, p->name, 1);
     return 0;
 }
 
-Log *createLog(ParkingSystem *system, Date *date, Time *time, char *reg, char *name, int type) {
+Log *changeLog(ParkingSystem *system, Date *date, Time *time, char *reg, char *name, int type) {
     if (type == 0) {
         Log *newLog = (Log *)malloc(sizeof(Log));
         if (newLog == NULL) {
@@ -361,10 +361,11 @@ void commandS(ParkingSystem* system, Buffer* buffer) {
     time = nextWord(buffer);
 
     // Check if the exit is valid (registration is valid, time is valid)
-    if (isValidExit(system, name, reg, date, time)) {
+    if (isValidRequest(system, name, reg, date, time)) {
         Park *park = parkExists(system, name);
         Vehicle *vehicle = getVehicle(system, reg);
         if (vehicle == NULL) {
+            // If the vehicle does not exist, it is invalid
             fprintf(stderr, "invalid license plate.\n");
             return;
         } else {
