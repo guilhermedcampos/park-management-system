@@ -170,7 +170,7 @@ int isVehicleInPark(ParkingSystem *system, char *reg, char *name) {
     return 0;
 }
 Vehicle *getVehicle(ParkingSystem *system, char *reg) {
-    VehicleNode *current = system->vehicles;
+    VehicleNode *current = system->vHead;
     while (current != NULL) {
         if (strcmp(current->vehicle->registration, reg) == 0) {
             return current->vehicle;

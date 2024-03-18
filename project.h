@@ -14,9 +14,19 @@ typedef struct time {
     int minute;
 } Time;
 
-typedef struct log {
-    
+typedef struct Log {
+    Date *date;
+    Time *time;
+    char *reg;
+    char *parkName;
+    int type;  // 0 corresponds to an entry, 1 to a leave
 } Log;
+
+typedef struct LogNode {
+    Log *log;
+    struct LogNode *next;
+    struct LogNode *prev;
+} LogNode;
 
 
 typedef struct Vehicle {
@@ -55,8 +65,9 @@ typedef struct Buffer {
 } Buffer;
 
 typedef struct ParkingSystem {
-    ParkingNode *head;
-    VehicleNode *vehicles;
+    ParkingNode *pHead;
+    VehicleNode *vHead;
+    LogNode *lHead;
     int numParks;
 } ParkingSystem;
 
@@ -70,6 +81,8 @@ void createPark(ParkingSystem *system, char *name, char *maxCapacity, char *bill
 void removePark(ParkingSystem *system, char *name);
 int enterPark(Park *p, Vehicle *v, char *date, char *time);
 void createPark(ParkingSystem *system, char *name, char *maxCapacity, char *billingValue15, char *billingValueAfter1Hour, char *maxDailyValue);
+Log *createLog(ParkingSystem *system, Date *date, Time *time, char *reg, char *name, int type);
+void addLog(ParkingSystem *system, Log *log);
 void commandP(ParkingSystem* system, Buffer* buffer);
 void commandR(ParkingSystem* system, Buffer* buffer);
 void commandE(ParkingSystem* system, Buffer* buffer);

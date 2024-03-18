@@ -23,15 +23,15 @@ ParkingSystem* init() {
         fprintf(stderr, "Memory allocation failed\n");
         exit(1);
     }
-    system->head = NULL;
-    system->vehicles = NULL;
+    system->pHead = NULL;
+    system->vHead = NULL;
     system->numParks = 0;
     
     return system;
 }
 
 void printParks(ParkingSystem* system) {
-    ParkingNode *current = system->head;
+    ParkingNode *current = system->pHead;
     while (current != NULL) {
         printf("p %s %d %.2f %.2f %.2f\n", 
             current->parking->name, 
@@ -45,7 +45,7 @@ void printParks(ParkingSystem* system) {
 
 /* Returns park, or Null if it doesn't exist */
 Park* parkExists(ParkingSystem* sys, char* name) {
-    ParkingNode *current = sys->head;
+    ParkingNode *current = sys->pHead;
     while (current != NULL) {
         if (strcmp(current->parking->name, name) == 0) {
             return current->parking;
@@ -57,7 +57,7 @@ Park* parkExists(ParkingSystem* sys, char* name) {
 
 /* Returns 1 if full, 0 if not full */
 int isParkFull(ParkingSystem* sys, char* name) {
-    ParkingNode *current = sys->head;
+    ParkingNode *current = sys->pHead;
     while (current != NULL) {
         if (strcmp(current->parking->name, name) == 0) {
             if (current->parking->currentLots == current->parking->maxCapacity) {
@@ -71,11 +71,11 @@ int isParkFull(ParkingSystem* sys, char* name) {
 
 void addPark(ParkingSystem *system, ParkingNode *parking) {
     // Iterate through the list to find an empty spot
-    if (system->head == NULL) {
-        system->head = parking;
+    if (system->pHead == NULL) {
+        system->pHead = parking;
         parking->next = NULL;
     } else {
-        ParkingNode *current = system->head;
+        ParkingNode *current = system->pHead;
         while (current->next != NULL) {
             current = current->next;
         }
@@ -87,17 +87,17 @@ void addPark(ParkingSystem *system, ParkingNode *parking) {
 }
 
 void removePark(ParkingSystem *system, char *name) {
-    if (system->head == NULL) {
+    if (system->pHead == NULL) {
         return;
     }
 
-    ParkingNode *current = system->head;
+    ParkingNode *current = system->pHead;
     ParkingNode *prev = NULL;
     while (current != NULL) {
         if (strcmp(current->parking->name, name) == 0) {
             // If the node to be removed is the head of the list
             if (prev == NULL) {
-                system->head = current->next;
+                system->pHead = current->next;
             } else {
                 prev->next = current->next;
             }
@@ -191,7 +191,7 @@ int createVehicle(ParkingSystem *system, char *reg) {
         free(newVehicle);
         exit(1);
     }
-    system->vehicles = newVehicle;
+    system->vHead = newVehicle;
 
     newVehicle->next = NULL;
     newVehicle->prev = NULL;
@@ -296,6 +296,44 @@ int exitPark(Park *p, Vehicle *v, char *date, char *time) {
 
     p->currentLots--;
     return 0;
+}
+
+Log *createLog(ParkingSystem *system, Date *date, Time *time, char *reg, char *name, int type) {
+    Log *newLog = (Log *)malloc(sizeof(Log));
+    if (newLog == NULL) {
+        fprintf(stderr, "Memory allocation failed\n");
+        exit(1);
+    }
+    newLog->date = date;
+    newLog->time = time;
+    strcpy(newLog->reg, reg);
+    strcpy(newLog->parkName, name);
+    newLog->type = type;
+
+    addLog(system, newLog);
+    return newLog;
+}
+
+void addLog(ParkingSystem *system, Log *l) {
+    LogNode *newLog = (LogNode *)malloc(sizeof(LogNode));
+    if (newLog == NULL) {
+        fprintf(stderr, "Memory allocation failed\n");
+        exit(1);
+    }
+    newLog->log = l;
+    newLog->next = NULL;
+    newLog->prev = NULL;
+
+    if (system->lHead == NULL) {
+        system->lHead = newLog;
+    } else {
+        LogNode *current = system->lHead;
+        while (current->next != NULL) {
+            current = current->next;
+        }
+        current->next = newLog;
+        newLog->prev = current;
+    }
 }
 
 void commandS(ParkingSystem* system, Buffer* buffer) {
