@@ -180,6 +180,18 @@ Vehicle *getVehicle(ParkingSystem *system, char *reg) {
     return NULL;
 }
 
+Log *findEntryLog(ParkingSystem *system, char *reg, char *name) {
+    LogNode *current = system->lHead;
+    while (current != NULL) {
+        // type needs to be 0 (entry), so it doesn't return an exit log (old log)
+        if (strcmp(current->log->reg, reg) == 0 && strcmp(current->log->parkName, name) == 0 && current->log->type == 0) {
+            return current->log;
+        }
+        current = current->next;
+    }
+    return NULL;
+}
+
 /*
  * Reads the input from the user and inserts it into the buffer.
  */

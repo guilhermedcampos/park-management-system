@@ -14,6 +14,7 @@ int isValidEntry(ParkingSystem *system, char * name, char *reg, char *date, char
 int isValidExit(ParkingSystem *system, char *name, char *reg, char *date, char *time);
 int isVehicleInPark(ParkingSystem *system, char *reg, char *name);
 Vehicle *getVehicle(ParkingSystem *system, char *reg);
+Log *findEntryLog(ParkingSystem *system, char *reg, char *name);
 Buffer *getBuffer(Buffer *buffer);
 int isValidRegistration(char *reg);
 Time *createTimeStruct(char *time);

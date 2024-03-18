@@ -273,45 +273,61 @@ void commandE(ParkingSystem* system, Buffer* buffer) {
                 fprintf(stderr, "invalid vehicle entry.\n");
                 return;
             }
-            enterPark(park, vehicle, date, time);
+            enterPark(system, park, vehicle, date, time);
         }
     }
 }
 
-int enterPark(Park *p, Vehicle *v, char *date, char *time) {
+int enterPark(ParkingSystem *sys, Park *p, Vehicle *v, char *date, char *time) {
     v->parkName = p->name;
     v->date = createDateStruct(date);
     v->time = createTimeStruct(time);
 
     p->currentLots++;
-
+    createLog(sys, v->date, v->time, v->registration, p->name, 0);
     return 0;
 }
 
-int exitPark(Park *p, Vehicle *v, char *date, char *time) {
+int exitPark(ParkingSystem *system, Park *p, Vehicle *v, char *date, char *time) {
     v->parkName = NULL;
     v->date = createDateStruct(date);
     v->time = createTimeStruct(time);
     v->isParked = 0;
 
     p->currentLots--;
+    createLog(system, v->date, v->time, v->registration, p->name, 1);
     return 0;
 }
 
 Log *createLog(ParkingSystem *system, Date *date, Time *time, char *reg, char *name, int type) {
-    Log *newLog = (Log *)malloc(sizeof(Log));
-    if (newLog == NULL) {
-        fprintf(stderr, "Memory allocation failed\n");
-        exit(1);
+    if (type == 0) {
+        Log *newLog = (Log *)malloc(sizeof(Log));
+        if (newLog == NULL) {
+            fprintf(stderr, "Memory allocation failed\n");
+            exit(1);
+        }
+        // Entry
+        newLog ->entryDate = date;
+        newLog ->entryTime = time;
+        newLog ->type = 0;
+        strcpy(newLog->reg, reg);
+        strcpy(newLog->parkName, name);
+        addLog(system, newLog);
+        return newLog;
+    } else {
+        // Findd the entry log
+        Log *l = findEntryLog(system, reg, name);
+        if (l == NULL) {
+            fprintf(stderr, "Invalid exit.\n");
+            return NULL;
+        }
+        // Exit
+        l->exitDate = date;
+        l->exitTime = time;
+        l->type = 1;
+        return l;
     }
-    newLog->date = date;
-    newLog->time = time;
-    strcpy(newLog->reg, reg);
-    strcpy(newLog->parkName, name);
-    newLog->type = type;
-
-    addLog(system, newLog);
-    return newLog;
+    return NULL;
 }
 
 void addLog(ParkingSystem *system, Log *l) {
@@ -356,7 +372,7 @@ void commandS(ParkingSystem* system, Buffer* buffer) {
                 fprintf(stderr, "invalid vehicle exit.\n");
                 return;
             }
-            exitPark(park, vehicle, date, time);
+            exitPark(system, park, vehicle, date, time);
         }
     }
 }

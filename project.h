@@ -15,11 +15,14 @@ typedef struct time {
 } Time;
 
 typedef struct Log {
-    Date *date;
-    Time *time;
+    Date *entryDate;
+    Date *exitDate;
+    Time *entryTime;
+    Time *exitTime;
     char *reg;
     char *parkName;
     int type;  // 0 corresponds to an entry, 1 to a leave
+    double value;  // value to be paid
 } Log;
 
 typedef struct LogNode {
@@ -79,7 +82,8 @@ void addPark(ParkingSystem *system, ParkingNode *parking);
 int createVehicle(ParkingSystem *system, char *reg);
 void createPark(ParkingSystem *system, char *name, char *maxCapacity, char *billingValue15, char *billingValueAfter1Hour, char *maxDailyValue);
 void removePark(ParkingSystem *system, char *name);
-int enterPark(Park *p, Vehicle *v, char *date, char *time);
+int enterPark(ParkingSystem *system, Park *p, Vehicle *v, char *date, char *time);
+int exitPark(ParkingSystem *system, Park *p, Vehicle *v, char *date, char *time);
 void createPark(ParkingSystem *system, char *name, char *maxCapacity, char *billingValue15, char *billingValueAfter1Hour, char *maxDailyValue);
 Log *createLog(ParkingSystem *system, Date *date, Time *time, char *reg, char *name, int type);
 void addLog(ParkingSystem *system, Log *log);
