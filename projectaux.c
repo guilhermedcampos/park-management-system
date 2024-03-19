@@ -56,6 +56,7 @@ int isValidRequest(ParkingSystem *system, char *name, char *reg, char *date, cha
         return 0;
     }
 
+    // Check if the vehicle is in the park if exit
     if (!isVehicleInPark(system, reg, name)) {
         fprintf(stderr, "invalid vehicle exit.");
     }
@@ -168,7 +169,7 @@ int isLogTimeValid(Time *t1, Time *t2) {
 }
 
 int isValidLogAux(Date *d1, Date *d2, Time *t1, Time *t2) {
-        int val = isLogDateValid(d1, d2);
+    int val = isLogDateValid(d1, d2);
     if (val == 1) {
         return 1;
     } else if (val == 2) {

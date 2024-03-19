@@ -374,8 +374,44 @@ void commandS(ParkingSystem* system, Buffer* buffer) {
                 return;
             }
             exitPark(system, park, vehicle, date, time);
+            // TO-DO PRINT VALUE
         }
     }
+}
+
+// TO-DO: SORT LOGS BY PARK NAME, DATE, TIME
+int printVehicleLogs(ParkingSystem* system, char* reg) {
+    LogNode *current = system->lHead;
+    int numLogs = 0;
+    while (current != NULL) {
+        if (strcmp(current->log->reg, reg) == 0) {
+            // If its an entry log, print only entry info
+            if (current->log->type == 0) {
+                printf("e %s %s %s %s\n", current->log->parkName, printDate(current->log->entryDate), printTime(current->log->entryTime));
+            } else {
+                printf("s %s %s %s %s\n", current->log->parkName, 
+                printDate(current->log->entryDate), 
+                printTime(current->log->entryTime), 
+                printDate(current->log->exitDate) , 
+                printTime(current->log->exitTime));
+            }
+        }
+        current = current->next;
+    }
+    return numLogs;   
+}
+
+void commandV(ParkingSystem* system, Buffer* buffer) {
+    char *reg;
+
+    reg = nextWord(buffer);
+
+    if (reg == NULL || !isValidRegistration(reg)) {
+        fprintf(stderr, "invalid license plate.\n");
+        return;
+    }
+
+    printVehicleLogs(system, reg);
 }
 
 
@@ -427,6 +463,7 @@ int main() {
             case 'v':
                  buffer->index = 2;
                 
+                commandV(system, buffer);
                 break;
             
             // Shows revenue of a parking lot
