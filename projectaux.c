@@ -43,6 +43,26 @@ int isLeapYear(int year) {
     }
 }
 
+char *dateToString(Date *date) {
+    char *dateString = (char *)malloc(11 * sizeof(char));
+    if (dateString == NULL) {
+        exit(1);
+    }
+
+    sprintf(dateString, "%02d-%02d-%04d", date->day, date->month, date->year); 
+    return dateString;
+}
+
+char *timeToString(Time *time){
+    char *timeString = (char *)malloc(6 * sizeof(char));
+    if (timeString == NULL) {
+        exit(1);
+    }
+
+    sprintf(timeString, "%02d:%02d", time->hour, time->minute);
+    return timeString;
+}
+
 int isValidRequest(ParkingSystem *system, char *name, char *reg, char *date, char *time) {
     Park *park = parkExists(system, name);
 

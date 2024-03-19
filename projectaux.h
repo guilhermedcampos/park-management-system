@@ -10,6 +10,8 @@
 int isValidDate(Date *date);
 int isValidTime(Time *time);
 int isLeapYear(int year);
+char *dateToString(Date *date);
+char *timeToString(Time *time);
 int isValidRequest(ParkingSystem *system, char * name, char *reg, char *date, char *time);
 int isVehicleInPark(ParkingSystem *system, char *reg, char *name);
 int isLogDateValid(Date *d1, Date *d2);

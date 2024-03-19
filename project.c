@@ -387,13 +387,13 @@ int printVehicleLogs(ParkingSystem* system, char* reg) {
         if (strcmp(current->log->reg, reg) == 0) {
             // If its an entry log, print only entry info
             if (current->log->type == 0) {
-                printf("e %s %s %s %s\n", current->log->parkName, printDate(current->log->entryDate), printTime(current->log->entryTime));
+                printf("%s %s %s\n", current->log->parkName, dateToString(current->log->entryDate), timeToString(current->log->entryTime));
             } else {
-                printf("s %s %s %s %s\n", current->log->parkName, 
-                printDate(current->log->entryDate), 
-                printTime(current->log->entryTime), 
-                printDate(current->log->exitDate) , 
-                printTime(current->log->exitTime));
+                printf("%s %s %s %s %s\n", current->log->parkName, 
+                dateToString(current->log->entryDate), 
+                timeToString(current->log->entryTime), 
+                dateToString(current->log->exitDate), 
+                timeToString(current->log->exitTime));
             }
         }
         current = current->next;
