@@ -243,7 +243,7 @@ Vehicle *getVehicle(ParkingSystem *system, char *reg) {
     if (current == NULL) {
         return NULL;
     }
-    
+
     while (current != NULL) {
         if (strcmp(current->vehicle->registration, reg) == 0) {
             return current->vehicle;
@@ -285,16 +285,34 @@ Buffer *getBuffer(Buffer *buffer) {
 Date *createDateStruct(char *date) {
     Date *d = (Date *)malloc(sizeof(Date));
     if (d == NULL) {
+        fprintf(stderr, "Memory allocation failed\n");
         exit(1);
     }
 
-    char *day = strtok(date, "-");
+    // Make a copy of the date string
+    char *date_copy = strdup(date);
+    if (date_copy == NULL) {
+        fprintf(stderr, "Memory allocation failed\n");
+        free(d);
+        exit(1);
+    }
+
+    char *day = strtok(date_copy, "-");
     char *month = strtok(NULL, "-");
     char *year = strtok(NULL, "-");
+
+    if (day == NULL || month == NULL || year == NULL) {
+        fprintf(stderr, "Invalid date format\n");
+        free(date_copy); // Free the copy of the date string
+        free(d);        // Free the allocated memory for the Date struct
+        exit(1);
+    }
 
     d->day = atoi(day);
     d->month = atoi(month);
     d->year = atoi(year);
+
+    free(date_copy); // Free the copy of the date string after tokenization
 
     return d;
 }
@@ -302,17 +320,36 @@ Date *createDateStruct(char *date) {
 Time *createTimeStruct(char *time) {
     Time *t = (Time *)malloc(sizeof(Time));
     if (t == NULL) {
+        fprintf(stderr, "Memory allocation failed\n");
         exit(1);
     }
 
-    char *hour = strtok(time, ":");
+    // Make a copy of the time string
+    char *time_copy = strdup(time);
+    if (time_copy == NULL) {
+        fprintf(stderr, "Memory allocation failed\n");
+        free(t);
+        exit(1);
+    }
+
+    char *hour = strtok(time_copy, ":");
     char *minute = strtok(NULL, ":");
+
+    if (hour == NULL || minute == NULL) {
+        fprintf(stderr, "Invalid time format\n");
+        free(time_copy); // Free the copy of the time string
+        free(t);        // Free the allocated memory for the Time struct
+        exit(1);
+    }
 
     t->hour = atoi(hour);
     t->minute = atoi(minute);
 
+    free(time_copy); // Free the copy of the time string after tokenization
+
     return t;
 }
+
 
 char *nextWord(Buffer *buffer) {
     int i = 0;

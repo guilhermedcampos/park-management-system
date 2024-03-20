@@ -198,14 +198,14 @@ Vehicle *createVehicle(ParkingSystem *system, char *reg) {
     VehicleNode *newVehicle = (VehicleNode *)malloc(sizeof(VehicleNode));
     if (newVehicle == NULL) {
         fprintf(stderr, "Memory allocation failed\n");
-        return NULL;
+        exit(1);
     }
 
     newVehicle->vehicle = (Vehicle *)malloc(sizeof(Vehicle));
     if (newVehicle->vehicle == NULL) {
         fprintf(stderr, "Memory allocation failed\n");
         free(newVehicle);
-        return NULL;
+        exit(1);
     }
     system->vHead = newVehicle;
 
@@ -218,7 +218,7 @@ Vehicle *createVehicle(ParkingSystem *system, char *reg) {
         fprintf(stderr, "Memory allocation failed\n");
         free(newVehicle->vehicle);
         free(newVehicle);
-        return NULL;
+        exit(1);
     }
     strcpy(newVehicle->vehicle->registration, reg);
 
@@ -227,7 +227,6 @@ Vehicle *createVehicle(ParkingSystem *system, char *reg) {
     newVehicle->vehicle->date = NULL;
     newVehicle->vehicle->time = NULL;
 
-    addVehicle(system, newVehicle);
     return newVehicle->vehicle;
 }
 
@@ -300,16 +299,28 @@ void commandE(ParkingSystem* system, Buffer* buffer) {
 }
 
 int enterPark(ParkingSystem *sys, Park *p, Vehicle *v, char *date, char *time) {
+    // Allocate memory for park name in vehicle
+    v->parkName = (char *)malloc(strlen(p->name) + 1);
+    if (v->parkName == NULL) {
+        fprintf(stderr, "Memory allocation failed\n");
+        exit(1);
+    }
     strcpy(v->parkName, p->name);
-    realloc(v->date, sizeof(Date));
-    realloc(v->time, sizeof(Time));
+
     
-    v->date = createDateStruct(date);
-    v->time = createTimeStruct(time);
+    // Allocate memory for date and time
+    if (v->date == NULL) {
+        v->date = createDateStruct(date);
+    }
+
+    if (v->time == NULL) {
+        v->time = createTimeStruct(time);
+    }
 
     p->currentLots++;
     printf("t: Vehicle %s entered parking lot %s\n", v->registration, p->name);
     changeLog(sys, v->date, v->time, v->registration, p->name, 0);
+
     return 0;
 }
 
