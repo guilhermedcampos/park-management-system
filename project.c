@@ -279,13 +279,10 @@ void commandE(ParkingSystem* system, Buffer* buffer) {
 
     // Check if the entry is valid (park exists, park is not full, registration is valid, time is valid)
     if (isValidRequest(system, name, reg, date, time)) {
-        printf("t: Entry valida\n");
         Park *park = parkExists(system, name);
-        printf("t: Park exists\n");
         Vehicle *vehicle = getVehicle(system, reg);
         if (vehicle == NULL) {
             Vehicle *v = createVehicle(system, reg);
-            printf("t: Vehicle created\n");
             enterPark(system, park, v, date, time);
             printf("t: Vehicle entered park\n");
         } else {
@@ -417,6 +414,7 @@ void commandS(ParkingSystem* system, Buffer* buffer) {
 
     // Check if the exit is valid (registration is valid, time is valid)
     if (isValidExitRequest(system, name, reg, date, time)) {
+        printf("t: Exit valid\n");
         Park *park = parkExists(system, name);
         Vehicle *vehicle = getVehicle(system, reg);
         if (vehicle == NULL) {
@@ -429,9 +427,10 @@ void commandS(ParkingSystem* system, Buffer* buffer) {
                 return;
             }
             exitPark(system, park, vehicle, date, time);
+            printf("t: Vehicle exited park\n");
             // TO-DO PRINT VALUE
         }
-    }
+    } 
 }
 
 // TO-DO: SORT LOGS BY PARK NAME, DATE, TIME

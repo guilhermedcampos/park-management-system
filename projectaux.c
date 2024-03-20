@@ -71,7 +71,11 @@ int isValidExitRequest(ParkingSystem *system, char *name, char *reg, char *date,
         return 0;
     }
 
-    return isValidRequest(system, name, reg, date, time);
+    if (isValidRequest(system, name, reg, date, time)) {
+        return 1;
+    }
+
+    return 0;
 }
 
 int isValidRequest(ParkingSystem *system, char *name, char *reg, char *date, char *time) {
@@ -216,26 +220,29 @@ int isValidLogAux(Date *d1, Date *d2, Time *t1, Time *t2) {
 }
 
 // Checks if the date and time of the last log in the system is sooner
-int  isValidLog(ParkingSystem *system, Time *time, Date *date) {
-    // Go through logs linked list in system and find if the date and time are valid
+int isValidLog(ParkingSystem *system, Time *time, Date *date) {
     LogNode *cur = system->lHead;
+    
+    // Iterate through the linked list until the last log entry is found
+    while (cur != NULL && cur->next != NULL) {
+        cur = cur->next;
+    }
+
     if (cur == NULL) {
+        // No logs in the system
         return 1;
     }
 
-    while (cur != NULL) {
-        // Last log 
-        if (cur->prev != NULL && cur->next == NULL) {
-            if (cur->log->type == 0) { // Last log is an entry
-                return isValidLogAux(cur->log->entryDate, date, cur->log->entryTime, time);
-
-            } else if (cur->log->type == 1) { // Last log is an exit
-                return isValidLogAux(cur->log->exitDate, date, cur->log->exitTime, time);
-            }
-        } 
+    // Check if the last log entry's date and time are valid
+    if (cur->log->type == 0) { // Last log is an entry
+        return isValidLogAux(cur->log->entryDate, date, cur->log->entryTime, time);
+    } else if (cur->log->type == 1) { // Last log is an exit
+        return isValidLogAux(cur->log->exitDate, date, cur->log->exitTime, time);
     }
-    return 1;
+
+    return 1; // Default to valid if something unexpected happens
 }
+
 
 Vehicle *getVehicle(ParkingSystem *system, char *reg) {
     VehicleNode *current = system->vHead;
