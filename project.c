@@ -46,6 +46,7 @@ void printParks(ParkingSystem* system) {
 /* Returns park, or Null if it doesn't exist */
 Park* parkExists(ParkingSystem* sys, char* name) {
     ParkingNode *current = sys->pHead;
+
     while (current != NULL) {
         if (strcmp(current->parking->name, name) == 0) {
             return current->parking;
@@ -177,19 +178,34 @@ void createPark(ParkingSystem *system, char *name, char *maxCapacity, char *bill
     addPark(system, newParking);
 }
 
+void addVehicle(ParkingSystem *system, VehicleNode *vehicle) {
+    // Iterate through the list to find an empty spot
+    if (system->vHead == NULL) {
+        system->vHead = vehicle;
+        vehicle->next = NULL;
+    } else {
+        VehicleNode *current = system->vHead;
+        while (current->next != NULL) {
+            current = current->next;
+        }
+        current->next = vehicle;
+        vehicle->prev = current;
+        vehicle->next = NULL;
+    }
+}
 
-int createVehicle(ParkingSystem *system, char *reg) {
+Vehicle *createVehicle(ParkingSystem *system, char *reg) {
     VehicleNode *newVehicle = (VehicleNode *)malloc(sizeof(VehicleNode));
     if (newVehicle == NULL) {
         fprintf(stderr, "Memory allocation failed\n");
-        exit(1);
+        return NULL;
     }
 
     newVehicle->vehicle = (Vehicle *)malloc(sizeof(Vehicle));
     if (newVehicle->vehicle == NULL) {
         fprintf(stderr, "Memory allocation failed\n");
         free(newVehicle);
-        exit(1);
+        return NULL;
     }
     system->vHead = newVehicle;
 
@@ -202,7 +218,7 @@ int createVehicle(ParkingSystem *system, char *reg) {
         fprintf(stderr, "Memory allocation failed\n");
         free(newVehicle->vehicle);
         free(newVehicle);
-        exit(1);
+        return NULL;
     }
     strcpy(newVehicle->vehicle->registration, reg);
 
@@ -211,7 +227,8 @@ int createVehicle(ParkingSystem *system, char *reg) {
     newVehicle->vehicle->date = NULL;
     newVehicle->vehicle->time = NULL;
 
-    return 0;
+    addVehicle(system, newVehicle);
+    return newVehicle->vehicle;
 }
 
 
@@ -265,25 +282,33 @@ void commandE(ParkingSystem* system, Buffer* buffer) {
     if (isValidRequest(system, name, reg, date, time)) {
         printf("t: Entry valida\n");
         Park *park = parkExists(system, name);
+        printf("t: Park exists\n");
         Vehicle *vehicle = getVehicle(system, reg);
         if (vehicle == NULL) {
-            createVehicle(system, reg);
+            Vehicle *v = createVehicle(system, reg);
+            printf("t: Vehicle created\n");
+            enterPark(system, park, v, date, time);
+            printf("t: Vehicle entered park\n");
         } else {
             if (vehicle->isParked == 1) {
                 fprintf(stderr, "invalid vehicle entry.\n");
                 return;
             }
-            enterPark(system, park, vehicle, date, time);
         }
+        
     }
 }
 
 int enterPark(ParkingSystem *sys, Park *p, Vehicle *v, char *date, char *time) {
-    v->parkName = p->name;
+    strcpy(v->parkName, p->name);
+    realloc(v->date, sizeof(Date));
+    realloc(v->time, sizeof(Time));
+    
     v->date = createDateStruct(date);
     v->time = createTimeStruct(time);
 
     p->currentLots++;
+    printf("t: Vehicle %s entered parking lot %s\n", v->registration, p->name);
     changeLog(sys, v->date, v->time, v->registration, p->name, 0);
     return 0;
 }
@@ -300,6 +325,7 @@ int exitPark(ParkingSystem *system, Park *p, Vehicle *v, char *date, char *time)
 }
 
 Log *changeLog(ParkingSystem *system, Date *date, Time *time, char *reg, char *name, int type) {
+
     if (type == 0) {
         Log *newLog = (Log *)malloc(sizeof(Log));
         if (newLog == NULL) {
@@ -307,14 +333,14 @@ Log *changeLog(ParkingSystem *system, Date *date, Time *time, char *reg, char *n
             exit(1);
         }
         // Entry
-        newLog ->entryDate = date;
-        newLog ->entryTime = time;
-        newLog ->type = 0;
+        newLog->entryDate = date;
+        newLog->entryTime = time;
+        newLog->type = 0;
         strcpy(newLog->reg, reg);
         strcpy(newLog->parkName, name);
         addLog(system, newLog);
         return newLog;
-    } else {
+    } else if (type == 1) {
         // Findd the entry log
         Log *l = findEntryLog(system, reg, name);
         if (l == NULL) {
@@ -361,7 +387,7 @@ void commandS(ParkingSystem* system, Buffer* buffer) {
     time = nextWord(buffer);
 
     // Check if the exit is valid (registration is valid, time is valid)
-    if (isValidRequest(system, name, reg, date, time)) {
+    if (isValidExitRequest(system, name, reg, date, time)) {
         Park *park = parkExists(system, name);
         Vehicle *vehicle = getVehicle(system, reg);
         if (vehicle == NULL) {
@@ -414,6 +440,22 @@ void commandV(ParkingSystem* system, Buffer* buffer) {
     printVehicleLogs(system, reg);
 }
 
+// Test
+void printAllLogs(ParkingSystem* system) {
+    LogNode *current = system->lHead;
+    while (current != NULL) {
+        if (current->log->type == 1) {
+            printf("%s %s %s %s %s %.2f\n", current->log->parkName, 
+            dateToString(current->log->entryDate), 
+            timeToString(current->log->entryTime), 
+            dateToString(current->log->exitDate), 
+            timeToString(current->log->exitTime), 
+            current->log->value);
+        }
+        current = current->next;
+    }
+}
+
 
 int main() {
     // Initializes the buffer
@@ -434,6 +476,7 @@ int main() {
                 free(system);
                 free(buffer->buffer);
                 free(buffer);
+
                 return 0;
 
             // Creates a parking lot or lists the existing parking lots
@@ -469,6 +512,7 @@ int main() {
             // Shows revenue of a parking lot
             case 'f':
                 buffer->index = 2;
+                printAllLogs(system);
 
                 break;
 

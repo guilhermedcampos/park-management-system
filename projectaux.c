@@ -63,6 +63,17 @@ char *timeToString(Time *time){
     return timeString;
 }
 
+int isValidExitRequest(ParkingSystem *system, char *name, char *reg, char *date, char *time) {
+
+    // Check if the vehicle is in the park if exit
+    if (!isVehicleInPark(system, reg, name)) {
+        fprintf(stderr, "invalid vehicle exit.\n");
+        return 0;
+    }
+
+    return isValidRequest(system, name, reg, date, time);
+}
+
 int isValidRequest(ParkingSystem *system, char *name, char *reg, char *date, char *time) {
     Park *park = parkExists(system, name);
 
@@ -76,10 +87,6 @@ int isValidRequest(ParkingSystem *system, char *name, char *reg, char *date, cha
         return 0;
     }
 
-    // Check if the vehicle is in the park if exit
-    if (!isVehicleInPark(system, reg, name)) {
-        fprintf(stderr, "invalid vehicle exit.");
-    }
 
     Time *t = createTimeStruct(time);
     Date *d = createDateStruct(date);
@@ -98,6 +105,9 @@ int isValidRequest(ParkingSystem *system, char *name, char *reg, char *date, cha
         fprintf(stderr, "invalid date.\n");
         return 0;
     }
+
+    free(t);
+    free(d);
 
     return 1;
 }
@@ -151,6 +161,9 @@ int isValidRegistration(char *reg) {
 
 int isVehicleInPark(ParkingSystem *system, char *reg, char *name) {
     Vehicle *v = getVehicle(system, reg);
+    if (v == NULL) {
+        return 0;
+    }
     if ((strcmp(v->parkName, name) == 0) && v->isParked) {
         return 1;
     }
@@ -203,7 +216,7 @@ int isValidLogAux(Date *d1, Date *d2, Time *t1, Time *t2) {
 }
 
 // Checks if the date and time of the last log in the system is sooner
-int isValidLog(ParkingSystem *system, Time *time, Date *date) {
+int  isValidLog(ParkingSystem *system, Time *time, Date *date) {
     // Go through logs linked list in system and find if the date and time are valid
     LogNode *cur = system->lHead;
     if (cur == NULL) {
@@ -226,6 +239,11 @@ int isValidLog(ParkingSystem *system, Time *time, Date *date) {
 
 Vehicle *getVehicle(ParkingSystem *system, char *reg) {
     VehicleNode *current = system->vHead;
+
+    if (current == NULL) {
+        return NULL;
+    }
+    
     while (current != NULL) {
         if (strcmp(current->vehicle->registration, reg) == 0) {
             return current->vehicle;
