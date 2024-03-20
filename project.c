@@ -336,7 +336,6 @@ int exitPark(ParkingSystem *system, Park *p, Vehicle *v, char *date, char *time)
 }
 
 Log *changeLog(ParkingSystem *system, Date *date, Time *time, char *reg, char *name, int type) {
-
     if (type == 0) {
         Log *newLog = (Log *)malloc(sizeof(Log));
         if (newLog == NULL) {
@@ -347,12 +346,30 @@ Log *changeLog(ParkingSystem *system, Date *date, Time *time, char *reg, char *n
         newLog->entryDate = date;
         newLog->entryTime = time;
         newLog->type = 0;
+
+        // Allocate memory for reg and copy the string
+        newLog->reg = (char *)malloc(strlen(reg) + 1);
+        if (newLog->reg == NULL) {
+            fprintf(stderr, "Memory allocation failed\n");
+            free(newLog);  // Free Log struct if allocation fails
+            exit(1);
+        }
         strcpy(newLog->reg, reg);
+
+        // Allocate memory for parkName and copy the string
+        newLog->parkName = (char *)malloc(strlen(name) + 1);
+        if (newLog->parkName == NULL) {
+            fprintf(stderr, "Memory allocation failed\n");
+            free(newLog->reg);  // Free reg if allocation fails
+            free(newLog);       // Free Log struct if allocation fails
+            exit(1);
+        }
         strcpy(newLog->parkName, name);
+
         addLog(system, newLog);
         return newLog;
     } else if (type == 1) {
-        // Findd the entry log
+        // Find the entry log
         Log *l = findEntryLog(system, reg, name);
         if (l == NULL) {
             fprintf(stderr, "Invalid exit.\n");
@@ -366,6 +383,7 @@ Log *changeLog(ParkingSystem *system, Date *date, Time *time, char *reg, char *n
     }
     return NULL;
 }
+
 
 void addLog(ParkingSystem *system, Log *l) {
     LogNode *newLog = (LogNode *)malloc(sizeof(LogNode));
