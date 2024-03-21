@@ -89,11 +89,13 @@ void createPark(ParkingSystem *system, char *name, char *maxCapacity, char *bill
 Log *changeLog(ParkingSystem *system, Date *date, Time *time, char *reg, char *name, int type);
 int printVehicleLogs(ParkingSystem* system, char* reg);
 void addLog(ParkingSystem *system, Log *log);
+void showParkRevenue(ParkingSystem* system, Park* p, Date* date);
 void commandP(ParkingSystem* system, Buffer* buffer);
 void commandR(ParkingSystem* system, Buffer* buffer);
 void commandE(ParkingSystem* system, Buffer* buffer);
 void commandS(ParkingSystem* system, Buffer* buffer);
 void commandV(ParkingSystem* system, Buffer* buffer);
+void commandF(ParkingSystem* system, Buffer* buffer);
 
 #endif // PROJECT_H
 

@@ -31,41 +31,41 @@ ParkingSystem* init() {
 }
 
 void printParks(ParkingSystem* system) {
-    ParkingNode *current = system->pHead;
-    while (current != NULL) {
+    ParkingNode *cur = system->pHead;
+    while (cur != NULL) {
         printf("p %s %d %.2f %.2f %.2f\n", 
-            current->parking->name, 
-            current->parking->maxCapacity, 
-            current->parking->billingValue15, 
-            current->parking->billingValueAfter1Hour, 
-            current->parking->maxDailyValue);
-        current = current->next;
+            cur->parking->name, 
+            cur->parking->maxCapacity, 
+            cur->parking->billingValue15, 
+            cur->parking->billingValueAfter1Hour, 
+            cur->parking->maxDailyValue);
+        cur = cur->next;
     }
 }
 
 /* Returns park, or Null if it doesn't exist */
 Park* parkExists(ParkingSystem* sys, char* name) {
-    ParkingNode *current = sys->pHead;
+    ParkingNode *cur = sys->pHead;
 
-    while (current != NULL) {
-        if (strcmp(current->parking->name, name) == 0) {
-            return current->parking;
+    while (cur != NULL) {
+        if (strcmp(cur->parking->name, name) == 0) {
+            return cur->parking;
         }
-        current = current->next;
+        cur = cur->next;
     }
     return NULL;
 }
 
 /* Returns 1 if full, 0 if not full */
 int isParkFull(ParkingSystem* sys, char* name) {
-    ParkingNode *current = sys->pHead;
-    while (current != NULL) {
-        if (strcmp(current->parking->name, name) == 0) {
-            if (current->parking->currentLots == current->parking->maxCapacity) {
+    ParkingNode *cur = sys->pHead;
+    while (cur != NULL) {
+        if (strcmp(cur->parking->name, name) == 0) {
+            if (cur->parking->currentLots == cur->parking->maxCapacity) {
                 return 1;
             }
         }
-        current = current->next;
+        cur = cur->next;
     }
     return 0;
 }
@@ -76,12 +76,12 @@ void addPark(ParkingSystem *system, ParkingNode *parking) {
         system->pHead = parking;
         parking->next = NULL;
     } else {
-        ParkingNode *current = system->pHead;
-        while (current->next != NULL) {
-            current = current->next;
+        ParkingNode *cur = system->pHead;
+        while (cur->next != NULL) {
+            cur = cur->next;
         }
-        current->next = parking;
-        parking->prev = current;
+        cur->next = parking;
+        parking->prev = cur;
         parking->next = NULL;
     }
     system->numParks++;
@@ -92,29 +92,29 @@ void removePark(ParkingSystem *system, char *name) {
         return;
     }
 
-    ParkingNode *current = system->pHead;
+    ParkingNode *cur = system->pHead;
     ParkingNode *prev = NULL;
-    while (current != NULL) {
-        if (strcmp(current->parking->name, name) == 0) {
+    while (cur != NULL) {
+        if (strcmp(cur->parking->name, name) == 0) {
             // If the node to be removed is the head of the list
             if (prev == NULL) {
-                system->pHead = current->next;
+                system->pHead = cur->next;
             } else {
-                prev->next = current->next;
+                prev->next = cur->next;
             }
 
             // If the node to be removed is not the last node in the list
-            if (current->next != NULL) {
-                current->next->prev = prev;
+            if (cur->next != NULL) {
+                cur->next->prev = prev;
             }
 
-            free(current->parking);
-            free(current);
+            free(cur->parking);
+            free(cur);
             system->numParks--;
             return;
         }
-        prev = current;
-        current = current->next;
+        prev = cur;
+        cur = cur->next;
     }
 }
 
@@ -184,12 +184,12 @@ void addVehicle(ParkingSystem *system, VehicleNode *vehicle) {
         system->vHead = vehicle;
         vehicle->next = NULL;
     } else {
-        VehicleNode *current = system->vHead;
-        while (current->next != NULL) {
-            current = current->next;
+        VehicleNode *cur = system->vHead;
+        while (cur->next != NULL) {
+            cur = cur->next;
         }
-        current->next = vehicle;
-        vehicle->prev = current;
+        cur->next = vehicle;
+        vehicle->prev = cur;
         vehicle->next = NULL;
     }
 }
@@ -395,12 +395,12 @@ void addLog(ParkingSystem *system, Log *l) {
     if (system->lHead == NULL) {
         system->lHead = newLog;
     } else {
-        LogNode *current = system->lHead;
-        while (current->next != NULL) {
-            current = current->next;
+        LogNode *cur = system->lHead;
+        while (cur->next != NULL) {
+            cur = cur->next;
         }
-        current->next = newLog;
-        newLog->prev = current;
+        cur->next = newLog;
+        newLog->prev = cur;
     }
 }
 
@@ -435,22 +435,22 @@ void commandS(ParkingSystem* system, Buffer* buffer) {
 
 // TO-DO: SORT LOGS BY PARK NAME, DATE, TIME
 int printVehicleLogs(ParkingSystem* system, char* reg) {
-    LogNode *current = system->lHead;
+    LogNode *cur = system->lHead;
     int numLogs = 0;
-    while (current != NULL) {
-        if (strcmp(current->log->reg, reg) == 0) {
+    while (cur != NULL) {
+        if (strcmp(cur->log->reg, reg) == 0) {
             // If its an entry log, print only entry info
-            if (current->log->type == 0) {
-                printf("%s %s %s\n", current->log->parkName, dateToString(current->log->entryDate), timeToString(current->log->entryTime));
+            if (cur->log->type == 0) {
+                printf("%s %s %s\n", cur->log->parkName, dateToString(cur->log->entryDate), timeToString(cur->log->entryTime));
             } else {
-                printf("%s %s %s %s %s\n", current->log->parkName, 
-                dateToString(current->log->entryDate), 
-                timeToString(current->log->entryTime), 
-                dateToString(current->log->exitDate), 
-                timeToString(current->log->exitTime));
+                printf("%s %s %s %s %s\n", cur->log->parkName, 
+                dateToString(cur->log->entryDate), 
+                timeToString(cur->log->entryTime), 
+                dateToString(cur->log->exitDate), 
+                timeToString(cur->log->exitTime));
             }
         }
-        current = current->next;
+        cur = cur->next;
     }
     return numLogs;   
 }
@@ -468,22 +468,54 @@ void commandV(ParkingSystem* system, Buffer* buffer) {
     printVehicleLogs(system, reg);
 }
 
-// Test
-void printAllLogs(ParkingSystem* system) {
-    LogNode *current = system->lHead;
-    while (current != NULL) {
-        if (current->log->type == 1) {
-            printf("%s %s %s %s %s %.2f\n", current->log->parkName, 
-            dateToString(current->log->entryDate), 
-            timeToString(current->log->entryTime), 
-            dateToString(current->log->exitDate), 
-            timeToString(current->log->exitTime), 
-            current->log->value);
-        }
-        current = current->next;
+void showParkRevenue(ParkingSystem* system, Park* p, Date* date) {
+
+    LogNode *cur = system->lHead;
+    if (cur == NULL) {
+        return;
     }
+    
+    while (cur != NULL) {
+        if (strcmp(cur->log->parkName, p->name) == 0) {
+            if (date == NULL) {
+                if (cur->log->type == 1) {
+                    printf("%s %.2f\n", dateToString(cur->log->exitDate), cur->log->value);
+                }
+            } else {
+                // TO-DO: CHECK IF DATE IS VALID (invalid ou posterior ao dia do ultimo reg saida ou entrada)
+                if (isValidDate(date) && isLogDateValid(date, cur->log->exitDate)) {
+                    if (cur->log->type == 1) {
+                        printf("%s %s %.2f\n", cur->log->reg, timeToString(cur->log->exitTime), cur->log->value);
+                    }
+                } else {
+                    fprintf(stderr, "invalid date.\n");
+                }
+            }
+        }
+        cur = cur->next;
+    }
+
 }
 
+// Checks total revenue of a park
+void commandF(ParkingSystem* system, Buffer* buffer) {
+    char *name, *date;
+
+    name = nextWord(buffer);
+    date = nextWord(buffer);
+
+    Park *park = parkExists(system, name);
+    if (park == NULL) {
+        fprintf(stderr, "no such parking.\n");
+        return;
+    }
+
+    if (date == NULL) {
+        showParkRevenue(system, park, NULL);
+    } else if (isValidDate(createDateStruct(date))) {  // and logDateValid of last entry date
+        showParkRevenue(system, park, createDateStruct(date));
+    }
+}
 
 int main() {
     // Initializes the buffer
@@ -540,7 +572,7 @@ int main() {
             // Shows revenue of a parking lot
             case 'f':
                 buffer->index = 2;
-                printAllLogs(system);
+                commandF(system, buffer);
 
                 break;
 
