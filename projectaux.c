@@ -289,6 +289,126 @@ Buffer *getBuffer(Buffer *buffer) {
     return buffer;
 }
 
+double getBillingValue(Park *park, TimeDiff *diff) {
+    double value = 0;
+    if (diff->date->day == 0) {
+        if (diff->time->hour < 1) {
+            value = park->billingValue15;
+        } else {
+            value = park->billingValue15 + (diff->time->hour - 1) * park->billingValueAfter1Hour;
+        }
+    } else {
+        value = park->maxDailyValue;
+    }
+    return value;
+}
+
+TimeDiff *getTimeDiff(Time *t1, Date *d1, Time *t2, Date *d2) {
+    TimeDiff *diff = (TimeDiff *)malloc(sizeof(TimeDiff));
+    if (diff == NULL) {
+        fprintf(stderr, "Memory allocation failed\n");
+        exit(1);
+    }
+
+    // Allocate memory for diff->time and diff->date
+    diff->time = (Time *)malloc(sizeof(Time));
+    if (diff->time == NULL) {
+        fprintf(stderr, "Memory allocation failed\n");
+        exit(1);
+    }
+
+    diff->date = (Date *)malloc(sizeof(Date));
+    if (diff->date == NULL) {
+        fprintf(stderr, "Memory allocation failed\n");
+        exit(1);
+    }
+
+    // Copy values of t1, d1, t2, d2
+    Time t1_copy = *t1;
+    Time t2_copy = *t2;
+    Date d1_copy = *d1;
+    Date d2_copy = *d2;
+
+    // Diff in minutes
+    if (t2_copy.minute < t1_copy.minute) {
+        t2_copy.hour -= 1;
+        t2_copy.minute += 60;
+    }
+    diff->time->minute = t2_copy.minute - t1_copy.minute;
+
+    // Diff in hours
+    if (t2_copy.hour < t1_copy.hour) {
+        d2_copy.day -= 1;
+        t2_copy.hour += 24;
+    }
+    diff->time->hour = t2_copy.hour - t1_copy.hour;
+
+    // Diff in days
+    if (d2_copy.day < d1_copy.day) {
+        d2_copy.month -= 1;
+        if (d2_copy.month == 0) {
+            d2_copy.month = 12;
+            d2_copy.year -= 1;
+        }
+        d2_copy.day += daysByMonth(d2_copy.month - 1);
+    }
+    diff->date->day = d2_copy.day - d1_copy.day;
+
+    // Diff in months
+    if (d2_copy.month < d1_copy.month) {
+        d2_copy.year -= 1;
+        d2_copy.month += 12;
+    }
+    diff->date->month = d2_copy.month - d1_copy.month;
+
+    // Diff in years
+    diff->date->year = d2_copy.year - d1_copy.year;
+
+    // Calculate total days based on years and months
+    diff->date->day += diff->date->year * 365 + diff->date->month * daysByMonth(d2_copy.month - 1);
+
+    // Reset year and months
+    diff->date->year = 0;
+    diff->date->month = 0;
+
+    return diff;
+}
+
+
+int daysByMonth(int month) {
+    switch (month) {
+        case 1: return 31;
+        case 2: return 28;
+        case 3: return 31;
+        case 4: return 30;
+        case 5: return 31;
+        case 6: return 30;
+        case 7: return 31;
+        case 8: return 31;
+        case 9: return 30;
+        case 10: return 31;
+        case 11: return 30;
+        case 12: return 31;
+        default: return 0;
+    }
+
+}
+
+double calculateValue(Log *log, ParkingSystem *system) {
+    printf("Calculating value\n");
+    Park *park = parkExists(system, log->parkName);
+    TimeDiff *timeDiff = getTimeDiff(log->entryTime, log->entryDate, log->exitTime, log->exitDate);
+    printf("Time diff calculated\n ");
+    if (timeDiff == NULL) {
+        fprintf(stderr, "Error calculating time difference\n");
+        return -1;  // Or handle the error as appropriate
+    }
+    double value = getBillingValue(park, timeDiff);
+    return value;
+}
+
+
+
 Date *createDateStruct(char *date) {
     Date *d = (Date *)malloc(sizeof(Date));
     if (d == NULL) {

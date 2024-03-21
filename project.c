@@ -87,6 +87,39 @@ void addPark(ParkingSystem *system, ParkingNode *parking) {
     system->numParks++;
 }
 
+void removeLogs(ParkingSystem *system, char *name) {
+    LogNode *cur = system->lHead;
+    LogNode *prev = NULL;
+    while (cur != NULL) {
+        if (strcmp(cur->log->parkName, name) == 0) {
+            // If the node to be removed is the head of the list
+            if (prev == NULL) {
+                system->lHead = cur->next;
+            } else {
+                prev->next = cur->next;
+            }
+
+            // If the node to be removed is not the last node in the list
+            if (cur->next != NULL) {
+                cur->next->prev = prev;
+            }
+
+            free(cur->log->reg);
+            free(cur->log->parkName);
+            free(cur->log->entryDate);
+            free(cur->log->entryTime);
+            free(cur->log->exitDate);
+            free(cur->log->exitTime);
+            free(cur->log);
+
+            free(cur);
+            return;
+        }
+        prev = cur;
+        cur = cur->next;
+    }
+}
+
 void removePark(ParkingSystem *system, char *name) {
     if (system->pHead == NULL) {
         return;
@@ -265,6 +298,7 @@ void commandR(ParkingSystem* system, Buffer* buffer) {
     
     if (parkExists(system, name) != NULL) {
         removePark(system, name);
+        removeLogs(system, name);
     }
 
 }
@@ -369,12 +403,13 @@ Log *changeLog(ParkingSystem *system, Date *date, Time *time, char *reg, char *n
         // Find the entry log
         Log *l = findEntryLog(system, reg, name);
         if (l == NULL) {
-            fprintf(stderr, "Invalid exit.\n");
+            fprintf(stderr, "invalid exit.\n");
             return NULL;
         }
         // Exit
         l->exitDate = date;
         l->exitTime = time;
+        l->value = calculateValue(l, system);
         l->type = 1;
         return l;
     }
@@ -414,7 +449,6 @@ void commandS(ParkingSystem* system, Buffer* buffer) {
 
     // Check if the exit is valid (registration is valid, time is valid)
     if (isValidExitRequest(system, name, reg, date, time)) {
-        printf("t: Exit valid\n");
         Park *park = parkExists(system, name);
         Vehicle *vehicle = getVehicle(system, reg);
         if (vehicle == NULL) {
@@ -427,7 +461,6 @@ void commandS(ParkingSystem* system, Buffer* buffer) {
                 return;
             }
             exitPark(system, park, vehicle, date, time);
-            printf("t: Vehicle exited park\n");
             // TO-DO PRINT VALUE
         }
     } 
