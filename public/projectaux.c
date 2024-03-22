@@ -42,8 +42,8 @@ int isValidDate(Date *date) {
     if (date == NULL) {
         return 0;
     }   
-    
-    if (date->day < 1 || date->day > 31) {
+
+    if (date->day < 1 || date->day > daysByMonth(date->month)) {
         return 0;
     }
     if (date->month < 1 || date->month > 12) {
@@ -200,10 +200,10 @@ int isVehicleInPark(ParkingSystem *system, char *reg, char *name) {
     if (v == NULL) {
         return 0;
     }
-    if ((strcmp(v->parkName, name) == 0) && v->isParked) {
-        return 1;
+    if ((strcmp(v->parkName, name) != 0)) {
+        return 0;
     }
-    return 0;
+    return 1;
 }
 
 // If d1 is sooner than d2, it's valid (1)

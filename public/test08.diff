@@ -1,16 +1,8 @@
-15,21c15,21
-< AA-00-AA: invalid vehicle exit.
-< AA-00-AA: invalid vehicle exit.
-< AA-00-AA: invalid vehicle exit.
-< AA-01-AA: invalid vehicle exit.
-< AA-01-AA: invalid vehicle exit.
-< AA-01-AA: invalid vehicle exit.
-< parque1 10 0
+17c17
+< AA-00-AA 01-01-2024 08:00 01-01-2024 09:08 0.30.
 ---
-> invalid date.
-> invalid date.
 > AA-00-AA 01-01-2024 08:00 01-01-2024 09:08 1.70
-> invalid date.
-> invalid date.
+20c20
+< AA-01-AA 01-01-2024 08:01 01-01-2024 23:59 7.30.
+---
 > AA-01-AA 01-01-2024 08:01 01-01-2024 23:59 15.00
-> parque1 10 2

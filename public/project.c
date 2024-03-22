@@ -201,38 +201,34 @@ void addVehicle(ParkingSystem *system, VehicleNode *vehicle) {
 }
 
 Vehicle *createVehicle(ParkingSystem *system, char *reg) {
-    VehicleNode *newVehicle = (VehicleNode *)malloc(sizeof(VehicleNode));
-    if (newVehicle == NULL) {
+    VehicleNode *newVehicleNode = (VehicleNode *)malloc(sizeof(VehicleNode));
+    if (newVehicleNode == NULL) {
         return NULL;
     }
 
-    newVehicle->vehicle = (Vehicle *)malloc(sizeof(Vehicle));
-    if (newVehicle->vehicle == NULL) {
-        
-        free(newVehicle);
+    newVehicleNode->vehicle = (Vehicle *)malloc(sizeof(Vehicle));
+    if (newVehicleNode->vehicle == NULL) {
+        free(newVehicleNode);
         return NULL;
     }
-    system->vHead = newVehicle;
-
-    newVehicle->next = NULL;
-    newVehicle->prev = NULL;
 
     // Allocate memory for the registration field and copy the string
-    newVehicle->vehicle->registration = (char *)malloc(strlen(reg) + 1);
-    if (newVehicle->vehicle->registration == NULL) {
-        
-        free(newVehicle->vehicle);
-        free(newVehicle);
+    newVehicleNode->vehicle->registration = (char *)malloc(strlen(reg) + 1);
+    if (newVehicleNode->vehicle->registration == NULL) {
+        free(newVehicleNode->vehicle);
+        free(newVehicleNode);
         return NULL;
     }
-    strcpy(newVehicle->vehicle->registration, reg);
+    strcpy(newVehicleNode->vehicle->registration, reg);
 
-    newVehicle->vehicle->parkName = NULL;
-    newVehicle->vehicle->isParked = 1;
-    newVehicle->vehicle->date = NULL;
-    newVehicle->vehicle->time = NULL;
+    // Initialize other fields
+    newVehicleNode->vehicle->parkName = NULL;
+    newVehicleNode->vehicle->isParked = 1;
+    newVehicleNode->vehicle->date = NULL;
+    newVehicleNode->vehicle->time = NULL;
 
-    return newVehicle->vehicle;
+    addVehicle(system, newVehicleNode);
+    return newVehicleNode->vehicle;
 }
 
 
@@ -308,10 +304,9 @@ int enterPark(ParkingSystem *sys, Park *p, Vehicle *v, char *date, char *time) {
     // Allocate memory for park name in vehicle
     v->parkName = (char *)malloc(strlen(p->name) + 1);
     if (v->parkName == NULL) {
-        exit(1);
+        return 0;
     }
     strcpy(v->parkName, p->name);
-
     
     // Allocate memory for date and time
     if (v->date == NULL) {
@@ -321,7 +316,7 @@ int enterPark(ParkingSystem *sys, Park *p, Vehicle *v, char *date, char *time) {
     if (v->time == NULL) {
         v->time = createTimeStruct(time);
     }
-
+    v->isParked = 1;
     p->currentLots++;
     changeLog(sys, v->date, v->time, v->registration, p->name, 0);
 
@@ -430,11 +425,7 @@ void commandS(ParkingSystem* system, Buffer* buffer) {
     if (isValidRequest(system, name, reg, date, time, 1)) {
         Park *park = parkExists(system, name);
         Vehicle *vehicle = getVehicle(system, reg);
-            if (vehicle->isParked == 0) {
-                printf("invalid vehicle exit.\n");
-                return;
-            }
-            exitPark(system, park, vehicle, date, time);
+        exitPark(system, park, vehicle, date, time);
     } 
 }
 
