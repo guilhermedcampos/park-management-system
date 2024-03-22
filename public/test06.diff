@@ -1,0 +1,16 @@
+15,19c15,19
+< Parque 2 0
+< Parque 2: parking is full.
+< Parque 2: parking is full.
+< Parque 2: parking is full.
+< Parque 2: parking is full.
+---
+> invalid date.
+> invalid date.
+> invalid date.
+> invalid date.
+> AA-01-AA: invalid vehicle entry.
+21c21
+< Parque 2 5 0
+---
+> Parque 2 5 1
