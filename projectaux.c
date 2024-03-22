@@ -6,6 +6,27 @@
 #include <string.h>
 #include <stdlib.h>
 
+int isValidParkRequest(int nParks, int cap, double x, double y, double z) {
+
+    if (cap == 0) {
+        fprintf(stderr, "%d invalid capacity.\n", cap);
+        return 0;
+    }
+
+    // Check for invalid costs
+    if (x <= 0 || y <= 0 || z <= 0 || x >= y|| y>= z) {
+        fprintf(stderr, "invalid cost.\n");
+        return 0;
+    }
+
+    if (nParks == MAX_PARKING_LOTS ) {
+        fprintf(stderr, "too many parks.\n");
+        return 0;
+    }
+
+    return 1;
+}
+
 int isValidTime(Time *time) {
     if (time->hour < 0 || time->hour > 23) {
         return 0;
@@ -63,50 +84,56 @@ char *timeToString(Time *time){
     return timeString;
 }
 
-int isValidExitRequest(ParkingSystem *system, char *name, char *reg, char *date, char *time) {
-
-    // Check if the vehicle is in the park if exit
-    if (!isVehicleInPark(system, reg, name)) {
-        fprintf(stderr, "invalid vehicle exit.\n");
-        return 0;
-    }
-
-    if (isValidRequest(system, name, reg, date, time)) {
-        return 1;
-    }
-
-    return 0;
-}
-
-int isValidRequest(ParkingSystem *system, char *name, char *reg, char *date, char *time) {
+int isValidRequest(ParkingSystem *system, char *name, char *reg, char *date, char *time, int type) {
     Park *park = parkExists(system, name);
 
     if (park == NULL) {
-        fprintf(stderr, "no such parking.\n");
+        printf("%s: no such parking.\n", name);
         return 0;
     }
 
-    if (!isValidRegistration(reg)) {
-        fprintf(stderr, "invalid licence plate.");
+    if (type == 0) {
+        if (park->currentLots == park->maxCapacity) {
+            printf("%s: parking full.\n", park->name);
+            return 0;
+        }
+    }
+
+    if (!isValidRegistration(reg) || (!isValidRegistration(reg) && type == 1)) {
+        printf("%s: invalid licence plate.\n", reg);
         return 0;
     }
 
+    if (type == 0) {
+        if (isVehicleInPark(system, reg, name)) {
+            printf("%s:invalid vehicle entry.\n", reg);
+            return 0;
+        }
+
+    }
+
+    if (type == 1) {
+        if (!isVehicleInPark(system, reg, name)) {
+            printf("%s: invalid vehicle exit.\n", reg);
+            return 0;
+        }
+    }
 
     Time *t = createTimeStruct(time);
     Date *d = createDateStruct(date);
 
     if (!isValidTime(t)) {
-        fprintf(stderr, "invalid date.\n");
+        printf("invalid date.\n");
         return 0;
     }
 
     if (!isValidDate(d)) {
-        fprintf(stderr, "invalid date.\n");
+        printf("invalid date.\n");
         return 0;
     }
 
     if (!isValidLog(system, t, d)) {
-        fprintf(stderr, "invalid date.\n");
+        printf("invalid date.\n");
         return 0;
     }
 
@@ -242,7 +269,6 @@ int isValidLog(ParkingSystem *system, Time *time, Date *date) {
 
     return 1; // Default to valid if something unexpected happens
 }
-
 
 Vehicle *getVehicle(ParkingSystem *system, char *reg) {
     VehicleNode *current = system->vHead;
@@ -395,19 +421,14 @@ int daysByMonth(int month) {
 }
 
 double calculateValue(Log *log, ParkingSystem *system) {
-    printf("Calculating value\n");
     Park *park = parkExists(system, log->parkName);
     TimeDiff *timeDiff = getTimeDiff(log->entryTime, log->entryDate, log->exitTime, log->exitDate);
-    printf("Time diff calculated\n ");
     if (timeDiff == NULL) {
-        fprintf(stderr, "Error calculating time difference\n");
-        return -1;  // Or handle the error as appropriate
+        return -1;  
     }
     double value = getBillingValue(park, timeDiff);
     return value;
 }
-
-
 
 Date *createDateStruct(char *date) {
     Date *d = (Date *)malloc(sizeof(Date));
@@ -476,7 +497,6 @@ Time *createTimeStruct(char *time) {
 
     return t;
 }
-
 
 char *nextWord(Buffer *buffer) {
     int i = 0;

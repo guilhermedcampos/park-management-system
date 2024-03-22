@@ -7,13 +7,13 @@
 #include <string.h>
 #include <stdlib.h>
 
+int isValidParkRequest(int nParks, int cap, double x, double y, double z);
 int isValidDate(Date *date);
 int isValidTime(Time *time);
 int isLeapYear(int year);
 char *dateToString(Date *date);
 char *timeToString(Time *time);
-int isValidExitRequest(ParkingSystem *system, char *name, char *reg, char *date, char *time);
-int isValidRequest(ParkingSystem *system, char * name, char *reg, char *date, char *time);
+int isValidRequest(ParkingSystem *system, char * name, char *reg, char *date, char *time, int type);
 int isVehicleInPark(ParkingSystem *system, char *reg, char *name);
 int isLogDateValid(Date *d1, Date *d2);
 int isLogTimeValid(Time *t1, Time *t2);

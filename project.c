@@ -20,7 +20,6 @@ define constants for error messages
 ParkingSystem* init() {
     ParkingSystem *system = (ParkingSystem *)malloc(sizeof(ParkingSystem));
     if (system == NULL) {
-        fprintf(stderr, "Memory allocation failed\n");
         exit(1);
     }
     system->pHead = NULL;
@@ -156,13 +155,11 @@ void createPark(ParkingSystem *system, char *name, char *maxCapacity, char *bill
     ParkingNode *newParking = (ParkingNode *)malloc(sizeof(Park));
 
     if (newParking == NULL) {
-        fprintf(stderr, "Memory allocation failed\n");
         exit(1);
     }
 
     newParking->parking = (Park *)malloc(sizeof(Park));
     if (newParking->parking == NULL) {
-        fprintf(stderr, "Memory allocation failed\n");
         free(newParking);
         exit(1);
     }
@@ -170,7 +167,6 @@ void createPark(ParkingSystem *system, char *name, char *maxCapacity, char *bill
     // Allocate memory for the name field and copy the string
     newParking->parking->name = (char *)malloc(strlen(name) + 1);
     if (newParking->parking->name == NULL) {
-        fprintf(stderr, "Memory allocation failed\n");
         free(newParking->parking);
         free(newParking);
         exit(1);
@@ -186,25 +182,6 @@ void createPark(ParkingSystem *system, char *name, char *maxCapacity, char *bill
     newParking->parking->billingValue15 = atof(billingValue15);
     newParking->parking->billingValueAfter1Hour = atof(billingValueAfter1Hour);
     newParking->parking->maxDailyValue = atof(maxDailyValue);
-
-    // Check for invalid costs
-    if (newParking->parking->billingValue15 <= 0 || newParking->parking->billingValueAfter1Hour <= 0 ||
-        newParking->parking->maxDailyValue <= 0 || newParking->parking->billingValue15 >= newParking->parking->billingValueAfter1Hour ||
-        newParking->parking->billingValueAfter1Hour >= newParking->parking->maxDailyValue) {
-        fprintf(stderr, "Invalid cost.\n");
-        free(newParking->parking->name);
-        free(newParking->parking);
-        free(newParking);
-        return;
-    }
-
-    if (newParking->parking->maxCapacity <= 0) {
-        fprintf(stderr, "Invalid capacity.\n");
-        free(newParking->parking->name);
-        free(newParking->parking);
-        free(newParking);
-        return;
-    }
 
     printf("t: Parking lot %s created\n", name);
 
@@ -230,13 +207,12 @@ void addVehicle(ParkingSystem *system, VehicleNode *vehicle) {
 Vehicle *createVehicle(ParkingSystem *system, char *reg) {
     VehicleNode *newVehicle = (VehicleNode *)malloc(sizeof(VehicleNode));
     if (newVehicle == NULL) {
-        fprintf(stderr, "Memory allocation failed\n");
         exit(1);
     }
 
     newVehicle->vehicle = (Vehicle *)malloc(sizeof(Vehicle));
     if (newVehicle->vehicle == NULL) {
-        fprintf(stderr, "Memory allocation failed\n");
+        
         free(newVehicle);
         exit(1);
     }
@@ -248,7 +224,7 @@ Vehicle *createVehicle(ParkingSystem *system, char *reg) {
     // Allocate memory for the registration field and copy the string
     newVehicle->vehicle->registration = (char *)malloc(strlen(reg) + 1);
     if (newVehicle->vehicle->registration == NULL) {
-        fprintf(stderr, "Memory allocation failed\n");
+        
         free(newVehicle->vehicle);
         free(newVehicle);
         exit(1);
@@ -275,18 +251,15 @@ void commandP(ParkingSystem* system, Buffer* buffer) {
     } else {
         // Checks if the parking lot already exists
         if (parkExists(system, name) != NULL) {
-            fprintf(stderr, "parking already exists.\n");
+            printf("%s: parking already exists.\n", name);
         } else {
-            if (system->numParks < MAX_PARKING_LOTS) {
-                // If the parking lot does not exist, create it
-                maxCapacity = nextWord(buffer);
-                billingValue15 = nextWord(buffer);
-                billingValueAfter1Hour = nextWord(buffer);
-                maxDailyValue = nextWord(buffer);
+            maxCapacity = nextWord(buffer);
+            billingValue15 = nextWord(buffer);
+            billingValueAfter1Hour = nextWord(buffer);
+            maxDailyValue = nextWord(buffer);
+            if (isValidParkRequest(system->numParks, atoi(maxCapacity), atof(billingValue15), atof(billingValueAfter1Hour), atof(maxDailyValue))) {
                 createPark(system, name, maxCapacity, billingValue15, billingValueAfter1Hour, maxDailyValue);
-            } else {
-                fprintf(stderr, "too many parks.\n");
-            }    
+            } 
         }
     }
 }
@@ -299,8 +272,9 @@ void commandR(ParkingSystem* system, Buffer* buffer) {
     if (parkExists(system, name) != NULL) {
         removePark(system, name);
         removeLogs(system, name);
+    } else {
+        printf("%s: no such parking.\n", name);
     }
-
 }
 
 void commandE(ParkingSystem* system, Buffer* buffer) {
@@ -312,20 +286,14 @@ void commandE(ParkingSystem* system, Buffer* buffer) {
     time = nextWord(buffer);
 
     // Check if the entry is valid (park exists, park is not full, registration is valid, time is valid)
-    if (isValidRequest(system, name, reg, date, time)) {
+    if (isValidRequest(system, name, reg, date, time, 0)) {
         Park *park = parkExists(system, name);
         Vehicle *vehicle = getVehicle(system, reg);
         if (vehicle == NULL) {
             Vehicle *v = createVehicle(system, reg);
             enterPark(system, park, v, date, time);
-            printf("t: Vehicle entered park\n");
-        } else {
-            if (vehicle->isParked == 1) {
-                fprintf(stderr, "invalid vehicle entry.\n");
-                return;
-            }
-        }
-        
+            printf("%s %d.\n", name, park->maxCapacity - park->currentLots);
+        } 
     }
 }
 
@@ -333,7 +301,7 @@ int enterPark(ParkingSystem *sys, Park *p, Vehicle *v, char *date, char *time) {
     // Allocate memory for park name in vehicle
     v->parkName = (char *)malloc(strlen(p->name) + 1);
     if (v->parkName == NULL) {
-        fprintf(stderr, "Memory allocation failed\n");
+        
         exit(1);
     }
     strcpy(v->parkName, p->name);
@@ -362,7 +330,11 @@ int exitPark(ParkingSystem *system, Park *p, Vehicle *v, char *date, char *time)
     v->isParked = 0;
 
     p->currentLots--;
-    changeLog(system, v->date, v->time, v->registration, p->name, 1);
+    Log *l = changeLog(system, v->date, v->time, v->registration, p->name, 1);
+    if (l == NULL) {
+        return 1;
+    }
+    printf("%s %s %s %s %s %.2f.\n", v->registration, dateToString(l->entryDate), timeToString(l->entryTime), dateToString(l->exitDate), timeToString(l->exitTime), l->value);
     return 0;
 }
 
@@ -370,7 +342,7 @@ Log *changeLog(ParkingSystem *system, Date *date, Time *time, char *reg, char *n
     if (type == 0) {
         Log *newLog = (Log *)malloc(sizeof(Log));
         if (newLog == NULL) {
-            fprintf(stderr, "Memory allocation failed\n");
+            
             exit(1);
         }
         // Entry
@@ -381,7 +353,7 @@ Log *changeLog(ParkingSystem *system, Date *date, Time *time, char *reg, char *n
         // Allocate memory for reg and copy the string
         newLog->reg = (char *)malloc(strlen(reg) + 1);
         if (newLog->reg == NULL) {
-            fprintf(stderr, "Memory allocation failed\n");
+            
             free(newLog);  // Free Log struct if allocation fails
             exit(1);
         }
@@ -390,7 +362,7 @@ Log *changeLog(ParkingSystem *system, Date *date, Time *time, char *reg, char *n
         // Allocate memory for parkName and copy the string
         newLog->parkName = (char *)malloc(strlen(name) + 1);
         if (newLog->parkName == NULL) {
-            fprintf(stderr, "Memory allocation failed\n");
+            
             free(newLog->reg);  // Free reg if allocation fails
             free(newLog);       // Free Log struct if allocation fails
             exit(1);
@@ -420,7 +392,7 @@ Log *changeLog(ParkingSystem *system, Date *date, Time *time, char *reg, char *n
 void addLog(ParkingSystem *system, Log *l) {
     LogNode *newLog = (LogNode *)malloc(sizeof(LogNode));
     if (newLog == NULL) {
-        fprintf(stderr, "Memory allocation failed\n");
+        
         exit(1);
     }
     newLog->log = l;
@@ -448,21 +420,14 @@ void commandS(ParkingSystem* system, Buffer* buffer) {
     time = nextWord(buffer);
 
     // Check if the exit is valid (registration is valid, time is valid)
-    if (isValidExitRequest(system, name, reg, date, time)) {
+    if (isValidRequest(system, name, reg, date, time, 1)) {
         Park *park = parkExists(system, name);
         Vehicle *vehicle = getVehicle(system, reg);
-        if (vehicle == NULL) {
-            // If the vehicle does not exist, it is invalid
-            fprintf(stderr, "invalid license plate.\n");
-            return;
-        } else {
             if (vehicle->isParked == 0) {
                 fprintf(stderr, "invalid vehicle exit.\n");
                 return;
             }
             exitPark(system, park, vehicle, date, time);
-            // TO-DO PRINT VALUE
-        }
     } 
 }
 
@@ -494,7 +459,7 @@ void commandV(ParkingSystem* system, Buffer* buffer) {
     reg = nextWord(buffer);
 
     if (reg == NULL || !isValidRegistration(reg)) {
-        fprintf(stderr, "invalid license plate.\n");
+        printf("%s: invalid license plate.\n", reg);
         return;
     }
 
@@ -539,14 +504,19 @@ void commandF(ParkingSystem* system, Buffer* buffer) {
 
     Park *park = parkExists(system, name);
     if (park == NULL) {
-        fprintf(stderr, "no such parking.\n");
+        printf("%s: no such parking.\n", name);
         return;
     }
 
     if (date == NULL) {
         showParkRevenue(system, park, NULL);
-    } else if (isValidDate(createDateStruct(date))) {  // and logDateValid of last entry date
-        showParkRevenue(system, park, createDateStruct(date));
+    } else {
+        if (isValidDate(createDateStruct(date))) {  // and logDateValid of last entry date
+            showParkRevenue(system, park, createDateStruct(date));
+        } else {
+            printf("invalid date.\n");
+        }
+        
     }
 }
 
