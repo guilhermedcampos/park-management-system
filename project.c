@@ -183,8 +183,6 @@ void createPark(ParkingSystem *system, char *name, char *maxCapacity, char *bill
     newParking->parking->billingValueAfter1Hour = atof(billingValueAfter1Hour);
     newParking->parking->maxDailyValue = atof(maxDailyValue);
 
-    printf("t: Parking lot %s created\n", name);
-
     addPark(system, newParking);
 }
 
@@ -264,6 +262,16 @@ void commandP(ParkingSystem* system, Buffer* buffer) {
     }
 }
 
+void printRemainingParks(ParkingSystem* system) {
+    ParkingNode *sortedNode = malloc(sizeof(ParkingNode));
+    sortedNode = sortList(system);
+    ParkingNode *cur = sortedNode;
+    while (cur != NULL) {
+        printf("%s\n", cur->parking->name);
+        cur = cur->next;
+    }
+}
+
 void commandR(ParkingSystem* system, Buffer* buffer) {
     char *name;
 
@@ -272,6 +280,7 @@ void commandR(ParkingSystem* system, Buffer* buffer) {
     if (parkExists(system, name) != NULL) {
         removePark(system, name);
         removeLogs(system, name);
+        printRemainingParks(system);
     } else {
         printf("%s: no such parking.\n", name);
     }
@@ -317,7 +326,6 @@ int enterPark(ParkingSystem *sys, Park *p, Vehicle *v, char *date, char *time) {
     }
 
     p->currentLots++;
-    printf("t: Vehicle %s entered parking lot %s\n", v->registration, p->name);
     changeLog(sys, v->date, v->time, v->registration, p->name, 0);
 
     return 0;

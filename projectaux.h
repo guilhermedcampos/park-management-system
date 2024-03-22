@@ -21,6 +21,7 @@ int isValidLogAux(Date *d1, Date *d2, Time *t1, Time *t2);
 int isValidLog(ParkingSystem *system, Time *time, Date *date);
 Vehicle *getVehicle(ParkingSystem *system, char *reg);
 Log *findEntryLog(ParkingSystem *system, char *reg, char *name);
+ParkingNode *sortList(ParkingSystem *sys);
 TimeDiff *getTimeDiff(Time *t1, Date *d1, Time *t2, Date *d2);
 double calculateValue(Log *log, ParkingSystem *system);
 int daysByMonth(int month);

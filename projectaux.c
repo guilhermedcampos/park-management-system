@@ -329,6 +329,33 @@ double getBillingValue(Park *park, TimeDiff *diff) {
     return value;
 }
 
+ParkingNode *sortList(ParkingSystem *sys) {
+    Park *temp;
+    ParkingNode *current = sys->pHead;
+    ParkingNode *index = NULL;
+
+    if (current == NULL) {
+        return NULL; 
+    }
+
+    while (current != NULL) {
+        index = current->next;
+
+        while (index != NULL) {
+            if (strcmp(current->parking->name, index->parking->name) > 0) {
+                temp = current->parking;
+                current->parking = index->parking;
+                index->parking = temp;
+            }
+            index = index->next;
+        }
+        current = current->next;
+    }
+
+    return sys->pHead; 
+}
+
+
 TimeDiff *getTimeDiff(Time *t1, Date *d1, Time *t2, Date *d2) {
     TimeDiff *diff = (TimeDiff *)malloc(sizeof(TimeDiff));
     if (diff == NULL) {
