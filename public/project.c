@@ -223,7 +223,7 @@ Vehicle *createVehicle(ParkingSystem *system, char *reg) {
 
     // Initialize other fields
     newVehicleNode->vehicle->parkName = NULL;
-    newVehicleNode->vehicle->isParked = 1;
+    newVehicleNode->vehicle->isParked = 0;
     newVehicleNode->vehicle->date = NULL;
     newVehicleNode->vehicle->time = NULL;
 
@@ -287,7 +287,6 @@ void commandE(ParkingSystem* system, Buffer* buffer) {
     reg = nextWord(buffer);
     date = nextWord(buffer);
     time = nextWord(buffer);
-
     // Check if the entry is valid (park exists, park is not full, registration is valid, time is valid)
     if (isValidRequest(system, name, reg, date, time, 0)) {
         Park *park = parkExists(system, name);
@@ -296,7 +295,9 @@ void commandE(ParkingSystem* system, Buffer* buffer) {
             Vehicle *v = createVehicle(system, reg);
             enterPark(system, park, v, date, time);
             printf("%s %d\n", name, park->maxCapacity - park->currentLots);
-        } 
+        } else {
+            enterPark(system, park, vehicle, date, time);
+        }
     }
 }
 
@@ -324,6 +325,7 @@ int enterPark(ParkingSystem *sys, Park *p, Vehicle *v, char *date, char *time) {
 }
 
 int exitPark(ParkingSystem *system, Park *p, Vehicle *v, char *date, char *time) {
+    free(v->parkName);
     v->parkName = NULL;
     v->date = createDateStruct(date);
     v->time = createTimeStruct(time);

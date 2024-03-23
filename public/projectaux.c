@@ -110,15 +110,14 @@ int isValidRequest(ParkingSystem *system, char *name, char *reg, char *date, cha
     }
 
     if (type == 0) {
-        if (isVehicleInPark(system, reg, name)) {
-            printf("%s:invalid vehicle entry.\n", reg);
+        if (isVehicleParked(system, reg)) {
+            printf("%s: invalid vehicle entry.\n", reg);
             return 0;
         }
-
     }
 
     if (type == 1) {
-        if (!isVehicleInPark(system, reg, name)) {
+        if (!isVehicleInParkExit(system, reg, name)) {
             printf("%s: invalid vehicle exit.\n", reg);
             return 0;
         }
@@ -195,14 +194,31 @@ int isValidRegistration(char *reg) {
     return 1;
 }
 
-int isVehicleInPark(ParkingSystem *system, char *reg, char *name) {
+int isVehicleParked(ParkingSystem *system, char *reg) {
+    Vehicle *v = getVehicle(system, reg);
+    // First entry, vehicle not created yet
+    if (v == NULL) {
+        return 0;
+    } 
+    
+    if (v->parkName == NULL && v->isParked == 0) {
+        return 0;
+    } 
+
+    return 1;
+}
+
+int isVehicleInParkExit(ParkingSystem *system, char *reg, char *name) {
     Vehicle *v = getVehicle(system, reg);
     if (v == NULL) {
         return 0;
-    }
-    if ((strcmp(v->parkName, name) != 0)) {
+    } if (v->parkName != NULL) {
+        if ((strcmp(v->parkName, name) == 0) && v->isParked == 1) {
+            return 1;
+        }
         return 0;
     }
+
     return 1;
 }
 
