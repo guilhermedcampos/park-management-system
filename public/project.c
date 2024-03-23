@@ -340,7 +340,7 @@ int exitPark(ParkingSystem *system, Park *p, Vehicle *v, char *date, char *time)
     if (l == NULL) {
         return 1;
     }
-    printf("%s %s %s %s %s %.2f.\n", v->registration, dateToString(l->entryDate), timeToString(l->entryTime), dateToString(l->exitDate), timeToString(l->exitTime), l->value);
+    printf("%s %s %s %s %s %.2f\n", v->registration, dateToString(l->entryDate), timeToString(l->entryTime), dateToString(l->exitDate), timeToString(l->exitTime), l->value);
     return 0;
 }
 

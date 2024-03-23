@@ -336,20 +336,6 @@ Buffer *getBuffer(Buffer *buffer) {
     return buffer;
 }
 
-double getBillingValue(Park *park, TimeDiff *diff) {
-    double value = 0;
-    if (diff->date->day == 0) {
-        if (diff->time->hour < 1) {
-            value = park->billingValue15;
-        } else {
-            value = park->billingValue15 + (diff->time->hour - 1) * park->billingValueAfter1Hour;
-        }
-    } else {
-        value = park->maxDailyValue;
-    }
-    return value;
-}
-
 ParkingNode *sortList(ParkingSystem *sys) {
     Park *temp;
     ParkingNode *current = sys->pHead;
@@ -376,75 +362,30 @@ ParkingNode *sortList(ParkingSystem *sys) {
     return sys->pHead; 
 }
 
-
-TimeDiff *getTimeDiff(Time *t1, Date *d1, Time *t2, Date *d2) {
-    TimeDiff *diff = (TimeDiff *)malloc(sizeof(TimeDiff));
-    if (diff == NULL) {
-        return NULL;
-    }
-
-    // Allocate memory for diff->time and diff->date
-    diff->time = (Time *)malloc(sizeof(Time));
-    if (diff->time == NULL) {
-        return NULL;
-    }
-
-    diff->date = (Date *)malloc(sizeof(Date));
-    if (diff->date == NULL) {
-        return NULL;
-    }
-
-    // Copy values of t1, d1, t2, d2
-    Time t1_copy = *t1;
-    Time t2_copy = *t2;
-    Date d1_copy = *d1;
-    Date d2_copy = *d2;
-
-    // Diff in minutes
-    if (t2_copy.minute < t1_copy.minute) {
-        t2_copy.hour -= 1;
-        t2_copy.minute += 60;
-    }
-    diff->time->minute = t2_copy.minute - t1_copy.minute;
-
-    // Diff in hours
-    if (t2_copy.hour < t1_copy.hour) {
-        d2_copy.day -= 1;
-        t2_copy.hour += 24;
-    }
-    diff->time->hour = t2_copy.hour - t1_copy.hour;
-
-    // Diff in days
-    if (d2_copy.day < d1_copy.day) {
-        d2_copy.month -= 1;
-        if (d2_copy.month == 0) {
-            d2_copy.month = 12;
-            d2_copy.year -= 1;
-        }
-        d2_copy.day += daysByMonth(d2_copy.month - 1);
-    }
-    diff->date->day = d2_copy.day - d1_copy.day;
-
-    // Diff in months
-    if (d2_copy.month < d1_copy.month) {
-        d2_copy.year -= 1;
-        d2_copy.month += 12;
-    }
-    diff->date->month = d2_copy.month - d1_copy.month;
-
-    // Diff in years
-    diff->date->year = d2_copy.year - d1_copy.year;
-
-    // Calculate total days based on years and months
-    diff->date->day += diff->date->year * 365 + diff->date->month * daysByMonth(d2_copy.month - 1);
-
-    // Reset year and months
-    diff->date->year = 0;
-    diff->date->month = 0;
-
-    return diff;
+size_t dateInMinutes(Date *d, Time *t) {
+    size_t totalMins = 0;
+    totalMins += d->year * 365 * 24 * 60;
+    totalMins += getTotalMonthDays(d->month) * 24 * 60;
+    totalMins += d->day * 24 * 60;
+    totalMins += t->hour * 60;
+    totalMins += t->minute;
+    return totalMins;
 }
 
+
+size_t getTimeDiff(Time *t1, Date *d1, Time *t2, Date *d2) {
+    size_t firstDateMins = dateInMinutes(d1, t1);
+    size_t secondDateMins = dateInMinutes(d2, t2);
+    return secondDateMins - firstDateMins;
+}
+
+int getTotalMonthDays(int month) {
+    int days = 0;
+    for( int i = 1; i <= month; i++) {
+        days += daysByMonth(i);
+    }
+    return days;
+}
 
 int daysByMonth(int month) {
     switch (month) {
@@ -465,14 +406,25 @@ int daysByMonth(int month) {
 
 }
 
+double min(double a, double b) {
+    return a < b ? a : b;
+}
+
 double calculateValue(Log *log, ParkingSystem *system) {
     Park *park = parkExists(system, log->parkName);
-    TimeDiff *timeDiff = getTimeDiff(log->entryTime, log->entryDate, log->exitTime, log->exitDate);
-    if (timeDiff == NULL) {
-        return -1;  
+    size_t minsInDay = 24 * 60;
+    size_t diff = getTimeDiff(log->entryTime, log->entryDate, log->exitTime, log->exitDate);
+    size_t days = diff / minsInDay;
+    double completeDayRev = park->maxDailyValue * days;
+    size_t remainingQuarters = ((diff % minsInDay) + 14) / 15;
+    double remainingRev = 0;
+    if (remainingQuarters <= 4) {
+        remainingRev = park->billingValue15 * remainingQuarters;
+    } else {
+        remainingRev = 4 * park->billingValue15 + (remainingQuarters - 4) * park->billingValueAfter1Hour;
     }
-    double value = getBillingValue(park, timeDiff);
-    return value;
+    completeDayRev += min(remainingRev, park->maxDailyValue);
+    return completeDayRev;
 }
 
 Date *createDateStruct(char *date) {
