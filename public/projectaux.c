@@ -332,6 +332,7 @@ ParkingNode *sortList(ParkingSystem *sys) {
         return NULL; 
     }
 
+    // ordenar por outras coisas
     while (current != NULL) {
         index = current->next;
 
@@ -346,6 +347,7 @@ ParkingNode *sortList(ParkingSystem *sys) {
         current = current->next;
     }
 
+    // retornar head da nova lista
     return sys->pHead; 
 }
 

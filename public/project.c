@@ -30,13 +30,10 @@ ParkingSystem* init() {
 }
 
 void printParks(ParkingSystem* system) {
-    ParkingNode *cur = system->pHead;
-    while (cur != NULL) {
-        printf("%s %d %d\n", 
-            cur->parking->name, 
-            cur->parking->maxCapacity, 
-            cur->parking->maxCapacity - cur->parking->currentLots);
-        cur = cur->next;
+    for (int i = 0; i < MAX_PARKING_LOTS; i++) {
+        if (system->parks[i] != NULL) {
+            printf("%s %d %d\n", system->parks[i]->name, system->parks[i]->maxCapacity, system->parks[i]->maxCapacity - system->parks[i]->currentLots);
+        }
     }
 }
 
@@ -328,6 +325,7 @@ void commandE(ParkingSystem* system, Buffer* buffer) {
             printf("%s %d\n", name, park->maxCapacity - park->currentLots);
         } else {
             enterPark(system, park, vehicle, date, time);
+            printf("%s %d\n", name, park->maxCapacity - park->currentLots);
         }
     }
 }
