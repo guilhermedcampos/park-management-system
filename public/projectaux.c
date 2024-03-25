@@ -352,7 +352,7 @@ ParkingNode *sortList(ParkingSystem *sys) {
 size_t dateInMinutes(Date *d, Time *t) {
     size_t totalMins = 0;
     totalMins += d->year * 365 * 24 * 60;
-        for (int i = 0; i< d->month; i++) {
+    for (int i = 1; i< d->month; i++) {
         totalMins += daysByMonth(i) * 24 * 60;
     }
     totalMins += d->day * 24 * 60;

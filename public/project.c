@@ -67,7 +67,18 @@ int isParkFull(ParkingSystem* sys, char* name) {
     return 0;
 }
 
+void addParkToArray(ParkingSystem *system, Park *park) {
+    for (int i = 0; i < MAX_PARKING_LOTS; i++) {
+        if (system->parks[i] == NULL) {
+            system->parks[i] = park;
+            return;
+        }
+    }
+}
+
 void addPark(ParkingSystem *system, ParkingNode *parking) {
+
+    addParkToArray(system, parking->parking);
     // Iterate through the list to find an empty spot
     if (system->pHead == NULL) {
         system->pHead = parking;
@@ -117,7 +128,28 @@ void removeLogs(ParkingSystem *system, char *name) {
     }
 }
 
+void updateParksArray(ParkingSystem *system, int index) {
+
+    // Shift elements to the left starting from the index
+    for (int i = index; i < MAX_PARKING_LOTS - 1; i++) {
+        system->parks[i] = system->parks[i + 1];
+    }
+
+    // Set the last element to NULL (as it's shifted left)
+    system->parks[MAX_PARKING_LOTS - 1] = NULL;
+}
+
+
 void removePark(ParkingSystem *system, char *name) {
+
+for (int i = 0; i < MAX_PARKING_LOTS; i++) {
+    if (system->parks[i] != NULL && strcmp(system->parks[i]->name, name) == 0) {
+        // First element of the list, shift left the array after removing first element
+        updateParksArray(system, i);
+    }
+}
+
+
     if (system->pHead == NULL) {
         return;
     }
@@ -137,17 +169,16 @@ void removePark(ParkingSystem *system, char *name) {
             if (cur->next != NULL) {
                 cur->next->prev = prev;
             }
-
+            system->numParks--;
+            free(cur->parking->name);
             free(cur->parking);
             free(cur);
-            system->numParks--;
             return;
         }
         prev = cur;
         cur = cur->next;
     }
 }
-
 
 void createPark(ParkingSystem *system, char *name, char *maxCapacity, char *billingValue15, char *billingValueAfter1Hour, char *maxDailyValue) {
     ParkingNode *newParking = (ParkingNode *)malloc(sizeof(Park));
@@ -447,8 +478,12 @@ int printVehicleLogs(ParkingSystem* system, char* reg) {
                 dateToString(cur->log->exitDate), 
                 timeToString(cur->log->exitTime));
             }
+            numLogs++;
         }
         cur = cur->next;
+    }
+    if (numLogs == 0) {
+        printf("%s: no entries found in any parking.\n", reg);
     }
     return numLogs;   
 }

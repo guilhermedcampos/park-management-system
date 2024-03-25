@@ -73,11 +73,13 @@ typedef struct Buffer {
 } Buffer;
 
 typedef struct ParkingSystem {
+    Park *parks[MAX_PARKING_LOTS];
     ParkingNode *pHead;
     VehicleNode *vHead;
     LogNode *lHead;
     int numParks;
 } ParkingSystem;
+
 
 ParkingSystem* init();
 void printParks(ParkingSystem* system);
