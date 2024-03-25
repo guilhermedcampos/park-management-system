@@ -11,7 +11,6 @@ int bufferIndex = 0;
 
 /*
 TO-DO
-correct print statements ( and check their order )
 define constants for error messages
 
 
@@ -286,7 +285,7 @@ void commandP(ParkingSystem* system, Buffer* buffer) {
 
 void printRemainingParks(ParkingSystem* system) {
     ParkingNode *sortedNode = malloc(sizeof(ParkingNode));
-    sortedNode = sortList(system);
+    sortedNode = sortListName(system);
     ParkingNode *cur = sortedNode;
     while (cur != NULL) {
         printf("%s\n", cur->parking->name);
@@ -513,7 +512,6 @@ void showParkRevenue(ParkingSystem* system, Park* p, Date* date) {
                     printf("%s %.2f\n", dateToString(cur->log->exitDate), cur->log->value);
                 }
             } else {
-                // TO-DO: CHECK IF DATE IS VALID (invalid ou posterior ao dia do ultimo reg saida ou entrada)
                 if (isValidDate(date) && isLogDateValid(date, cur->log->exitDate)) {
                     if (cur->log->type == 1) {
                         printf("%s %s %.2f\n", cur->log->reg, timeToString(cur->log->exitTime), cur->log->value);

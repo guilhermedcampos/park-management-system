@@ -22,7 +22,7 @@ int isValidLogAux(Date *d1, Date *d2, Time *t1, Time *t2);
 int isValidLog(ParkingSystem *system, Time *time, Date *date);
 Vehicle *getVehicle(ParkingSystem *system, char *reg);
 Log *findEntryLog(ParkingSystem *system, char *reg, char *name);
-ParkingNode *sortList(ParkingSystem *sys);
+ParkingNode *sortListName(ParkingSystem *sys);
 size_t getTimeDiff(Time *t1, Date *d1, Time *t2, Date *d2);
 size_t dateInMinutes(Date *d, Time *t);
 int getTotalMonthDays(int month);

@@ -323,7 +323,7 @@ Buffer *getBuffer(Buffer *buffer) {
     return buffer;
 }
 
-ParkingNode *sortList(ParkingSystem *sys) {
+ParkingNode *sortListName(ParkingSystem *sys) {
     Park *temp;
     ParkingNode *current = sys->pHead;
     ParkingNode *index = NULL;
@@ -347,6 +347,16 @@ ParkingNode *sortList(ParkingSystem *sys) {
         current = current->next;
     }
 
+    // find head of the new list
+    while (sys->pHead->prev != NULL) {
+        sys->pHead = sys->pHead->prev;
+    }
+
+    return sys->pHead; 
+}
+
+ParkingNode *sortListEntryDate(ParkingSystem *sys) {
+    
     // retornar head da nova lista
     return sys->pHead; 
 }
