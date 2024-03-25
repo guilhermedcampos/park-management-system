@@ -53,20 +53,7 @@ int isValidDate(Date *date) {
         return 0;
     }
 
-    // Check if it's February 29th and it's not a leap year
-    if (date->month == 2 && date->day == 29 && !isLeapYear(date->year)) {
-        return 0;
-    }
-
     return 1;
-}
-
-int isLeapYear(int year) {
-    if ((year % 4 == 0 && year % 100 != 0) || year % 400 == 0) {
-        return 1;
-    } else {
-        return 0;
-    }
 }
 
 char *dateToString(Date *date) {
@@ -365,7 +352,9 @@ ParkingNode *sortList(ParkingSystem *sys) {
 size_t dateInMinutes(Date *d, Time *t) {
     size_t totalMins = 0;
     totalMins += d->year * 365 * 24 * 60;
-    totalMins += getTotalMonthDays(d->month) * 24 * 60;
+        for (int i = 0; i< d->month; i++) {
+        totalMins += daysByMonth(i) * 24 * 60;
+    }
     totalMins += d->day * 24 * 60;
     totalMins += t->hour * 60;
     totalMins += t->minute;
