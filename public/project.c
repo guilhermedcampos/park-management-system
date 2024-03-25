@@ -492,7 +492,7 @@ void commandV(ParkingSystem* system, Buffer* buffer) {
     reg = nextWord(buffer);
 
     if (reg == NULL || !isValidRegistration(reg)) {
-        printf("%s: invalid license plate.\n", reg);
+        printf("%s: invalid licence plate.\n", reg);
         return;
     }
 

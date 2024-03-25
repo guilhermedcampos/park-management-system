@@ -51,9 +51,3 @@
 > parque1 03-01-2024 19:05 03-01-2024 19:05
 35d35
 < parque1 03-01-2024 19:02 03-01-2024 19:05
-37,38c37,38
-< XX-YY-ZZ: invalid license plate.
-< 99-78-11: invalid license plate.
----
-> XX-YY-ZZ: invalid licence plate.
-> 99-78-11: invalid licence plate.
