@@ -413,44 +413,21 @@ LogNode *sortListExitDate(Park *p) {
         ptr1 = p->lHead;
 
         while (ptr1->next != lptr) {
-            if (ptr1->log->type == 0 && ptr1->next->log->type == 0) {
-                if (isValidLogAux(ptr1->log->entryDate, ptr1->next->log->entryDate, ptr1->log->entryTime, ptr1->next->log->entryTime)){
-                    swap(ptr1, ptr1->next);
-                    swapped = 1;
-                }
-            } else if (ptr1->log->type == 1 && ptr1->next->log->type == 1) {
+            if (ptr1->log->type == 1 && ptr1->next->log->type == 1) {
                 if (isValidLogAux(ptr1->log->exitDate, ptr1->next->log->exitDate, ptr1->log->exitTime, ptr1->next->log->exitTime)){
                     swap(ptr1, ptr1->next);
                     swapped = 1;
                 }
-            } else if (ptr1->log->type == 0 && ptr1->next->log->type == 1) { 
-                if (isValidLogAux(ptr1->log->entryDate, ptr1->next->log->exitDate, ptr1->log->entryTime, ptr1->next->log->exitTime)){
-                    swap(ptr1, ptr1->next);
-                    swapped = 1;
-                }
-            } else if (ptr1->log->type == 1 && ptr1->next->log->type == 0) {
-                if (isValidLogAux(ptr1->log->exitDate, ptr1->next->log->entryDate, ptr1->log->exitTime, ptr1->next->log->entryTime)){
-                    swap(ptr1, ptr1->next);
-                    swapped = 1;
-                }
-            }
+            } 
             ptr1 = ptr1->next;
         }   
         lptr = ptr1;
     } while (swapped);
-    printf("\n");
 
     // find head of the new list
     while (p->lHead->prev != NULL) {
         p->lHead = p->lHead->prev;
     }
-
-    // print all elements of list
-    while (p->lHead != NULL) {
-        printf("%s-%s\n", dateToString(p->lHead->log->entryDate), timeToString(p->lHead->log->entryTime));
-        p->lHead = p->lHead->next;
-    }
-    
 
     return p->lHead;
 }

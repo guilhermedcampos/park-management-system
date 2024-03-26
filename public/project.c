@@ -586,24 +586,24 @@ void commandV(ParkingSystem* system, Buffer* buffer) {
 
 void showParkRevenue(Park* p, Date* date) {
 
-    LogNode *cur = p->lHead;
+    // Sort the list by exit date
+    sortListExitDate(p);
+
+        LogNode *cur = p->lHead;
     if (cur == NULL) {
         return;
     }
-
-    // Sort the list by exit date
-    cur = sortListExitDate(p);
     
     while (cur != NULL) {
         if (strcmp(cur->log->parkName, p->name) == 0) {
             if (date == NULL) {
                 if (cur->log->type == 1 && isSameDate(cur->log->exitDate, date)) {
-                    //printf("%s %.2f\n", dateToString(cur->log->exitDate), cur->log->value);
+                    printf("%s %.2f\n", dateToString(cur->log->exitDate), cur->log->value);
                 } 
             } else {
                 if (isValidDate(date) && cur->log->type == 1) {
                     if (isLogDateValid(date, cur->log->exitDate) && isSameDate(cur->log->exitDate, date)) {
-                        //printf("%s %s %.2f\n", cur->log->reg, timeToString(cur->log->exitTime), cur->log->value);
+                        printf("%s %s %.2f\n", cur->log->reg, timeToString(cur->log->exitTime), cur->log->value);
                     }
                 } 
             }
@@ -611,6 +611,19 @@ void showParkRevenue(Park* p, Date* date) {
         cur = cur->next;
     }
 
+}
+
+void printParkLogs(Park* p) {
+    LogNode *cur = p->lHead;
+    if (cur == NULL) {
+        return;
+    }
+    while (cur != NULL) {
+            if (cur->log->type == 1) {
+                printf("%s %s %s %s %s %.2f\n", cur->log->reg, dateToString(cur->log->entryDate), timeToString(cur->log->entryTime), dateToString(cur->log->exitDate), timeToString(cur->log->exitTime), cur->log->value);
+            }
+        cur = cur->next;
+    }
 }
 
 // Checks total revenue of a park
