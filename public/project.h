@@ -36,13 +36,14 @@ typedef struct LogNode {
     struct LogNode *prev;
 } LogNode;
 
-
 typedef struct Vehicle {
     char *parkName;
     char *registration;
     Date *date;
     Time *time;
     int isParked;
+    // logs of entries and exits from the vehicle, will be in entry order
+    LogNode *lHead;
 } Vehicle;
 
 typedef struct VehicleNode {
@@ -58,6 +59,8 @@ typedef struct Park {
     double billingValue15;
     double billingValueAfter1Hour;
     double maxDailyValue;
+    // logs of entries and exits in the park
+    LogNode *lHead;
 } Park;
 
 typedef struct ParkingNode {
@@ -76,8 +79,9 @@ typedef struct ParkingSystem {
     Park *parks[MAX_PARKING_LOTS];
     ParkingNode *pHead;
     VehicleNode *vHead;
-    LogNode *lHead;
     int numParks;
+    Date *lastDate;
+    Time *lastTime;
 } ParkingSystem;
 
 
@@ -95,9 +99,8 @@ int exitPark(ParkingSystem *system, Park *p, Vehicle *v, char *date, char *time)
 void createPark(ParkingSystem *system, char *name, char *maxCapacity, char *billingValue15, char *billingValueAfter1Hour, char *maxDailyValue);
 Log *changeLog(ParkingSystem *system, Date *date, Time *time, char *reg, char *name, int type);
 int printVehicleLogs(ParkingSystem* system, char* reg);
-void addLog(ParkingSystem *system, Log *log);
 void printRemainingParks(ParkingSystem* system);
-void showParkRevenue(ParkingSystem* system, Park* p, Date* date);
+void showParkRevenue(Park* p, Date* date);
 void commandP(ParkingSystem* system, Buffer* buffer);
 void commandR(ParkingSystem* system, Buffer* buffer);
 void commandE(ParkingSystem* system, Buffer* buffer);

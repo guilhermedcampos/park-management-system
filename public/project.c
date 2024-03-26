@@ -24,6 +24,9 @@ ParkingSystem* init() {
     system->pHead = NULL;
     system->vHead = NULL;
     system->numParks = 0;
+
+    system->lastDate = malloc(sizeof(Date));
+    system->lastTime = malloc(sizeof(Time));
     
     return system;
 }
@@ -91,14 +94,15 @@ void addPark(ParkingSystem *system, ParkingNode *parking) {
     system->numParks++;
 }
 
-void removeLogs(ParkingSystem *system, char *name) {
-    LogNode *cur = system->lHead;
+// Removes all logs of a vehicle in specific park
+void removeLogsVehicle(Vehicle *v, char* parkName) {
+    LogNode *cur = v->lHead;
     LogNode *prev = NULL;
     while (cur != NULL) {
-        if (strcmp(cur->log->parkName, name) == 0) {
+        if (strcmp(cur->log->parkName, parkName) == 0) {
             // If the node to be removed is the head of the list
             if (prev == NULL) {
-                system->lHead = cur->next;
+                v->lHead = cur->next;
             } else {
                 prev->next = cur->next;
             }
@@ -124,6 +128,26 @@ void removeLogs(ParkingSystem *system, char *name) {
     }
 }
 
+// Removes all logs of a park
+void removeLogs(ParkingSystem *system, char *name) {
+    Park *p = parkExists(system, name);
+    LogNode *cur = p->lHead;
+    while (cur != NULL) {
+        removeLogsVehicle(getVehicle(system, cur->log->reg), name);
+        LogNode *temp = cur;
+        cur = cur->next;
+        free(temp->log->reg);
+        free(temp->log->parkName);
+        free(temp->log->entryDate);
+        free(temp->log->entryTime);
+        free(temp->log->exitDate);
+        free(temp->log->exitTime);
+        free(temp->log);
+        free(temp);
+    }
+    
+}
+
 void updateParksArray(ParkingSystem *system, int index) {
 
     // Shift elements to the left starting from the index
@@ -138,12 +162,12 @@ void updateParksArray(ParkingSystem *system, int index) {
 
 void removePark(ParkingSystem *system, char *name) {
 
-for (int i = 0; i < MAX_PARKING_LOTS; i++) {
-    if (system->parks[i] != NULL && strcmp(system->parks[i]->name, name) == 0) {
-        // First element of the list, shift left the array after removing first element
-        updateParksArray(system, i);
+    for (int i = 0; i < MAX_PARKING_LOTS; i++) {
+        if (system->parks[i] != NULL && strcmp(system->parks[i]->name, name) == 0) {
+            // First element of the list, shift left the array after removing first element
+            updateParksArray(system, i);
+        }
     }
-}
 
 
     if (system->pHead == NULL) {
@@ -285,6 +309,7 @@ void commandP(ParkingSystem* system, Buffer* buffer) {
 
 void printRemainingParks(ParkingSystem* system) {
     ParkingNode *sortedNode = malloc(sizeof(ParkingNode));
+    // Sort the list by park names alphabetically
     sortedNode = sortListName(system);
     ParkingNode *cur = sortedNode;
     while (cur != NULL) {
@@ -337,18 +362,14 @@ int enterPark(ParkingSystem *sys, Park *p, Vehicle *v, char *date, char *time) {
     }
     strcpy(v->parkName, p->name);
     
-    // Allocate memory for date and time
-    if (v->date == NULL) {
-        v->date = createDateStruct(date);
-    }
+    v->date = createDateStruct(date);
+    v->time = createTimeStruct(time);
 
-    if (v->time == NULL) {
-        v->time = createTimeStruct(time);
-    }
+    sys->lastDate = v->date;
+    sys->lastTime = v->time;
     v->isParked = 1;
     p->currentLots++;
     changeLog(sys, v->date, v->time, v->registration, p->name, 0);
-
     return 0;
 }
 
@@ -363,6 +384,8 @@ int exitPark(ParkingSystem *system, Park *p, Vehicle *v, char *date, char *time)
         return 1;
     }
 
+    system->lastDate = v->date;
+    system->lastTime = v->time;
     p->currentLots--;
     Log *l = changeLog(system, v->date, v->time, v->registration, p->name, 1);
     if (l == NULL) {
@@ -371,6 +394,81 @@ int exitPark(ParkingSystem *system, Park *p, Vehicle *v, char *date, char *time)
     printf("%s %s %s %s %s %.2f\n", v->registration, dateToString(l->entryDate), timeToString(l->entryTime), dateToString(l->exitDate), timeToString(l->exitTime), l->value);
     return 0;
 }
+
+// Logs are added to the list in order of entry
+void addLogVehicle(Vehicle *v, Log *l) {
+    LogNode *newLog = (LogNode *)malloc(sizeof(LogNode));
+    if (newLog == NULL) {
+        return;
+    }
+    newLog->log = l;
+    newLog->next = NULL;
+    newLog->prev = NULL;
+
+    if (v->lHead == NULL) {
+        v->lHead = (LogNode *)malloc(sizeof(LogNode));
+        v->lHead = newLog;
+    } else {
+        LogNode *cur = v->lHead;
+        while (cur->next != NULL) {
+            cur = cur->next;
+        }
+        cur->next = newLog;
+    }
+}
+
+void addLogPark(Park *p, Log *l) {
+    LogNode *newLog = (LogNode *)malloc(sizeof(LogNode));
+    if (newLog == NULL) {
+        return;
+    }
+    newLog->log = l;
+    newLog->next = NULL;
+    newLog->prev = NULL;
+
+    if (p->lHead == NULL) {
+        p->lHead = newLog;
+    } else {
+        LogNode *cur = p->lHead;
+        while (cur->next != NULL) {
+            cur = cur->next;
+        }
+        cur->next = newLog;
+    }
+}
+
+void updateEntryLog(Log *l, Date *date, Time *time, Park *park) {
+    // Free the memory for exitDate and exitTime if they are already allocated
+    if (l->exitDate != NULL) {
+        free(l->exitDate);
+        l->exitDate = NULL;  // Set to NULL to indicate it's freed
+    }
+    if (l->exitTime != NULL) {
+        free(l->exitTime);
+        l->exitTime = NULL;  // Set to NULL to indicate it's freed
+    }
+
+    // Allocate memory for exitDate and exitTime and copy the new values
+    l->exitDate = (Date *)malloc(sizeof(Date));
+    if (l->exitDate == NULL) {
+        // Handle allocation failure
+        return;
+    }
+    *l->exitDate = *date;  // Copy the new date
+
+    l->exitTime = (Time *)malloc(sizeof(Time));
+    if (l->exitTime == NULL) {
+        // Handle allocation failure
+        free(l->exitDate);  // Free previously allocated memory
+        l->exitDate = NULL; // Set to NULL to indicate it's freed
+        return;
+    }
+    *l->exitTime = *time;  // Copy the new time
+
+    l->value = calculateValue(l, park);
+    l->type = 1;
+}
+
 
 Log *changeLog(ParkingSystem *system, Date *date, Time *time, char *reg, char *name, int type) {
     if (type == 0) {
@@ -386,7 +484,6 @@ Log *changeLog(ParkingSystem *system, Date *date, Time *time, char *reg, char *n
         // Allocate memory for reg and copy the string
         newLog->reg = (char *)malloc(strlen(reg) + 1);
         if (newLog->reg == NULL) {
-            
             free(newLog);  // Free Log struct if allocation fails
             return NULL;
         }
@@ -402,45 +499,30 @@ Log *changeLog(ParkingSystem *system, Date *date, Time *time, char *reg, char *n
         }
         strcpy(newLog->parkName, name);
 
-        addLog(system, newLog);
+        addLogVehicle(getVehicle(system, reg), newLog);
+        addLogPark(parkExists(system, name), newLog);
         return newLog;
+
     } else if (type == 1) {
         // Find the entry log
-        Log *l = findEntryLog(system, reg, name);
-        if (l == NULL) {
+        Log *l1 = (Log *)malloc(sizeof(Log));
+        l1 = findEntryLogVehicle(system, reg, name);
+
+        if (l1 == NULL) {
             return NULL;
         }
-        // Exit
-        l->exitDate = date;
-        l->exitTime = time;
-        l->value = calculateValue(l, system);
-        l->type = 1;
-        return l;
+
+        // Find the exit log
+        Log *l2 = (Log *)malloc(sizeof(Log));
+        l2 = findEntryLogPark(system, reg, name);
+        if (l2 == NULL) {
+            return NULL;
+        }
+        updateEntryLog(l1, date, time, parkExists(system, name));
+        updateEntryLog(l2, date, time, parkExists(system, name));
+        return l1;
     }
     return NULL;
-}
-
-
-void addLog(ParkingSystem *system, Log *l) {
-    LogNode *newLog = (LogNode *)malloc(sizeof(LogNode));
-    if (newLog == NULL) {
-        
-        return;
-    }
-    newLog->log = l;
-    newLog->next = NULL;
-    newLog->prev = NULL;
-
-    if (system->lHead == NULL) {
-        system->lHead = newLog;
-    } else {
-        LogNode *cur = system->lHead;
-        while (cur->next != NULL) {
-            cur = cur->next;
-        }
-        cur->next = newLog;
-        newLog->prev = cur;
-    }
 }
 
 void commandS(ParkingSystem* system, Buffer* buffer) {
@@ -459,9 +541,16 @@ void commandS(ParkingSystem* system, Buffer* buffer) {
     } 
 }
 
-// TO-DO: SORT LOGS BY PARK NAME, DATE, TIME
+
 int printVehicleLogs(ParkingSystem* system, char* reg) {
-    LogNode *cur = system->lHead;
+    Vehicle *v = getVehicle(system, reg);
+    LogNode *cur = v->lHead;
+    // Sort the list by park names, since the logs are in order of entry
+    cur = sortLogListName(v);
+    if (cur == NULL) {
+        printf("%s: no entries found in any parking.\n", reg);
+        return 0;
+    }
     int numLogs = 0;
     while (cur != NULL) {
         if (strcmp(cur->log->reg, reg) == 0) {
@@ -479,9 +568,6 @@ int printVehicleLogs(ParkingSystem* system, char* reg) {
         }
         cur = cur->next;
     }
-    if (numLogs == 0) {
-        printf("%s: no entries found in any parking.\n", reg);
-    }
     return numLogs;   
 }
 
@@ -498,12 +584,15 @@ void commandV(ParkingSystem* system, Buffer* buffer) {
     printVehicleLogs(system, reg);
 }
 
-void showParkRevenue(ParkingSystem* system, Park* p, Date* date) {
+void showParkRevenue(Park* p, Date* date) {
 
-    LogNode *cur = system->lHead;
+    LogNode *cur = p->lHead;
     if (cur == NULL) {
         return;
     }
+
+    // Sort the list by exit date
+    cur = sortListExitDate(p);
     
     while (cur != NULL) {
         if (strcmp(cur->log->parkName, p->name) == 0) {
@@ -540,10 +629,12 @@ void commandF(ParkingSystem* system, Buffer* buffer) {
     }
 
     if (date == NULL) {
-        showParkRevenue(system, park, NULL);
+        showParkRevenue(park, NULL);
     } else {
         if (isValidDate(createDateStruct(date))) {  // and logDateValid of last entry date
-            showParkRevenue(system, park, createDateStruct(date));
+            // Sort by exit date
+            sortListExitDate(park);
+            showParkRevenue(park, createDateStruct(date));
         } else {
             printf("invalid date.\n");
         }

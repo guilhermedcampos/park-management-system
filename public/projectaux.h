@@ -7,6 +7,11 @@
 #include <string.h>
 #include <stdlib.h>
 
+LogNode *sortLogListName(Vehicle *vehicle);
+LogNode *sortListEntryDate(ParkingSystem *sys);
+LogNode *sortListExitDate(Park *park);
+
+
 int isValidParkRequest(int nParks, int cap, double x, double y, double z);
 int isValidDate(Date *date);
 int isValidTime(Time *time);
@@ -21,12 +26,13 @@ int isLogTimeValid(Time *t1, Time *t2);
 int isValidLogAux(Date *d1, Date *d2, Time *t1, Time *t2);
 int isValidLog(ParkingSystem *system, Time *time, Date *date);
 Vehicle *getVehicle(ParkingSystem *system, char *reg);
-Log *findEntryLog(ParkingSystem *system, char *reg, char *name);
+Log *findEntryLogVehicle(ParkingSystem *system, char *reg, char *name);
+Log *findEntryLogPark(ParkingSystem *system, char *reg, char *name);
 ParkingNode *sortListName(ParkingSystem *sys);
 size_t getTimeDiff(Time *t1, Date *d1, Time *t2, Date *d2);
 size_t dateInMinutes(Date *d, Time *t);
 int getTotalMonthDays(int month);
-double calculateValue(Log *log, ParkingSystem *system);
+double calculateValue(Log *log, Park *park);
 int daysByMonth(int month);
 Buffer *getBuffer(Buffer *buffer);
 int isValidRegistration(char *reg);

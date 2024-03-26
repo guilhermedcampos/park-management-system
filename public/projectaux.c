@@ -240,6 +240,7 @@ int isLogTimeValid(Time *t1, Time *t2) {
     return 0;
 }
 
+// Check if the date and time of the last log in the system is sooner
 int isValidLogAux(Date *d1, Date *d2, Time *t1, Time *t2) {
     int val = isLogDateValid(d1, d2);
     if (val == 1) {
@@ -256,26 +257,10 @@ int isValidLogAux(Date *d1, Date *d2, Time *t1, Time *t2) {
 
 // Checks if the date and time of the last log in the system is sooner
 int isValidLog(ParkingSystem *system, Time *time, Date *date) {
-    LogNode *cur = system->lHead;
-    
-    // Iterate through the linked list until the last log entry is found
-    while (cur != NULL && cur->next != NULL) {
-        cur = cur->next;
-    }
-
-    if (cur == NULL) {
-        // No logs in the system
+    if (system->lastDate == NULL || system->lastTime == NULL) {
         return 1;
     }
-
-    // Check if the last log entry's date and time are valid
-    if (cur->log->type == 0) { // Last log is an entry
-        return isValidLogAux(cur->log->entryDate, date, cur->log->entryTime, time);
-    } else if (cur->log->type == 1) { // Last log is an exit
-        return isValidLogAux(cur->log->exitDate, date, cur->log->exitTime, time);
-    }
-
-    return 1; // Default to valid if something unexpected happens
+    return isValidLogAux(system->lastDate, date, system->lastTime, time);
 }
 
 Vehicle *getVehicle(ParkingSystem *system, char *reg) {
@@ -294,11 +279,25 @@ Vehicle *getVehicle(ParkingSystem *system, char *reg) {
     return NULL;
 }
 
-Log *findEntryLog(ParkingSystem *system, char *reg, char *name) {
-    LogNode *current = system->lHead;
+Log *findEntryLogVehicle(ParkingSystem *system, char *reg, char *name) {
+    Vehicle *v = getVehicle(system, reg);
+    LogNode *current = v->lHead;
     while (current != NULL) {
         // type needs to be 0 (entry), so it doesn't return an exit log (old log)
-        if (strcmp(current->log->reg, reg) == 0 && strcmp(current->log->parkName, name) == 0 && current->log->type == 0) {
+        if ((strcmp(current->log->parkName, name) == 0) && current->log->type == 0) {
+            return current->log;
+        }
+        current = current->next;
+    }
+    return NULL;
+}
+
+Log *findEntryLogPark(ParkingSystem *system, char *reg, char *name) {
+    Park *p = parkExists(system, name);
+    LogNode *current = p->lHead;
+    while (current != NULL) {
+        // type needs to be 0 (entry), so it doesn't return an exit log (old log)
+        if ((strcmp(current->log->reg, reg) == 0) && current->log->type == 0) {
             return current->log;
         }
         current = current->next;
@@ -321,6 +320,41 @@ Buffer *getBuffer(Buffer *buffer) {
     }
 
     return buffer;
+}
+
+LogNode *sortLogListName(Vehicle *v) {
+    if (v == NULL) {
+        return NULL;
+    }
+    Log *temp;
+    LogNode *current = v->lHead;
+    LogNode *index = NULL;
+
+    if (current == NULL) {
+        return NULL; 
+    }
+
+    // ordenar por outras coisas
+    while (current != NULL) {
+        index = current->next;
+
+        while (index != NULL) {
+            if (strcmp(current->log->parkName, index->log->parkName) > 0) {
+                temp = current->log;
+                current->log = index->log;
+                index->log = temp;
+            }
+            index = index->next;
+        }
+        current = current->next;
+    }
+
+    // find head of the new list
+    while (v->lHead->prev != NULL) {
+        v->lHead = v->lHead->prev;
+    }
+
+    return v->lHead; 
 }
 
 ParkingNode *sortListName(ParkingSystem *sys) {
@@ -355,11 +389,46 @@ ParkingNode *sortListName(ParkingSystem *sys) {
     return sys->pHead; 
 }
 
-ParkingNode *sortListEntryDate(ParkingSystem *sys) {
-    
-    // retornar head da nova lista
-    return sys->pHead; 
+// Function to swap two log nodes
+void swap(LogNode *a, LogNode *b) {
+    LogNode *temp = a;
+    a = b;
+    b = temp;
 }
+
+// Function to sort the log nodes by entry date using bubble sort
+LogNode *sortListExitDate(Park *p) {
+    int swapped;
+    LogNode *ptr1;
+    LogNode *lptr = NULL;
+
+    // Checking for empty list
+    if ( p->lHead == NULL)
+        return NULL;
+
+    do {
+        swapped = 0;
+        ptr1 = p->lHead;
+
+        while (ptr1->next != lptr) {
+            // Check if the current log's entry date is later than the next log's entry date
+            if (isValidLogAux(ptr1->log->exitDate, ptr1->next->log->exitDate, ptr1->log->exitTime, ptr1->next->log->exitTime)) {
+                swap(ptr1, ptr1->next);
+                swapped = 1;
+            }
+            ptr1 = ptr1->next;
+        }
+        lptr = ptr1;
+    } while (swapped);
+
+    // find head of the new list
+    while (p->lHead->prev != NULL) {
+        p->lHead = p->lHead->prev;
+    }
+
+    return p->lHead;
+}
+
 
 size_t dateInMinutes(Date *d, Time *t) {
     size_t totalMins = 0;
@@ -411,8 +480,7 @@ double min(double a, double b) {
     return a < b ? a : b;
 }
 
-double calculateValue(Log *log, ParkingSystem *system) {
-    Park *park = parkExists(system, log->parkName);
+double calculateValue(Log *log, Park *park) {
     size_t minsInDay = 24 * 60;
     size_t diff = getTimeDiff(log->entryTime, log->entryDate, log->exitTime, log->exitDate);
     size_t days = diff / minsInDay;
