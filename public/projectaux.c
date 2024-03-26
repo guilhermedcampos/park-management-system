@@ -242,6 +242,8 @@ int isLogTimeValid(Time *t1, Time *t2) {
 
 // Check if the date and time of the last log in the system is sooner
 int isValidLogAux(Date *d1, Date *d2, Time *t1, Time *t2) {
+
+
     int val = isLogDateValid(d1, d2);
     if (val == 1) {
         return 1;
@@ -406,25 +408,37 @@ LogNode *sortListExitDate(Park *p) {
     if ( p->lHead == NULL)
         return NULL;
 
+
     do {
         swapped = 0;
         ptr1 = p->lHead;
 
         while (ptr1->next != lptr) {
-            // Check if the current log's entry date is later than the next log's entry date
-            if (isValidLogAux(ptr1->log->exitDate, ptr1->next->log->exitDate, ptr1->log->exitTime, ptr1->next->log->exitTime)) {
-                swap(ptr1, ptr1->next);
-                swapped = 1;
+            if (ptr1->log->type == 0 && ptr1->next->log->type == 0) {
+                if (isValidLogAux(ptr1->log->entryDate, ptr1->next->log->entryDate, ptr1->log->entryTime, ptr1->next->log->entryTime)){
+                    swap(ptr1, ptr1->next);
+                    swapped = 1;
+                }
+            } else if (ptr1->log->type == 1 && ptr1->next->log->type == 1) {
+                if (isValidLogAux(ptr1->log->exitDate, ptr1->next->log->exitDate, ptr1->log->exitTime, ptr1->next->log->exitTime)){
+                    swap(ptr1, ptr1->next);
+                    swapped = 1;
+                }
+            } else if (ptr1->log->type == 0 && ptr1->next->log->type == 1) { 
+                if (isValidLogAux(ptr1->log->entryDate, ptr1->next->log->exitDate, ptr1->log->entryTime, ptr1->next->log->exitTime)){
+                    swap(ptr1, ptr1->next);
+                    swapped = 1;
+                }
+            } else if (ptr1->log->type == 1 && ptr1->next->log->type == 0) {
+                if (isValidLogAux(ptr1->log->exitDate, ptr1->next->log->entryDate, ptr1->log->exitTime, ptr1->next->log->entryTime)){
+                    swap(ptr1, ptr1->next);
+                    swapped = 1;
+                }
             }
             ptr1 = ptr1->next;
-        }
+        }   
         lptr = ptr1;
     } while (swapped);
-
-    // find head of the new list
-    while (p->lHead->prev != NULL) {
-        p->lHead = p->lHead->prev;
-    }
 
     return p->lHead;
 }

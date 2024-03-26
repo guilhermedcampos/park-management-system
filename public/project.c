@@ -599,10 +599,10 @@ void showParkRevenue(Park* p, Date* date) {
             if (date == NULL) {
                 if (cur->log->type == 1) {
                     printf("%s %.2f\n", dateToString(cur->log->exitDate), cur->log->value);
-                }
+                } 
             } else {
-                if (isValidDate(date) && isLogDateValid(date, cur->log->exitDate)) {
-                    if (cur->log->type == 1) {
+                if (isValidDate(date) && cur->log->type == 1) {
+                    if (isLogDateValid(date, cur->log->exitDate)) {
                         printf("%s %s %.2f\n", cur->log->reg, timeToString(cur->log->exitTime), cur->log->value);
                     }
                 } else {
@@ -627,13 +627,10 @@ void commandF(ParkingSystem* system, Buffer* buffer) {
         printf("%s: no such parking.\n", name);
         return;
     }
-
     if (date == NULL) {
         showParkRevenue(park, NULL);
     } else {
         if (isValidDate(createDateStruct(date))) {  // and logDateValid of last entry date
-            // Sort by exit date
-            sortListExitDate(park);
             showParkRevenue(park, createDateStruct(date));
         } else {
             printf("invalid date.\n");
