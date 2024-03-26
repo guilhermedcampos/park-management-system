@@ -587,9 +587,9 @@ void commandV(ParkingSystem* system, Buffer* buffer) {
 void showParkRevenue(Park* p, Date* date) {
 
     // Sort the list by exit date
-    sortListExitDate(p);
+    LogNode *cur = (LogNode *)malloc(sizeof(LogNode));
+    cur = sortListExitDate(p);
 
-        LogNode *cur = p->lHead;
     if (cur == NULL) {
         return;
     }
@@ -610,7 +610,6 @@ void showParkRevenue(Park* p, Date* date) {
         }
         cur = cur->next;
     }
-
 }
 
 void printParkLogs(Park* p) {

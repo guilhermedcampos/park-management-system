@@ -390,46 +390,67 @@ ParkingNode *sortListName(ParkingSystem *sys) {
     return sys->pHead; 
 }
 
-// Function to swap two log nodes
-void swap(LogNode *a, LogNode *b) {
-    LogNode *temp = a;
-    a = b;
-    b = temp;
-}
-
 // Function to sort the log nodes by entry date using bubble sort
 LogNode *sortListExitDate(Park *p) {
-    int swapped;
-    LogNode *ptr1;
-    LogNode *lptr = NULL;
 
-    // Checking for empty list
-    if ( p->lHead == NULL)
-        return NULL;
-
-
-    do {
-        swapped = 0;
-        ptr1 = p->lHead;
-
-        while (ptr1->next != lptr) {
-            if (ptr1->log->type == 1 && ptr1->next->log->type == 1) {
-                if (isValidLogAux(ptr1->log->exitDate, ptr1->next->log->exitDate, ptr1->log->exitTime, ptr1->next->log->exitTime)){
-                    swap(ptr1, ptr1->next);
-                    swapped = 1;
-                }
-            } 
-            ptr1 = ptr1->next;
-        }   
-        lptr = ptr1;
-    } while (swapped);
-
-    // find head of the new list
-    while (p->lHead->prev != NULL) {
-        p->lHead = p->lHead->prev;
+    // Find number of elements in linked list
+    int n = 0;
+    LogNode *current = p->lHead;
+    while (current != NULL) {
+        n++;
+        current = current->next;
     }
 
-    return p->lHead;
+    // Transform linked list into array
+    LogNode *arr[n];
+    current = p->lHead;
+    for (int i = 0; i < n; i++) {
+        arr[i] = current;
+        current = current->next;
+
+    }
+
+    // Bubble sort the array 
+    LogNode *temp;
+    for (int i = 0; i < n-1; i++) {
+        for (int j = 0; j < n-i-1; j++) {
+            if (arr[j]->log->type == 1 && arr[j+1]->log->type == 1) {
+                if (!isValidLogAux(arr[j]->log->exitDate, arr[j+1]->log->exitDate, arr[j]->log->exitTime, arr[j+1]->log->exitTime)) {
+                    temp = arr[j];
+                    arr[j] = arr[j+1];
+                    arr[j+1] = temp;
+                }
+            }
+        }
+    }
+
+    // Create a new linked list with the sorted array
+    LogNode *head = (LogNode *)malloc(sizeof(LogNode));
+    if (head == NULL) {
+        return NULL;
+    }
+    head->log = arr[0]->log;
+    head->next = NULL;
+    head->prev = NULL;
+    LogNode *currentNode = head;
+    for (int i = 1; i < n; i++) {
+        LogNode *newNode = (LogNode *)malloc(sizeof(LogNode));
+        if (newNode == NULL) {
+            return NULL;
+        }
+        newNode->log = arr[i]->log;
+        newNode->next = NULL;
+        newNode->prev = currentNode;
+        currentNode->next = newNode;
+        currentNode = newNode;
+    }
+
+    // find head of the new list
+    while (head->prev != NULL) {
+        head = head->prev;
+    }
+
+    return head;
 }
 
 
