@@ -264,6 +264,50 @@ int isValidLog(ParkingSystem *system, Time *time, Date *date) {
     return isValidLogAux(system->lastDate, date, system->lastTime, time);
 }
 
+void removeVehicleLog(ParkingSystem *sys, Park *p, char *reg) {
+    Vehicle *v = getVehicle(sys, reg);
+    if (v == NULL) {
+        return;
+    }
+    
+    LogNode *current = v->lHead;
+    while (current != NULL) {
+        LogNode *temp = current;
+        current = current->next;
+
+        if (strcmp(temp->log->parkName, p->name) == 0) {
+            if (temp->prev == NULL) {
+                v->lHead = temp->next;
+            } else {
+                temp->prev->next = temp->next;
+            }
+            if (temp->next != NULL) {
+                temp->next->prev = temp->prev;
+            }
+
+            // Free memory for log fields and log node
+            free(temp->log->reg);
+            free(temp->log->parkName);
+            free(temp->log->entryDate);
+            free(temp->log->exitDate);
+            free(temp->log->entryTime);
+            free(temp->log->exitTime);
+            free(temp->log);
+            free(temp);
+        }
+    }
+}
+
+
+void freeParkLogs(ParkingSystem *sys, Park *p) {
+    LogNode *cur = p->lHead;
+    while (cur != NULL) {
+        LogNode *temp = cur;
+        cur = cur->next;
+        removeVehicleLog(sys, p, temp->log->reg);
+    }
+}
+
 Vehicle *getVehicle(ParkingSystem *system, char *reg) {
     VehicleNode *current = system->vHead;
 

@@ -16,6 +16,7 @@ int isValidParkRequest(int nParks, int cap, double x, double y, double z);
 int isValidDate(Date *date);
 int isValidTime(Time *time);
 int isSameDate(Date *d1, Date *d2);
+void freeParkLogs(ParkingSystem *system, Park *p);
 char *dateToString(Date *date);
 char *timeToString(Time *time);
 int isValidRequest(ParkingSystem *system, char * name, char *reg, char *date, char *time, int type);

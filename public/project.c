@@ -128,24 +128,15 @@ void removeLogsVehicle(Vehicle *v, char* parkName) {
     }
 }
 
+
 // Removes all logs of a park
 void removeLogs(ParkingSystem *system, char *name) {
-    Park *p = parkExists(system, name);
-    LogNode *cur = p->lHead;
-    while (cur != NULL) {
-        removeLogsVehicle(getVehicle(system, cur->log->reg), name);
-        LogNode *temp = cur;
-        cur = cur->next;
-        free(temp->log->reg);
-        free(temp->log->parkName);
-        free(temp->log->entryDate);
-        free(temp->log->entryTime);
-        free(temp->log->exitDate);
-        free(temp->log->exitTime);
-        free(temp->log);
-        free(temp);
+    for (int i = 0; i < MAX_PARKING_LOTS; i++) {
+        if (strcmp(system->parks[i]->name, name) == 0) {
+            freeParkLogs(system, system->parks[i]);
+            break;
+        }
     }
-    
 }
 
 void updateParksArray(ParkingSystem *system, int index) {
@@ -322,10 +313,10 @@ void commandR(ParkingSystem* system, Buffer* buffer) {
     char *name;
 
     name = nextWord(buffer);
-    
+
     if (parkExists(system, name) != NULL) {
-        removePark(system, name);
         removeLogs(system, name);
+        removePark(system, name);
         printRemainingParks(system);
     } else {
         printf("%s: no such parking.\n", name);
