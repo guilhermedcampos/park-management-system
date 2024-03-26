@@ -584,8 +584,39 @@ void commandV(ParkingSystem* system, Buffer* buffer) {
     printVehicleLogs(system, reg);
 }
 
-void showParkRevenue(Park* p, Date* date) {
+void printLogsByDate(LogNode *head) {
+    LogNode *cur = head;
+    char *prevDate = NULL;
+    double totalRevenue = 0.0;
 
+    while (cur != NULL) {
+        if (cur->log->type == 0) {
+            cur = cur->next;
+            continue;
+        }
+        char *curDate = dateToString(cur->log->exitDate);
+
+        // If the current date is different from the previous one, print accumulated revenue
+        if (prevDate != NULL && strcmp(curDate, prevDate) != 0) {
+            printf("%s %.2f\n", prevDate, totalRevenue);
+            totalRevenue = 0.0; // Reset accumulated revenue for the new date
+        }
+
+        // Accumulate revenue
+        totalRevenue += cur->log->value;
+        prevDate = curDate; // Update previous date
+
+        cur = cur->next;
+    }
+
+    // Print the last date and accumulated revenue
+    if (prevDate != NULL) {
+        printf("%s %.2f\n", prevDate, totalRevenue);
+    }
+}
+
+
+void showParkRevenue(Park* p, Date* date) {
     // Sort the list by exit date
     LogNode *cur = (LogNode *)malloc(sizeof(LogNode));
     cur = sortListExitDate(p);
@@ -597,8 +628,9 @@ void showParkRevenue(Park* p, Date* date) {
     while (cur != NULL) {
         if (strcmp(cur->log->parkName, p->name) == 0) {
             if (date == NULL) {
-                if (cur->log->type == 1 && isSameDate(cur->log->exitDate, date)) {
-                    printf("%s %.2f\n", dateToString(cur->log->exitDate), cur->log->value);
+                if (cur->log->type == 1) {
+                    printLogsByDate(cur);
+                    break;
                 } 
             } else {
                 if (isValidDate(date) && cur->log->type == 1) {

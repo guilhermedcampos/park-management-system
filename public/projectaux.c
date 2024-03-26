@@ -306,6 +306,7 @@ Log *findEntryLogPark(ParkingSystem *system, char *reg, char *name) {
     return NULL;
 }
 
+
 /*
  * Reads the input from the user and inserts it into the buffer.
  */
