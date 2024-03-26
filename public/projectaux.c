@@ -229,21 +229,20 @@ int isLogDateValid(Date *d1, Date *d2) {
 
 // If t1 is sooner than t2, it's valid (1)
 int isLogTimeValid(Time *t1, Time *t2) {
+
     if (t1->hour < t2->hour) {
         return 1;
     }   else if (t1->hour == t2->hour) {
-        if (t1->minute <= t2->minute) {
-            return 1;
-        }
+            if (t1->minute <= t2->minute) {
+                return 1;
+            }
         return 0;
     }
     return 0;
 }
-
-// Check if the date and time of the last log in the system is sooner
+// If d1 and t1 are sooner than d2 and t2, it's valid (1)
 int isValidLogAux(Date *d1, Date *d2, Time *t1, Time *t2) {
-
-
+    //printf("a comparar %s-%s com %s-%s\n", dateToString(d1), timeToString(t1), dateToString(d2), timeToString(t2));
     int val = isLogDateValid(d1, d2);
     if (val == 1) {
         return 1;
@@ -439,6 +438,19 @@ LogNode *sortListExitDate(Park *p) {
         }   
         lptr = ptr1;
     } while (swapped);
+    printf("\n");
+
+    // find head of the new list
+    while (p->lHead->prev != NULL) {
+        p->lHead = p->lHead->prev;
+    }
+
+    // print all elements of list
+    while (p->lHead != NULL) {
+        printf("%s-%s\n", dateToString(p->lHead->log->entryDate), timeToString(p->lHead->log->entryTime));
+        p->lHead = p->lHead->next;
+    }
+    
 
     return p->lHead;
 }
@@ -454,6 +466,11 @@ size_t dateInMinutes(Date *d, Time *t) {
     totalMins += t->hour * 60;
     totalMins += t->minute;
     return totalMins;
+}
+
+int isSameDate(Date *d1, Date *d2) {
+    if (d1->day == d2->day && d1->month == d2->month && d1->year == d2->year) { return 1; }
+    return 0;
 }
 
 

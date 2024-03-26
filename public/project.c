@@ -597,17 +597,15 @@ void showParkRevenue(Park* p, Date* date) {
     while (cur != NULL) {
         if (strcmp(cur->log->parkName, p->name) == 0) {
             if (date == NULL) {
-                if (cur->log->type == 1) {
-                    printf("%s %.2f\n", dateToString(cur->log->exitDate), cur->log->value);
+                if (cur->log->type == 1 && isSameDate(cur->log->exitDate, date)) {
+                    //printf("%s %.2f\n", dateToString(cur->log->exitDate), cur->log->value);
                 } 
             } else {
                 if (isValidDate(date) && cur->log->type == 1) {
-                    if (isLogDateValid(date, cur->log->exitDate)) {
-                        printf("%s %s %.2f\n", cur->log->reg, timeToString(cur->log->exitTime), cur->log->value);
+                    if (isLogDateValid(date, cur->log->exitDate) && isSameDate(cur->log->exitDate, date)) {
+                        //printf("%s %s %.2f\n", cur->log->reg, timeToString(cur->log->exitTime), cur->log->value);
                     }
-                } else {
-                    printf("invalid date.\n");
-                }
+                } 
             }
         }
         cur = cur->next;
