@@ -23,6 +23,7 @@ ParkingSystem* init() {
     }
     system->pHead = NULL;
     system->vHead = NULL;
+    system->vTail = NULL;
     system->numParks = 0;
 
     system->lastDate = malloc(sizeof(Date));
@@ -222,18 +223,19 @@ void createPark(ParkingSystem *system, char *name, char *maxCapacity, char *bill
 }
 
 void addVehicle(ParkingSystem *system, VehicleNode *vehicle) {
-    // Iterate through the list to find an empty spot
+    // Initialize the vehicle node pointers
+    vehicle->prev = NULL;
+    vehicle->next = NULL;
+
     if (system->vHead == NULL) {
+        // If the list is empty, set both head and tail to the new node
         system->vHead = vehicle;
-        vehicle->next = NULL;
+        system->vTail = vehicle;
     } else {
-        VehicleNode *cur = system->vHead;
-        while (cur->next != NULL) {
-            cur = cur->next;
-        }
-        cur->next = vehicle;
-        vehicle->prev = cur;
-        vehicle->next = NULL;
+        // Otherwise, append the new node to the tail
+        system->vTail->next = vehicle;
+        vehicle->prev = system->vTail;
+        system->vTail = vehicle; // Update the tail pointer
     }
 }
 

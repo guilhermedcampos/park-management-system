@@ -81,6 +81,7 @@ typedef struct ParkingSystem {
     Park *parks[MAX_PARKING_LOTS];
     ParkingNode *pHead;
     VehicleNode *vHead;
+    VehicleNode *vTail;
     int numParks;
     Date *lastDate;
     Time *lastTime;
