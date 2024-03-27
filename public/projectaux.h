@@ -8,7 +8,7 @@
 #include <stdlib.h>
 
 LogNode *sortLogListName(Vehicle *vehicle);
-LogNode *sortListEntryDate(ParkingSystem *sys);
+LogNode *sortListEntryDate(Vehicle *vehicle);
 LogNode *sortListExitDate(Park *park);
 
 

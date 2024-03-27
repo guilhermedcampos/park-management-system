@@ -739,7 +739,7 @@ int main() {
 
                 break;
             default:
-                printf("Invalid command\n");
+                break;
         }
     }
     return 0;

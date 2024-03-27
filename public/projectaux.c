@@ -396,39 +396,103 @@ Buffer *getBuffer(Buffer *buffer) {
     return buffer;
 }
 
+// Merge function for mergesort
+void merge(LogNode **arr, int l, int m, int r) {
+    int i, j, k;
+    int n1 = m - l + 1;
+    int n2 = r - m;
+
+    LogNode **L = (LogNode **)malloc(n1 * sizeof(LogNode *));
+    LogNode **R = (LogNode **)malloc(n2 * sizeof(LogNode *));
+
+    for (i = 0; i < n1; i++)
+        L[i] = arr[l + i];
+    for (j = 0; j < n2; j++)
+        R[j] = arr[m + 1 + j];
+
+    i = 0;
+    j = 0;
+    k = l;
+    while (i < n1 && j < n2) {
+        if (strcmp(L[i]->log->parkName, R[j]->log->parkName) <= 0) {
+            arr[k] = L[i];
+            i++;
+        } else {
+            arr[k] = R[j];
+            j++;
+        }
+        k++;
+    }
+
+    while (i < n1) {
+        arr[k] = L[i];
+        i++;
+        k++;
+    }
+
+    while (j < n2) {
+        arr[k] = R[j];
+        j++;
+        k++;
+    }
+
+    free(L);
+    free(R);
+}
+
+// Mergesort function
+void mergeSort(LogNode **arr, int l, int r) {
+    if (l < r) {
+        int m = l + (r - l) / 2;
+
+        mergeSort(arr, l, m);
+        mergeSort(arr, m + 1, r);
+
+        merge(arr, l, m, r);
+    }
+}
+
+// Sort by name
 LogNode *sortLogListName(Vehicle *v) {
-    if (v == NULL) {
+    if (v == NULL || v->lHead == NULL) {
         return NULL;
     }
-    Log *temp;
-    LogNode *current = v->lHead;
-    LogNode *index = NULL;
 
-    if (current == NULL) {
-        return NULL; 
+    // Count the number of nodes
+    int count = 0;
+    LogNode *temp = v->lHead;
+    while (temp != NULL) {
+        count++;
+        temp = temp->next;
     }
 
-    // ordenar por outras coisas
-    while (current != NULL) {
-        index = current->next;
-
-        while (index != NULL) {
-            if (strcmp(current->log->parkName, index->log->parkName) > 0) {
-                temp = current->log;
-                current->log = index->log;
-                index->log = temp;
-            }
-            index = index->next;
-        }
-        current = current->next;
+    // Convert linked list to array
+    LogNode **arr = (LogNode **)malloc(count * sizeof(LogNode *));
+    temp = v->lHead;
+    int i = 0;
+    while (temp != NULL) {
+        arr[i] = temp;
+        temp = temp->next;
+        i++;
     }
 
-    // find head of the new list
-    while (v->lHead->prev != NULL) {
-        v->lHead = v->lHead->prev;
-    }
+    // Sort the array using mergesort
+    mergeSort(arr, 0, count - 1);
 
-    return v->lHead; 
+    // Update the linked list with sorted array
+    for (i = 0; i < count - 1; i++) {
+        arr[i]->next = arr[i + 1];
+        arr[i + 1]->prev = arr[i];
+    }
+    arr[0]->prev = NULL;
+    arr[count - 1]->next = NULL;
+
+    // Update the head of the linked list
+    v->lHead = arr[0];
+
+    free(arr);
+
+    return v->lHead;
 }
 
 ParkingNode *sortListName(ParkingSystem *sys) {
