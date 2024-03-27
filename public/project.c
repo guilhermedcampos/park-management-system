@@ -383,10 +383,10 @@ int exitPark(ParkingSystem *system, Park *p, Vehicle *v, char *date, char *time)
 }
 
 // Logs are added to the list in order of entry
-void addLogVehicle(Vehicle *v, Log *l) {
+Log *addLogVehicle(Vehicle *v, Log *l) {
     LogNode *newLog = (LogNode *)malloc(sizeof(LogNode));
     if (newLog == NULL) {
-        return;
+        return NULL;
     }
     newLog->log = l;
     newLog->next = NULL;
@@ -402,6 +402,7 @@ void addLogVehicle(Vehicle *v, Log *l) {
         }
         cur->next = newLog;
     }
+    return l;
 }
 
 void addLogPark(Park *p, Log *l) {
@@ -424,7 +425,7 @@ void addLogPark(Park *p, Log *l) {
     }
 }
 
-void updateEntryLog(Log *l, Date *date, Time *time, Park *park) {
+Log *updateEntryLog(Log *l, Date *date, Time *time, Park *park) {
     // Free the memory for exitDate and exitTime if they are already allocated
     if (l->exitDate != NULL) {
         free(l->exitDate);
@@ -439,7 +440,7 @@ void updateEntryLog(Log *l, Date *date, Time *time, Park *park) {
     l->exitDate = (Date *)malloc(sizeof(Date));
     if (l->exitDate == NULL) {
         // Handle allocation failure
-        return;
+        return NULL;
     }
     *l->exitDate = *date;  // Copy the new date
 
@@ -448,12 +449,13 @@ void updateEntryLog(Log *l, Date *date, Time *time, Park *park) {
         // Handle allocation failure
         free(l->exitDate);  // Free previously allocated memory
         l->exitDate = NULL; // Set to NULL to indicate it's freed
-        return;
+        return NULL;
     }
     *l->exitTime = *time;  // Copy the new time
 
     l->value = calculateValue(l, park);
     l->type = 1;
+    return l;
 }
 
 
@@ -486,20 +488,14 @@ Log *changeLog(Vehicle *v, Park *p, int type) {
         }
         strcpy(newLog->parkName, p->name);
 
-        addLogVehicle(v, newLog);
-        addLogPark(p, newLog);
+        Log *l = addLogVehicle(v, newLog);
+        addLogPark(p, l);
         return newLog;
 
     } else if (type == 1) {
 
-        Log *l2 = (Log *)malloc(sizeof(Log));
-        l2 = findEntryLogPark(v->registration, p);
-        if (l2 == NULL) {
-            return NULL;
-        }
-        updateEntryLog(v->lastLog, v->date, v->time, p);
-        updateEntryLog(l2, v->date, v->time, p);
-        return l2;
+        Log *l = updateEntryLog(v->lastLog, v->date, v->time, p);
+        return l;
     }
     return NULL;
 }
