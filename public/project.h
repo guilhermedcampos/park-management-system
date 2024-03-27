@@ -78,11 +78,18 @@ typedef struct Buffer {
     int index;
 } Buffer;
 
+
+typedef struct VehicleHashNode {
+    Vehicle *vehicle;
+    struct VehicleHashNode *next;
+} VehicleHashNode;
+
 typedef struct ParkingSystem {
     Park *parks[MAX_PARKING_LOTS];
     ParkingNode *pHead;
     VehicleNode *vHead;
     VehicleNode *vTail;
+    VehicleHashNode *hashTable[HASH_TABLE_SIZE];
     int numParks;
     Date *lastDate;
     Time *lastTime;
@@ -105,6 +112,7 @@ Log *changeLog(Vehicle *v, Park *p, int type);
 int printVehicleLogs(ParkingSystem* system, char* reg);
 void printRemainingParks(ParkingSystem* system);
 void showParkRevenue(Park* p, Date* date);
+unsigned int hash(const char *reg);
 void commandP(ParkingSystem* system, Buffer* buffer);
 void commandR(ParkingSystem* system, Buffer* buffer);
 void commandE(ParkingSystem* system, Buffer* buffer);

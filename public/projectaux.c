@@ -336,12 +336,10 @@ void freeParkLogs(ParkingSystem *sys, Park *p) {
     }
 }
 
+// Function to get a vehicle by registration using the hash table
 Vehicle *getVehicle(ParkingSystem *system, char *reg) {
-    VehicleNode *current = system->vHead;
-
-    if (current == NULL) {
-        return NULL;
-    }
+    unsigned int index = hash(reg);
+    VehicleHashNode *current = system->hashTable[index];
 
     while (current != NULL) {
         if (strcmp(current->vehicle->registration, reg) == 0) {
@@ -349,7 +347,7 @@ Vehicle *getVehicle(ParkingSystem *system, char *reg) {
         }
         current = current->next;
     }
-    return NULL;
+    return NULL; // Vehicle not found
 }
 
 /*

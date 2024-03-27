@@ -222,6 +222,29 @@ void createPark(ParkingSystem *system, char *name, char *maxCapacity, char *bill
     addPark(system, newParking);
 }
 
+// Hash function to map registration strings to indices
+unsigned int hash(const char *reg) {
+    unsigned int hashValue = 0;
+    while (*reg) {
+        hashValue = (hashValue << 5) + *reg++;
+    }
+    return hashValue % HASH_TABLE_SIZE;
+}
+
+
+// Function to add a vehicle to the hash table
+void addToHashTable(ParkingSystem *system, Vehicle *vehicle) {
+    unsigned int index = hash(vehicle->registration);
+    VehicleHashNode *newNode = (VehicleHashNode *)malloc(sizeof(VehicleHashNode));
+    if (newNode == NULL) {
+        // Handle memory allocation error
+        return;
+    }
+    newNode->vehicle = vehicle;
+    newNode->next = system->hashTable[index];
+    system->hashTable[index] = newNode;
+}
+
 void addVehicle(ParkingSystem *system, VehicleNode *vehicle) {
     // Initialize the vehicle node pointers
     vehicle->prev = NULL;
@@ -237,6 +260,7 @@ void addVehicle(ParkingSystem *system, VehicleNode *vehicle) {
         vehicle->prev = system->vTail;
         system->vTail = vehicle; // Update the tail pointer
     }
+    addToHashTable(system, vehicle->vehicle);
 }
 
 Vehicle *createVehicle(ParkingSystem *system, char *reg) {
