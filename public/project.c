@@ -356,7 +356,8 @@ int enterPark(ParkingSystem *sys, Park *p, Vehicle *v, char *date, char *time) {
     sys->lastTime = v->time;
     v->isParked = 1;
     p->currentLots++;
-    changeLog(sys, v->date, v->time, v->registration, p->name, 0);
+    v->lastLog = (Log *)malloc(sizeof(Log));
+    v->lastLog = changeLog(sys, v->date, v->time, v->registration, p->name, 0);
     return 0;
 }
 
@@ -491,23 +492,15 @@ Log *changeLog(ParkingSystem *system, Date *date, Time *time, char *reg, char *n
         return newLog;
 
     } else if (type == 1) {
-        // Find the entry log
-        Log *l1 = (Log *)malloc(sizeof(Log));
-        l1 = findEntryLogVehicle(system, reg, name);
 
-        if (l1 == NULL) {
-            return NULL;
-        }
-
-        // Find the exit log
         Log *l2 = (Log *)malloc(sizeof(Log));
         l2 = findEntryLogPark(system, reg, name);
         if (l2 == NULL) {
             return NULL;
         }
-        updateEntryLog(l1, date, time, parkExists(system, name));
+        updateEntryLog(getVehicle(system,reg)->lastLog, date, time, parkExists(system, name));
         updateEntryLog(l2, date, time, parkExists(system, name));
-        return l1;
+        return l2;
     }
     return NULL;
 }

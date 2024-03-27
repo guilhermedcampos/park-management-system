@@ -44,6 +44,7 @@ typedef struct Vehicle {
     int isParked;
     // logs of entries and exits from the vehicle, will be in entry order
     LogNode *lHead;
+    Log *lastLog;
 } Vehicle;
 
 typedef struct VehicleNode {
