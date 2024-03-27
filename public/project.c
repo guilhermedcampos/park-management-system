@@ -130,8 +130,7 @@ void removeLogsVehicle(Vehicle *v, char* parkName) {
 
 
 // Removes all logs of a park
-void removeLogs(ParkingSystem *system, char *name) {
-    Park *p = parkExists(system, name);
+void removeLogs(ParkingSystem *system, Park *p) {
     freeParkLogs(system, p);
 }
 
@@ -309,9 +308,9 @@ void commandR(ParkingSystem* system, Buffer* buffer) {
     char *name;
 
     name = nextWord(buffer);
-
-    if (parkExists(system, name) != NULL) {
-        removeLogs(system, name);
+    Park *p = parkExists(system, name);
+    if (p != NULL) {
+        removeLogs(system, p);
         removePark(system, name);
         printRemainingParks(system);
     } else {
@@ -357,7 +356,7 @@ int enterPark(ParkingSystem *sys, Park *p, Vehicle *v, char *date, char *time) {
     v->isParked = 1;
     p->currentLots++;
     v->lastLog = (Log *)malloc(sizeof(Log));
-    v->lastLog = changeLog(sys, v->date, v->time, v->registration, p->name, 0);
+    v->lastLog = changeLog(v, p, 0);
     return 0;
 }
 
@@ -375,7 +374,7 @@ int exitPark(ParkingSystem *system, Park *p, Vehicle *v, char *date, char *time)
     system->lastDate = v->date;
     system->lastTime = v->time;
     p->currentLots--;
-    Log *l = changeLog(system, v->date, v->time, v->registration, p->name, 1);
+    Log *l = changeLog(v, p, 1);
     if (l == NULL) {
         return 1;
     }
@@ -416,12 +415,12 @@ void addLogPark(Park *p, Log *l) {
 
     if (p->lHead == NULL) {
         p->lHead = newLog;
+        p->lTail = newLog;
     } else {
-        LogNode *cur = p->lHead;
-        while (cur->next != NULL) {
-            cur = cur->next;
-        }
-        cur->next = newLog;
+        // Otherwise, append the new node to the tail
+        p->lTail->next = newLog;
+        newLog->prev = p->lTail;
+        p->lTail = newLog; // Update the tail pointer
     }
 }
 
@@ -458,48 +457,48 @@ void updateEntryLog(Log *l, Date *date, Time *time, Park *park) {
 }
 
 
-Log *changeLog(ParkingSystem *system, Date *date, Time *time, char *reg, char *name, int type) {
+Log *changeLog(Vehicle *v, Park *p, int type) {
     if (type == 0) {
         Log *newLog = (Log *)malloc(sizeof(Log));
         if (newLog == NULL) {
             return NULL;
         }
         // Entry
-        newLog->entryDate = date;
-        newLog->entryTime = time;
+        newLog->entryDate = v->date;
+        newLog->entryTime = v->time;
         newLog->type = 0;
 
         // Allocate memory for reg and copy the string
-        newLog->reg = (char *)malloc(strlen(reg) + 1);
+        newLog->reg = (char *)malloc(strlen(v->registration) + 1);
         if (newLog->reg == NULL) {
             free(newLog);  // Free Log struct if allocation fails
             return NULL;
         }
-        strcpy(newLog->reg, reg);
+        strcpy(newLog->reg, v->registration);
 
         // Allocate memory for parkName and copy the string
-        newLog->parkName = (char *)malloc(strlen(name) + 1);
+        newLog->parkName = (char *)malloc(strlen(p->name) + 1);
         if (newLog->parkName == NULL) {
             
             free(newLog->reg);  // Free reg if allocation fails
             free(newLog);       // Free Log struct if allocation fails
             return NULL;
         }
-        strcpy(newLog->parkName, name);
+        strcpy(newLog->parkName, p->name);
 
-        addLogVehicle(getVehicle(system, reg), newLog);
-        addLogPark(parkExists(system, name), newLog);
+        addLogVehicle(v, newLog);
+        addLogPark(p, newLog);
         return newLog;
 
     } else if (type == 1) {
 
         Log *l2 = (Log *)malloc(sizeof(Log));
-        l2 = findEntryLogPark(system, reg, name);
+        l2 = findEntryLogPark(v->registration, p);
         if (l2 == NULL) {
             return NULL;
         }
-        updateEntryLog(getVehicle(system,reg)->lastLog, date, time, parkExists(system, name));
-        updateEntryLog(l2, date, time, parkExists(system, name));
+        updateEntryLog(v->lastLog, v->date, v->time, p);
+        updateEntryLog(l2, v->date, v->time, p);
         return l2;
     }
     return NULL;

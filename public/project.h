@@ -62,6 +62,7 @@ typedef struct Park {
     double maxDailyValue;
     // logs of entries and exits in the park
     LogNode *lHead;
+    LogNode *lTail;
 } Park;
 
 typedef struct ParkingNode {
@@ -98,7 +99,7 @@ void addVehicle(ParkingSystem *system, VehicleNode *vehicle);
 int enterPark(ParkingSystem *system, Park *p, Vehicle *v, char *date, char *time);
 int exitPark(ParkingSystem *system, Park *p, Vehicle *v, char *date, char *time);
 void createPark(ParkingSystem *system, char *name, char *maxCapacity, char *billingValue15, char *billingValueAfter1Hour, char *maxDailyValue);
-Log *changeLog(ParkingSystem *system, Date *date, Time *time, char *reg, char *name, int type);
+Log *changeLog(Vehicle *v, Park *p, int type);
 int printVehicleLogs(ParkingSystem* system, char* reg);
 void printRemainingParks(ParkingSystem* system);
 void showParkRevenue(Park* p, Date* date);

@@ -352,21 +352,7 @@ Vehicle *getVehicle(ParkingSystem *system, char *reg) {
     return NULL;
 }
 
-Log *findEntryLogVehicle(ParkingSystem *system, char *reg, char *name) {
-    Vehicle *v = getVehicle(system, reg);
-    LogNode *current = v->lHead;
-    while (current != NULL) {
-        // type needs to be 0 (entry), so it doesn't return an exit log (old log)
-        if ((strcmp(current->log->parkName, name) == 0) && current->log->type == 0) {
-            return current->log;
-        }
-        current = current->next;
-    }
-    return NULL;
-}
-
-Log *findEntryLogPark(ParkingSystem *system, char *reg, char *name) {
-    Park *p = parkExists(system, name);
+Log *findEntryLogPark(char *reg, Park *p) {
     LogNode *current = p->lHead;
     while (current != NULL) {
         // type needs to be 0 (entry), so it doesn't return an exit log (old log)
