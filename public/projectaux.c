@@ -463,6 +463,36 @@ ParkingNode *sortListName(ParkingSystem *sys) {
     return sys->pHead; 
 }
 
+// Partition function for quicksort
+int partition(LogNode **arr, int low, int high) {
+    LogNode *pivot = arr[high];
+    int i = low - 1;
+    for (int j = low; j < high; j++) {
+        if (arr[j]->log->type == 1 && pivot->log->type == 1) {
+            if (isValidLogAux(arr[j]->log->exitDate, pivot->log->exitDate, arr[j]->log->exitTime, pivot->log->exitTime)) {
+                i++;
+                LogNode *temp = arr[i];
+                arr[i] = arr[j];
+                arr[j] = temp;
+            }
+        }
+    }
+    LogNode *temp = arr[i + 1];
+    arr[i + 1] = arr[high];
+    arr[high] = temp;
+    return i + 1;
+}
+
+// Quicksort function
+void quicksort(LogNode **arr, int low, int high) {
+    if (low < high) {
+        int pi = partition(arr, low, high);
+        quicksort(arr, low, pi - 1);
+        quicksort(arr, pi + 1, high);
+    }
+}
+
+
 // Function to sort the log nodes by entry date using bubble sort
 LogNode *sortListExitDate(Park *p) {
 
@@ -484,18 +514,7 @@ LogNode *sortListExitDate(Park *p) {
     }
 
     // Bubble sort the array 
-    LogNode *temp;
-    for (int i = 0; i < n-1; i++) {
-        for (int j = 0; j < n-i-1; j++) {
-            if (arr[j]->log->type == 1 && arr[j+1]->log->type == 1) {
-                if (!isValidLogAux(arr[j]->log->exitDate, arr[j+1]->log->exitDate, arr[j]->log->exitTime, arr[j+1]->log->exitTime)) {
-                    temp = arr[j];
-                    arr[j] = arr[j+1];
-                    arr[j+1] = temp;
-                }
-            }
-        }
-    }
+    quicksort(arr, 0, n - 1);
 
     // Create a new linked list with the sorted array
     LogNode *head = (LogNode *)malloc(sizeof(LogNode));
