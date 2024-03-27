@@ -269,38 +269,66 @@ void removeVehicleLog(ParkingSystem *sys, Park *p, char *reg) {
     if (v == NULL) {
         return;
     }
-    
+
+    // Find number of elements in linked list
+    int n = 0;
     LogNode *current = v->lHead;
     while (current != NULL) {
-        LogNode *temp = current;
-        current = current->next;
-
-        if (strcmp(temp->log->parkName, p->name) == 0) {
-            if (temp->prev == NULL) {
-                v->lHead = temp->next;
-            } else {
-                temp->prev->next = temp->next;
-            }
-            if (temp->next != NULL) {
-                temp->next->prev = temp->prev;
-            }
-
-            // Free memory for log fields and log node
-            free(temp->log->reg);
-            free(temp->log->parkName);
-            free(temp->log->entryDate);
-            free(temp->log->exitDate);
-            free(temp->log->entryTime);
-            free(temp->log->exitTime);
-            free(temp->log);
-            free(temp);
+        if (strcmp(current->log->parkName, p->name) != 0) {
+            n++;
         }
+        current = current->next;
     }
+
+    if (n == 0) {
+        v->lHead = NULL;
+        return;
+    }
+
+    // Transform linked list into array
+    LogNode *arr[n];
+    current = v->lHead; 
+    int i = 0;
+    while (current != NULL) {
+        if (strcmp(current->log->parkName, p->name) != 0) {
+            arr[i] = current;
+            i++;
+        }
+        current = current->next;
+    }
+
+    // Create a new linked list with the sorted array
+    LogNode *head = (LogNode *)malloc(sizeof(LogNode));
+    if (head == NULL) {
+        return;
+    }
+    head->log = arr[0]->log;
+    head->next = NULL;
+    head->prev = NULL;
+    LogNode *currentNode = head;
+    for (int i = 1; i < n; i++) {
+        LogNode *newNode = (LogNode *)malloc(sizeof(LogNode));
+        if (newNode == NULL) {
+            return;
+        }
+        newNode->log = arr[i]->log;
+        newNode->next = NULL;
+        newNode->prev = currentNode;
+        currentNode->next = newNode;
+        currentNode = newNode;
+    }
+
+    // find head of the new list
+    while (head->prev != NULL) {
+        head = head->prev;
+    }
+    v->lHead = head;
 }
 
 
 void freeParkLogs(ParkingSystem *sys, Park *p) {
     LogNode *cur = p->lHead;
+
     while (cur != NULL) {
         LogNode *temp = cur;
         cur = cur->next;

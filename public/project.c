@@ -131,12 +131,8 @@ void removeLogsVehicle(Vehicle *v, char* parkName) {
 
 // Removes all logs of a park
 void removeLogs(ParkingSystem *system, char *name) {
-    for (int i = 0; i < MAX_PARKING_LOTS; i++) {
-        if (strcmp(system->parks[i]->name, name) == 0) {
-            freeParkLogs(system, system->parks[i]);
-            break;
-        }
-    }
+    Park *p = parkExists(system, name);
+    freeParkLogs(system, p);
 }
 
 void updateParksArray(ParkingSystem *system, int index) {
@@ -535,13 +531,17 @@ void commandS(ParkingSystem* system, Buffer* buffer) {
 
 int printVehicleLogs(ParkingSystem* system, char* reg) {
     Vehicle *v = getVehicle(system, reg);
+    if (v == NULL) {
+        printf("%s: no entries found in any parking.\n", reg);
+        return 0;
+    }
     LogNode *cur = v->lHead;
     // Sort the list by park names, since the logs are in order of entry
-    cur = sortLogListName(v);
     if (cur == NULL) {
         printf("%s: no entries found in any parking.\n", reg);
         return 0;
     }
+    cur = sortLogListName(v);
     int numLogs = 0;
     while (cur != NULL) {
         if (strcmp(cur->log->reg, reg) == 0) {
@@ -723,7 +723,6 @@ int main() {
             // Lists the entries and exits of a vehicle
             case 'v':
                  buffer->index = 2;
-                
                 commandV(system, buffer);
                 break;
             
