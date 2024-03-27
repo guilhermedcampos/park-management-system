@@ -395,17 +395,18 @@ Log *addLogVehicle(Vehicle *v, Log *l) {
     newLog->prev = NULL;
 
     if (v->lHead == NULL) {
-        v->lHead = (LogNode *)malloc(sizeof(LogNode));
+        // If the list is empty, set both head and tail to the new node
         v->lHead = newLog;
+        v->lTail = newLog;
     } else {
-        LogNode *cur = v->lHead;
-        while (cur->next != NULL) {
-            cur = cur->next;
-        }
-        cur->next = newLog;
+        // Otherwise, append the new node to the tail
+        v->lTail->next = newLog;
+        newLog->prev = v->lTail;
+        v->lTail = newLog; // Update the tail pointer
     }
     return l;
 }
+
 
 void addLogPark(Park *p, Log *l) {
     LogNode *newLog = (LogNode *)malloc(sizeof(LogNode));
