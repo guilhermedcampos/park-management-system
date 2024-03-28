@@ -134,51 +134,54 @@ int isValidRequest(ParkingSystem *system, char *name, char *reg, char *date, cha
     return 1;
 }
 
-int isValidRegistration(char *reg) {
+int isValidPair(char cur, char next) {
+    if ((cur >= 'A' && cur <= 'Z') && (next >= 'A' && next <= 'Z')) {
+        return 0;
+    } else if ((cur >= '0' && cur <= '9') && (next >= '0' && next <= '9')) {
+        return 1;
+    } else {
+        return 2;
+    }
+}
 
+int isValidRegistration(char *reg) {
     // Check if the length of the registration is valid
     if (strlen(reg) != REGISTRATION_LENGTH) {
         return 0;
     }
 
-    // Initialize counts for letters and digits
-    int letterCount = 0;
-    int digitCount = 0;
+    // Flags to track groups of letters and digits
     int letterGroup = 0;
     int digitGroup = 0;
+
+    if (reg[2] != '-' || reg[5] != '-') {
+        return 0;
+    }
 
     // Iterate through each character in the registration
     for (int i = 0; i < REGISTRATION_LENGTH; i++) {
         char cur = reg[i];
+        char next = reg[i + 1];
 
-        // Check if the current character is a letter (uppercase)
-        if (cur >= 'A' && cur <= 'Z') {
-            letterCount++;
-            if (!letterGroup) {
-                letterGroup = 1;
-            }
-        }
-        // Check if the current character is a digit
-        else if (cur >= '0' && cur <= '9') {
-            digitCount++;
-            if (!digitGroup) {
-                digitGroup = 1;
-            }
-        }
-        // Check if the current character is a hyphen
-        else if (cur != '-') {
-            // If the character is not a hyphen, it must be either a letter or a digit
+        int res;
+        if ((res = isValidPair(cur, next)) == 2) { 
             return 0;
+        } else if (res == 0) {
+            letterGroup++;
+            i +=2;
+        } else {
+            digitGroup++;
+            i += 2;
         }
     }
 
     // Check if the registration contains at least one pair of letters and one pair of digits
-    if (letterCount < 2 || digitCount < 2) {
-        return 0;
+    if ((letterGroup == 2 && digitGroup == 1) || (letterGroup == 1 && digitGroup == 2) ) {
+        return 1;
     }
 
     // If all checks pass, the registration is valid
-    return 1;
+    return 0;
 }
 
 int isVehicleParked(ParkingSystem *system, char *reg) {
