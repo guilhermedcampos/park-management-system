@@ -491,32 +491,29 @@ Log *updateEntryLog(Log *l, Date *date, Time *time, Park *park) {
     // Free the memory for exitDate and exitTime if they are already allocated
     if (l->exitDate != NULL) {
         free(l->exitDate);
-        l->exitDate = NULL;  // Set to NULL to indicate it's freed
     }
     if (l->exitTime != NULL) {
         free(l->exitTime);
-        l->exitTime = NULL;  // Set to NULL to indicate it's freed
     }
 
     // Allocate memory for exitDate and exitTime and copy the new values
-    l->exitDate = (Date *)malloc(sizeof(Date));
+    l->exitDate = createDate(date->day, date->month, date->year);
     if (l->exitDate == NULL) {
         // Handle allocation failure
         return NULL;
     }
-    l->exitDate = date;  // Copy the new date
 
-    l->exitTime = (Time *)malloc(sizeof(Time));
+    l->exitTime = createTime(time->hour, time->minute);
     if (l->exitTime == NULL) {
         // Handle allocation failure
         free(l->exitDate);  // Free previously allocated memory
-        l->exitDate = NULL; // Set to NULL to indicate it's freed
         return NULL;
     }
-    l->exitTime = time;  // Copy the new time
 
+    // Update other fields of the Log struct
     l->value = calculateValue(l, park);
     l->type = 1;
+
     return l;
 }
 
@@ -528,47 +525,35 @@ Log *changeLog(Vehicle *v, Park *p, int type) {
             return NULL;
         }
 
-        newLog->entryDate = (Date *)malloc(sizeof(Date));
-        if (newLog->entryDate == NULL) {
-            free(newLog);
-            return NULL;
-        }
-
-        newLog->entryTime = (Time *)malloc(sizeof(Time));
-        if (newLog->entryTime == NULL) {
-            free(newLog->entryDate);
-            free(newLog);
-            return NULL;
-        }
-
-        // Entry
-        newLog->entryDate = v->date;
-        newLog->entryTime = v->time;
+        newLog->entryDate = createDate(v->date->day, v->date->month, v->date->year);
+        newLog->entryTime = createTime(v->time->hour, v->time->minute);
         newLog->type = 0;
 
         // Allocate memory for reg and copy the string
-        newLog->reg = (char *)malloc(strlen(v->registration) + 1);
+        newLog->reg = strdup(v->registration);
         if (newLog->reg == NULL) {
-            free(newLog->entryDate);  // Free entryDate if allocation fails
-            free(newLog->entryTime);  // Free entryTime if allocation fails
-            free(newLog);  // Free Log struct if allocation fails
+            free(newLog->entryDate);
+            free(newLog->entryTime);
+            free(newLog);
             return NULL;
         }
-        strcpy(newLog->reg, v->registration);
 
         // Allocate memory for parkName and copy the string
-        newLog->parkName = (char *)malloc(strlen(p->name) + 1);
+        newLog->parkName = strdup(p->name);
         if (newLog->parkName == NULL) {
-            free(newLog->entryDate);  // Free entryDate if allocation fails
-            free(newLog->entryTime);  // Free entryTime if allocation fails
-            free(newLog->reg);  // Free reg if allocation fails
-            free(newLog);       // Free Log struct if allocation fails
+            free(newLog->entryDate);
+            free(newLog->entryTime);
+            free(newLog->reg);
+            free(newLog);
             return NULL;
         }
-        strcpy(newLog->parkName, p->name);
 
+        // Add the new log to vehicle's log list
         newLog = addLogVehicle(v, newLog);
+
+        // Add the new log to park's log list
         addLogPark(p, newLog);
+
         return newLog;
 
     } else if (type == 1) {

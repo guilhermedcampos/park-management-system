@@ -245,7 +245,6 @@ int isLogTimeValid(Time *t1, Time *t2) {
 }
 // If d1 and t1 are sooner than d2 and t2, it's valid (1)
 int isValidLogAux(Date *d1, Date *d2, Time *t1, Time *t2) {
-    //printf("a comparar %s-%s com %s-%s\n", dateToString(d1), timeToString(t1), dateToString(d2), timeToString(t2));
     int val = isLogDateValid(d1, d2);
     if (val == 1) {
         return 1;
@@ -501,7 +500,7 @@ ParkingNode *sortListName(ParkingSystem *sys) {
     return sys->pHead; 
 }
 
-// Partition function for quicksort
+ // Partition function for quicksort
 int partition(LogNode **arr, int low, int high) {
     LogNode *pivot = arr[high];
     int i = low - 1;
@@ -533,7 +532,6 @@ void quicksort(LogNode **arr, int low, int high) {
 
 // Function to sort the log nodes by entry date using bubble sort
 LogNode *sortListExitDate(Park *p) {
-
     // Find number of elements in linked list
     int n = 0;
     LogNode *current = p->lHead;
@@ -543,46 +541,55 @@ LogNode *sortListExitDate(Park *p) {
     }
 
     // Transform linked list into array
-    LogNode *arr[n];
+    LogNode **arr = (LogNode **)malloc(n * sizeof(LogNode *));
+    if (arr == NULL) {
+        return NULL; // Allocation failed
+    }
     current = p->lHead;
     for (int i = 0; i < n; i++) {
         arr[i] = current;
         current = current->next;
-
     }
 
     // Bubble sort the array 
     quicksort(arr, 0, n - 1);
 
     // Create a new linked list with the sorted array
-    LogNode *head = (LogNode *)malloc(sizeof(LogNode));
-    if (head == NULL) {
-        return NULL;
-    }
-    head->log = arr[0]->log;
-    head->next = NULL;
-    head->prev = NULL;
-    LogNode *currentNode = head;
-    for (int i = 1; i < n; i++) {
+    LogNode *head = NULL;
+    LogNode *currentNode = NULL;
+    for (int i = 0; i < n; i++) {
         LogNode *newNode = (LogNode *)malloc(sizeof(LogNode));
         if (newNode == NULL) {
+            // Handle allocation failure by manually freeing previously allocated memory
+            for (int j = 0; j < i; j++) {
+                free(arr[j]->log->exitDate);
+                free(arr[j]->log->exitTime);
+                free(arr[j]->log->entryDate);
+                free(arr[j]->log->entryTime);
+                free(arr[j]->log->reg);
+                free(arr[j]->log->parkName);
+                free(arr[j]->log);
+                free(arr[j]);
+            }
+            free(arr);
             return NULL;
         }
         newNode->log = arr[i]->log;
         newNode->next = NULL;
         newNode->prev = currentNode;
-        currentNode->next = newNode;
+        if (head == NULL) {
+            head = newNode;
+        } else {
+            currentNode->next = newNode;
+        }
         currentNode = newNode;
     }
 
-    // find head of the new list
-    while (head->prev != NULL) {
-        head = head->prev;
-    }
+    // Free the memory allocated for the array arr
+    free(arr);
 
     return head;
 }
-
 
 size_t dateInMinutes(Date *d, Time *t) {
     size_t totalMins = 0;
@@ -653,6 +660,31 @@ double calculateValue(Log *log, Park *park) {
     }
     completeDayRev += min(remainingRev, park->maxDailyValue);
     return completeDayRev;
+}
+
+Date *createDate(int day, int month, int year) {
+    Date *d = (Date *)malloc(sizeof(Date));
+    if (d == NULL) {
+        return NULL;
+    }
+
+    d->day = day;
+    d->month = month;
+    d->year = year;
+
+    return d;
+}
+
+Time *createTime(int hour, int minute) {
+    Time *t = (Time *)malloc(sizeof(Time));
+    if (t == NULL) {
+        return NULL;
+    }
+
+    t->hour = hour;
+    t->minute = minute;
+
+    return t;
 }
 
 Date *createDateStruct(char *date) {
