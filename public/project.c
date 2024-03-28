@@ -678,7 +678,7 @@ void commandF(ParkingSystem* system, Buffer* buffer) {
     if (date == NULL) {
         showParkRevenue(park, NULL);
     } else {
-        if (isValidDate(createDateStruct(date))) {  // and logDateValid of last entry date
+        if (isValidDate(createDateStruct(date)) && isLogDateValid((createDateStruct(date)),system->lastDate)) {  // and logDateValid of last entry date
             showParkRevenue(park, createDateStruct(date));
         } else {
             printf("invalid date.\n");
