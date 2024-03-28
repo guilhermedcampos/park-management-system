@@ -26,9 +26,35 @@ ParkingSystem* init() {
     system->vTail = NULL;
     system->numParks = 0;
 
-    system->lastDate = malloc(sizeof(Date));
-    system->lastTime = malloc(sizeof(Time));
-    
+    // Initialize lastDate and lastTime
+    system->lastDate = (Date *)malloc(sizeof(Date));
+    if (system->lastDate == NULL) {
+        free(system);
+        return NULL;
+    }
+    system->lastDate->day = 0;
+    system->lastDate->month = 0;
+    system->lastDate->year = 0;
+
+    system->lastTime = (Time *)malloc(sizeof(Time));
+    if (system->lastTime == NULL) {
+        free(system->lastDate);
+        free(system);
+        return NULL;
+    }
+    system->lastTime->hour = 0;
+    system->lastTime->minute = 0;
+
+    // Initialize parks array to NULL
+    for (int i = 0; i < MAX_PARKING_LOTS; i++) {
+        system->parks[i] = NULL;
+    }
+
+    // Initialize hashTable to NULL
+    for (int i = 0; i < HASH_TABLE_SIZE; i++) {
+        system->hashTable[i] = NULL;
+    }
+
     return system;
 }
 
@@ -289,6 +315,10 @@ Vehicle *createVehicle(ParkingSystem *system, char *reg) {
     newVehicleNode->vehicle->isParked = 0;
     newVehicleNode->vehicle->date = NULL;
     newVehicleNode->vehicle->time = NULL;
+    newVehicleNode->vehicle->lHead = (LogNode *)malloc(sizeof(LogNode));
+    newVehicleNode->vehicle->lHead = NULL;
+    newVehicleNode->vehicle->lTail = (LogNode *)malloc(sizeof(LogNode));
+    newVehicleNode->vehicle->lTail = NULL;
 
     addVehicle(system, newVehicleNode);
     return newVehicleNode->vehicle;
@@ -414,6 +444,12 @@ Log *addLogVehicle(Vehicle *v, Log *l) {
     if (newLog == NULL) {
         return NULL;
     }
+    
+    newLog->log = (Log *)malloc(sizeof(Log));
+    if (newLog->log == NULL) {
+        free(newLog);
+        return NULL;
+    }
     newLog->log = l;
     newLog->next = NULL;
     newLog->prev = NULL;
@@ -430,7 +466,6 @@ Log *addLogVehicle(Vehicle *v, Log *l) {
     }
     return l;
 }
-
 
 void addLogPark(Park *p, Log *l) {
     LogNode *newLog = (LogNode *)malloc(sizeof(LogNode));
@@ -469,7 +504,7 @@ Log *updateEntryLog(Log *l, Date *date, Time *time, Park *park) {
         // Handle allocation failure
         return NULL;
     }
-    *l->exitDate = *date;  // Copy the new date
+    l->exitDate = date;  // Copy the new date
 
     l->exitTime = (Time *)malloc(sizeof(Time));
     if (l->exitTime == NULL) {
@@ -478,7 +513,7 @@ Log *updateEntryLog(Log *l, Date *date, Time *time, Park *park) {
         l->exitDate = NULL; // Set to NULL to indicate it's freed
         return NULL;
     }
-    *l->exitTime = *time;  // Copy the new time
+    l->exitTime = time;  // Copy the new time
 
     l->value = calculateValue(l, park);
     l->type = 1;
@@ -492,6 +527,20 @@ Log *changeLog(Vehicle *v, Park *p, int type) {
         if (newLog == NULL) {
             return NULL;
         }
+
+        newLog->entryDate = (Date *)malloc(sizeof(Date));
+        if (newLog->entryDate == NULL) {
+            free(newLog);
+            return NULL;
+        }
+
+        newLog->entryTime = (Time *)malloc(sizeof(Time));
+        if (newLog->entryTime == NULL) {
+            free(newLog->entryDate);
+            free(newLog);
+            return NULL;
+        }
+
         // Entry
         newLog->entryDate = v->date;
         newLog->entryTime = v->time;
@@ -500,6 +549,8 @@ Log *changeLog(Vehicle *v, Park *p, int type) {
         // Allocate memory for reg and copy the string
         newLog->reg = (char *)malloc(strlen(v->registration) + 1);
         if (newLog->reg == NULL) {
+            free(newLog->entryDate);  // Free entryDate if allocation fails
+            free(newLog->entryTime);  // Free entryTime if allocation fails
             free(newLog);  // Free Log struct if allocation fails
             return NULL;
         }
@@ -508,15 +559,16 @@ Log *changeLog(Vehicle *v, Park *p, int type) {
         // Allocate memory for parkName and copy the string
         newLog->parkName = (char *)malloc(strlen(p->name) + 1);
         if (newLog->parkName == NULL) {
-            
+            free(newLog->entryDate);  // Free entryDate if allocation fails
+            free(newLog->entryTime);  // Free entryTime if allocation fails
             free(newLog->reg);  // Free reg if allocation fails
             free(newLog);       // Free Log struct if allocation fails
             return NULL;
         }
         strcpy(newLog->parkName, p->name);
 
-        Log *l = addLogVehicle(v, newLog);
-        addLogPark(p, l);
+        newLog = addLogVehicle(v, newLog);
+        addLogPark(p, newLog);
         return newLog;
 
     } else if (type == 1) {
@@ -623,9 +675,7 @@ void printLogsByDate(LogNode *head) {
 
 
 void showParkRevenue(Park* p, Date* date) {
-    // Sort the list by exit date
-    LogNode *cur = (LogNode *)malloc(sizeof(LogNode));
-    cur = sortListExitDate(p);
+    LogNode *cur = sortListExitDate(p);
 
     if (cur == NULL) {
         return;
@@ -687,6 +737,13 @@ void commandF(ParkingSystem* system, Buffer* buffer) {
     }
 }
 
+void terminate(ParkingSystem* system, Buffer* buffer) {
+    free(system);
+    free(buffer->buffer);
+    free(buffer);
+    
+}
+
 int main() {
     // Initializes the buffer
     Buffer *buffer = (Buffer *)malloc(sizeof(Buffer));
@@ -705,10 +762,7 @@ int main() {
 
             // Closes the program
             case 'q':
-                
-                free(system);
-                free(buffer->buffer);
-                free(buffer);
+                terminate(system, buffer);
 
                 return 0;
 
