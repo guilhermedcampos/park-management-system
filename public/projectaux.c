@@ -500,6 +500,20 @@ ParkingNode *sortListName(ParkingSystem *sys) {
     return sys->pHead; 
 }
 
+void freeLogNode(LogNode *node) {
+    if (node == NULL) {
+        return;
+    }
+
+    free(node->log->exitDate);
+    free(node->log->exitTime);
+    free(node->log->entryDate);
+    free(node->log->entryTime);
+    free(node->log->reg);
+    free(node->log->parkName);
+    free(node->log);
+}
+
  // Partition function for quicksort
 int partition(LogNode **arr, int low, int high) {
     LogNode *pivot = arr[high];
@@ -562,14 +576,7 @@ LogNode *sortListExitDate(Park *p) {
         if (newNode == NULL) {
             // Handle allocation failure by manually freeing previously allocated memory
             for (int j = 0; j < i; j++) {
-                free(arr[j]->log->exitDate);
-                free(arr[j]->log->exitTime);
-                free(arr[j]->log->entryDate);
-                free(arr[j]->log->entryTime);
-                free(arr[j]->log->reg);
-                free(arr[j]->log->parkName);
-                free(arr[j]->log);
-                free(arr[j]);
+                freeLogNode(arr[j]);
             }
             free(arr);
             return NULL;

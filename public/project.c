@@ -346,6 +346,7 @@ void commandP(ParkingSystem* system, Buffer* buffer) {
                 createPark(system, name, maxCapacity, billingValue15, billingValueAfter1Hour, maxDailyValue);
             } 
         }
+        free(name);
     }
 }
 
@@ -372,6 +373,7 @@ void commandR(ParkingSystem* system, Buffer* buffer) {
     } else {
         printf("%s: no such parking.\n", name);
     }
+    free(name);
 }
 
 void commandE(ParkingSystem* system, Buffer* buffer) {
@@ -394,6 +396,10 @@ void commandE(ParkingSystem* system, Buffer* buffer) {
             printf("%s %d\n", name, park->maxCapacity - park->currentLots);
         }
     }
+    free(name);
+    free(reg);
+    free(date);
+    free(time);
 }
 
 int enterPark(ParkingSystem *sys, Park *p, Vehicle *v, char *date, char *time) {
@@ -402,7 +408,7 @@ int enterPark(ParkingSystem *sys, Park *p, Vehicle *v, char *date, char *time) {
     if (v->parkName == NULL) {
         return 0;
     }
-    strcpy(v->parkName, p->name);
+    v->parkName = strdup(p->name);
     
     v->date = createDateStruct(date);
     v->time = createTimeStruct(time);
@@ -417,7 +423,6 @@ int enterPark(ParkingSystem *sys, Park *p, Vehicle *v, char *date, char *time) {
 }
 
 int exitPark(ParkingSystem *system, Park *p, Vehicle *v, char *date, char *time) {
-    free(v->parkName);
     v->parkName = NULL;
     v->date = createDateStruct(date);
     v->time = createTimeStruct(time);
@@ -488,13 +493,6 @@ void addLogPark(Park *p, Log *l) {
 }
 
 Log *updateEntryLog(Log *l, Date *date, Time *time, Park *park) {
-    // Free the memory for exitDate and exitTime if they are already allocated
-    if (l->exitDate != NULL) {
-        free(l->exitDate);
-    }
-    if (l->exitTime != NULL) {
-        free(l->exitTime);
-    }
 
     // Allocate memory for exitDate and exitTime and copy the new values
     l->exitDate = createDate(date->day, date->month, date->year);
@@ -578,6 +576,10 @@ void commandS(ParkingSystem* system, Buffer* buffer) {
         Vehicle *vehicle = getVehicle(system, reg);
         exitPark(system, park, vehicle, date, time);
     } 
+    free(name);
+    free(reg);
+    free(date);
+    free(time);
 }
 
 
@@ -625,6 +627,7 @@ void commandV(ParkingSystem* system, Buffer* buffer) {
     }
 
     printVehicleLogs(system, reg);
+    free(reg);
 }
 
 void printLogsByDate(LogNode *head) {
@@ -718,8 +721,9 @@ void commandF(ParkingSystem* system, Buffer* buffer) {
         } else {
             printf("invalid date.\n");
         }
-        
     }
+    free(name);
+    free(date);
 }
 
 void terminate(ParkingSystem* system, Buffer* buffer) {
