@@ -155,12 +155,6 @@ void removeLogsVehicle(Vehicle *v, char* parkName) {
     }
 }
 
-
-// Removes all logs of a park
-void removeLogs(ParkingSystem *system, Park *p) {
-    freeParkLogs(system, p);
-}
-
 void updateParksArray(ParkingSystem *system, int index) {
 
     // Shift elements to the left starting from the index
@@ -370,7 +364,7 @@ void commandR(ParkingSystem* system, Buffer* buffer) {
     name = nextWord(buffer);
     Park *p = parkExists(system, name);
     if (p != NULL) {
-        removeLogs(system, p);
+        freeParkLogs(system, p);
         removePark(system, name);
         printRemainingParks(system);
     } else {
