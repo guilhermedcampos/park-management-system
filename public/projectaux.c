@@ -547,7 +547,7 @@ void quicksort(LogNode **arr, int low, int high) {
 }
 
 
-// Function to sort the log nodes by entry date using bubble sort
+// Function to sort the log nodes by entry date
 LogNode *sortListExitDate(Park *p) {
     // Find number of elements in linked list
     int n = 0;
