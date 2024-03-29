@@ -214,7 +214,7 @@ void removePark(ParkingSystem *system, char *name) {
 }
 
 void createPark(ParkingSystem *system, char *name, char *maxCapacity, char *billingValue15, char *billingValueAfter1Hour, char *maxDailyValue) {
-    ParkingNode *newParking = (ParkingNode *)malloc(sizeof(Park));
+    ParkingNode *newParking = (ParkingNode *)malloc(sizeof(ParkingNode));
 
     if (newParking == NULL) {
         return;
@@ -227,13 +227,12 @@ void createPark(ParkingSystem *system, char *name, char *maxCapacity, char *bill
     }
 
     // Allocate memory for the name field and copy the string
-    newParking->parking->name = (char *)malloc(strlen(name) + 1);
+    newParking->parking->name = strdup(name);
     if (newParking->parking->name == NULL) {
         free(newParking->parking);
         free(newParking);
         return;
     }
-    strcpy(newParking->parking->name, name);
 
     newParking->next = NULL;
     newParking->prev = NULL;
@@ -247,6 +246,7 @@ void createPark(ParkingSystem *system, char *name, char *maxCapacity, char *bill
 
     addPark(system, newParking);
 }
+
 
 // Hash function to map registration strings to indices
 unsigned int hash(const char *reg) {
@@ -302,27 +302,26 @@ Vehicle *createVehicle(ParkingSystem *system, char *reg) {
     }
 
     // Allocate memory for the registration field and copy the string
-    newVehicleNode->vehicle->registration = (char *)malloc(strlen(reg) + 1);
+    newVehicleNode->vehicle->registration = strdup(reg);
     if (newVehicleNode->vehicle->registration == NULL) {
         free(newVehicleNode->vehicle);
         free(newVehicleNode);
         return NULL;
     }
-    strcpy(newVehicleNode->vehicle->registration, reg);
 
     // Initialize other fields
     newVehicleNode->vehicle->parkName = NULL;
     newVehicleNode->vehicle->isParked = 0;
     newVehicleNode->vehicle->date = NULL;
     newVehicleNode->vehicle->time = NULL;
-    newVehicleNode->vehicle->lHead = (LogNode *)malloc(sizeof(LogNode));
-    newVehicleNode->vehicle->lHead = NULL;
-    newVehicleNode->vehicle->lTail = (LogNode *)malloc(sizeof(LogNode));
-    newVehicleNode->vehicle->lTail = NULL;
+    newVehicleNode->vehicle->lHead = NULL; 
+    newVehicleNode->vehicle->lTail = NULL; 
+    newVehicleNode->vehicle->lastLog = (Log *)malloc(sizeof(Log));
 
     addVehicle(system, newVehicleNode);
     return newVehicleNode->vehicle;
 }
+
 
 
 void commandP(ParkingSystem* system, Buffer* buffer) {   
@@ -345,6 +344,10 @@ void commandP(ParkingSystem* system, Buffer* buffer) {
             if (isValidParkRequest(system->numParks, atoi(maxCapacity), atof(billingValue15), atof(billingValueAfter1Hour), atof(maxDailyValue))) {
                 createPark(system, name, maxCapacity, billingValue15, billingValueAfter1Hour, maxDailyValue);
             } 
+            free(maxCapacity);
+            free(billingValue15);
+            free(billingValueAfter1Hour);
+            free(maxDailyValue);
         }
         free(name);
     }
@@ -417,7 +420,6 @@ int enterPark(ParkingSystem *sys, Park *p, Vehicle *v, char *date, char *time) {
     sys->lastTime = v->time;
     v->isParked = 1;
     p->currentLots++;
-    v->lastLog = (Log *)malloc(sizeof(Log));
     v->lastLog = changeLog(v, p, 0);
     return 0;
 }

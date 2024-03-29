@@ -504,14 +504,14 @@ void freeLogNode(LogNode *node) {
     if (node == NULL) {
         return;
     }
-
+    free(node->log->reg);
+    free(node->log->parkName);
     free(node->log->exitDate);
     free(node->log->exitTime);
     free(node->log->entryDate);
     free(node->log->entryTime);
-    free(node->log->reg);
-    free(node->log->parkName);
     free(node->log);
+
 }
 
  // Partition function for quicksort
@@ -565,7 +565,7 @@ LogNode *sortListExitDate(Park *p) {
         current = current->next;
     }
 
-    // Bubble sort the array 
+    // Quick sort the array 
     quicksort(arr, 0, n - 1);
 
     // Create a new linked list with the sorted array
