@@ -169,6 +169,7 @@ void updateParksArray(ParkingSystem *system, int index) {
 
 void removePark(ParkingSystem *system, char *name) {
 
+    // Update the parks array
     for (int i = 0; i < MAX_PARKING_LOTS; i++) {
         if (system->parks[i] != NULL && strcmp(system->parks[i]->name, name) == 0) {
             // First element of the list, shift left the array after removing first element
@@ -177,6 +178,7 @@ void removePark(ParkingSystem *system, char *name) {
     }
 
 
+    // Remove all logs of vehicles in the park
     if (system->pHead == NULL) {
         return;
     }
@@ -770,7 +772,6 @@ void terminate(ParkingSystem* system, Buffer* buffer) {
     free(system);
     free(buffer->buffer);
     free(buffer);
-    
 }
 
 int main() {

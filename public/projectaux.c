@@ -381,13 +381,12 @@ void merge(LogNode **arr, int l, int m, int r) {
     int n1 = m - l + 1;
     int n2 = r - m;
 
-    LogNode **L = (LogNode **)malloc(n1 * sizeof(LogNode *));
-    LogNode **R = (LogNode **)malloc(n2 * sizeof(LogNode *));
+    LogNode *L[n1];
+    LogNode *R[n2];
 
-    for (i = 0; i < n1; i++)
-        L[i] = arr[l + i];
-    for (j = 0; j < n2; j++)
-        R[j] = arr[m + 1 + j];
+    // Copy data to temporary arrays L[] and R[] using memcpy
+    memcpy(L, &arr[l], n1 * sizeof(LogNode *));
+    memcpy(R, &arr[m + 1], n2 * sizeof(LogNode *));
 
     i = 0;
     j = 0;
@@ -403,6 +402,7 @@ void merge(LogNode **arr, int l, int m, int r) {
         k++;
     }
 
+    // Copy the remaining elements of L[] and R[], if any
     while (i < n1) {
         arr[k] = L[i];
         i++;
@@ -414,9 +414,6 @@ void merge(LogNode **arr, int l, int m, int r) {
         j++;
         k++;
     }
-
-    free(L);
-    free(R);
 }
 
 // Mergesort function
@@ -585,6 +582,8 @@ LogNode *sortListExitDate(Park *p) {
                 freeLogNode(arr[j]);
             }
             free(arr);
+            // Free the last allocated node
+            free(newNode); // Corrected: Free the newNode itself
             return NULL;
         }
         newNode->log = arr[i]->log;
@@ -598,11 +597,11 @@ LogNode *sortListExitDate(Park *p) {
         currentNode = newNode;
     }
 
-    // Free the memory allocated for the array arr
     free(arr);
 
     return head;
 }
+
 
 size_t dateInMinutes(Date *d, Time *t) {
     size_t totalMins = 0;
