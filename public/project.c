@@ -418,6 +418,18 @@ int enterPark(ParkingSystem *sys, Park *p, Vehicle *v, char *date, char *time) {
     return 0;
 }
 
+void printExit(Vehicle *v) {
+    char *d1 = dateToString(v->lastLog->entryDate);
+    char *t1 = timeToString(v->lastLog->entryTime);
+    char *d2 = dateToString(v->lastLog->exitDate);
+    char *t2 = timeToString(v->lastLog->exitTime);
+    printf("%s %s %s %s %s %.2f\n", v->registration, d1, t1, d2, t2, v->lastLog->value);
+    free(d1);
+    free(t1);
+    free(d2);
+    free(t2);
+}
+
 int exitPark(ParkingSystem *system, Park *p, Vehicle *v, char *date, char *time) {
     v->parkName = NULL;
     v->date = createDateStruct(date);
@@ -435,7 +447,7 @@ int exitPark(ParkingSystem *system, Park *p, Vehicle *v, char *date, char *time)
     if (l == NULL) {
         return 1;
     }
-    printf("%s %s %s %s %s %.2f\n", v->registration, dateToString(l->entryDate), timeToString(l->entryTime), dateToString(l->exitDate), timeToString(l->exitTime), l->value);
+    printExit(v);
     return 0;
 }
 
@@ -509,6 +521,23 @@ Log *updateEntryLog(Log *l, Date *date, Time *time, Park *park) {
     l->type = 1;
 
     return l;
+}
+
+Log *initLog() {
+    Log *newLog = (Log *)malloc(sizeof(Log));
+    if (newLog == NULL) {
+        return NULL;
+    }
+    newLog->entryDate = (Date *)malloc(sizeof(Date));
+    newLog->exitDate = (Date *)malloc(sizeof(Date));
+    newLog->entryTime = NULL;
+    newLog->exitTime = NULL;
+    newLog->reg = NULL;
+    newLog->parkName = NULL;
+    newLog->type = -1;
+    newLog->value = 0.0;
+    return newLog;
+
 }
 
 
@@ -596,14 +625,25 @@ int printVehicleLogs(ParkingSystem* system, char* reg) {
     while (cur != NULL) {
         if (strcmp(cur->log->reg, reg) == 0) {
             // If its an entry log, print only entry info
+            char *dEntry = dateToString(cur->log->entryDate);
+            char *tEntry = timeToString(cur->log->entryTime);
             if (cur->log->type == 0) {
-                printf("%s %s %s\n", cur->log->parkName, dateToString(cur->log->entryDate), timeToString(cur->log->entryTime));
+                printf("%s %s %s\n", cur->log->parkName, dEntry, tEntry);
+                free(dEntry);
+                free(tEntry);
             } else {
+                // If its an exit log, print entry and exit info
+                char *dExit = dateToString(cur->log->exitDate);
+                char *tExit = timeToString(cur->log->exitTime);
                 printf("%s %s %s %s %s\n", cur->log->parkName, 
-                dateToString(cur->log->entryDate), 
-                timeToString(cur->log->entryTime), 
-                dateToString(cur->log->exitDate), 
-                timeToString(cur->log->exitTime));
+                dEntry, 
+                tEntry, 
+                dExit, 
+                tExit);
+                free(dEntry);
+                free(tEntry);
+                free(dExit);
+                free(tExit);
             }
             numLogs++;
         }
@@ -647,16 +687,18 @@ void printLogsByDate(LogNode *head) {
         // Accumulate revenue
         totalRevenue += cur->log->value;
         prevDate = curDate; // Update previous date
-
         cur = cur->next;
+
+        // Free the memory allocated for the current date string
+        freeDateString(curDate);
     }
 
     // Print the last date and accumulated revenue
     if (prevDate != NULL) {
         printf("%s %.2f\n", prevDate, totalRevenue);
+        freeDateString(prevDate);
     }
 }
-
 
 void showParkRevenue(Park* p, Date* date) {
     LogNode *cur = sortListExitDate(p);
@@ -691,7 +733,15 @@ void printParkLogs(Park* p) {
     }
     while (cur != NULL) {
             if (cur->log->type == 1) {
-                printf("%s %s %s %s %s %.2f\n", cur->log->reg, dateToString(cur->log->entryDate), timeToString(cur->log->entryTime), dateToString(cur->log->exitDate), timeToString(cur->log->exitTime), cur->log->value);
+                char *dEntry = dateToString(cur->log->entryDate);
+                char *tEntry = timeToString(cur->log->entryTime);
+                char *dExit = dateToString(cur->log->exitDate);
+                char *tExit = timeToString(cur->log->exitTime);
+                printf("%s %s %s %s %s %.2f\n", cur->log->reg, dEntry, tEntry, dExit, tExit, cur->log->value);
+                free(dEntry);
+                free(tEntry);
+                free(dExit);
+                free(tExit);
             }
         cur = cur->next;
     }

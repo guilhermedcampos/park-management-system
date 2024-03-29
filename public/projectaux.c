@@ -56,6 +56,12 @@ int isValidDate(Date *date) {
     return 1;
 }
 
+void freeDateString(char *dateString) {
+    if (dateString != NULL) {
+        free(dateString);
+    }
+}
+
 char *dateToString(Date *date) {
     char *dateString = (char *)malloc(11 * sizeof(char));
     if (dateString == NULL) {

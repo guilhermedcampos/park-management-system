@@ -8,11 +8,10 @@
 #include <stdlib.h>
 
 LogNode *sortLogListName(Vehicle *vehicle);
-LogNode *sortListEntryDate(Vehicle *vehicle);
 LogNode *sortListExitDate(Park *park);
 Date *createDate(int day, int month, int year);
 Time *createTime(int hour, int minute);
-
+void freeDateString(char *dateString);
 
 int isValidParkRequest(int nParks, int cap, double x, double y, double z);
 int isValidDate(Date *date);
