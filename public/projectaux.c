@@ -28,6 +28,9 @@ int isValidParkRequest(int nParks, int cap, double x, double y, double z) {
 }
 
 int isValidTime(Time *time) {
+    if (time == NULL) {
+        return 0;
+    }
     if (time->hour < 0 || time->hour > 23) {
         return 0;
     }
@@ -700,6 +703,10 @@ Time *createTime(int hour, int minute) {
 }
 
 Date *createDateStruct(char *date) {
+    if (strlen(date) != 10) {
+        return NULL;
+    }
+
     Date *d = (Date *)malloc(sizeof(Date));
     if (d == NULL) {
         return NULL;

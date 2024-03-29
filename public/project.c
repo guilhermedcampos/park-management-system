@@ -211,7 +211,6 @@ void removePark(ParkingSystem *system, char *name) {
 
 void createPark(ParkingSystem *system, char *name, char *maxCapacity, char *billingValue15, char *billingValueAfter1Hour, char *maxDailyValue) {
     ParkingNode *newParking = (ParkingNode *)malloc(sizeof(ParkingNode));
-
     if (newParking == NULL) {
         return;
     }
