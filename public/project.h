@@ -104,7 +104,7 @@ void addPark(ParkingSystem *system, ParkingNode *parking);
 Vehicle *createVehicle(ParkingSystem *system, char *reg);
 void createPark(ParkingSystem *system, char *name, char *maxCapacity, char *billingValue15, char *billingValueAfter1Hour, char *maxDailyValue);
 void removePark(ParkingSystem *system, char *name);
-void addVehicle(ParkingSystem *system, VehicleNode *vehicle);
+void addVehicle(ParkingSystem *system, Vehicle *vehicle);
 int enterPark(ParkingSystem *system, Park *p, Vehicle *v, char *date, char *time);
 int exitPark(ParkingSystem *system, Park *p, Vehicle *v, char *date, char *time);
 void createPark(ParkingSystem *system, char *name, char *maxCapacity, char *billingValue15, char *billingValueAfter1Hour, char *maxDailyValue);

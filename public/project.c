@@ -265,55 +265,50 @@ void addToHashTable(ParkingSystem *system, Vehicle *vehicle) {
     system->hashTable[index] = newNode;
 }
 
-void addVehicle(ParkingSystem *system, VehicleNode *vehicle) {
+void addVehicle(ParkingSystem *system, Vehicle *vehicle) {
     // Initialize the vehicle node pointers
-    vehicle->prev = NULL;
-    vehicle->next = NULL;
+    VehicleNode *vehicleNode = (VehicleNode *)malloc(sizeof(VehicleNode));
+    vehicleNode->prev = NULL;
+    vehicleNode->next = NULL;
+    vehicleNode->vehicle = vehicle;
 
     if (system->vHead == NULL) {
         // If the list is empty, set both head and tail to the new node
-        system->vHead = vehicle;
-        system->vTail = vehicle;
+        system->vHead = vehicleNode;
+        system->vTail = vehicleNode;
     } else {
         // Otherwise, append the new node to the tail
-        system->vTail->next = vehicle;
-        vehicle->prev = system->vTail;
-        system->vTail = vehicle; // Update the tail pointer
+        system->vTail->next = vehicleNode;
+        vehicleNode->prev = system->vTail;
+        system->vTail = vehicleNode; // Update the tail pointer
     }
-    addToHashTable(system, vehicle->vehicle);
+    addToHashTable(system, vehicle);
 }
 
 Vehicle *createVehicle(ParkingSystem *system, char *reg) {
-    VehicleNode *newVehicleNode = (VehicleNode *)malloc(sizeof(VehicleNode));
-    if (newVehicleNode == NULL) {
-        return NULL;
-    }
-
-    newVehicleNode->vehicle = (Vehicle *)malloc(sizeof(Vehicle));
-    if (newVehicleNode->vehicle == NULL) {
-        free(newVehicleNode);
+    Vehicle *vehicle = (Vehicle *)malloc(sizeof(Vehicle));
+    if (vehicle == NULL) {
         return NULL;
     }
 
     // Allocate memory for the registration field and copy the string
-    newVehicleNode->vehicle->registration = strdup(reg);
-    if (newVehicleNode->vehicle->registration == NULL) {
-        free(newVehicleNode->vehicle);
-        free(newVehicleNode);
+    vehicle->registration = strdup(reg);
+    if (vehicle->registration == NULL) {
+        free(vehicle);
         return NULL;
     }
 
     // Initialize other fields
-    newVehicleNode->vehicle->parkName = NULL;
-    newVehicleNode->vehicle->isParked = 0;
-    newVehicleNode->vehicle->date = NULL;
-    newVehicleNode->vehicle->time = NULL;
-    newVehicleNode->vehicle->lHead = NULL; 
-    newVehicleNode->vehicle->lTail = NULL; 
-    newVehicleNode->vehicle->lastLog = (Log *)malloc(sizeof(Log));
+    vehicle->parkName = NULL;
+    vehicle->isParked = 0;
+    vehicle->date = NULL;
+    vehicle->time = NULL;
+    vehicle->lHead = NULL; 
+    vehicle->lTail = NULL; 
+    vehicle->lastLog = (Log *)malloc(sizeof(Log));
 
-    addVehicle(system, newVehicleNode);
-    return newVehicleNode->vehicle;
+    addVehicle(system, vehicle);
+    return vehicle;
 }
 
 
@@ -688,17 +683,14 @@ void printLogsByDate(LogNode *head) {
         totalRevenue += cur->log->value;
         prevDate = curDate; // Update previous date
         cur = cur->next;
-
-        // Free the memory allocated for the current date string
-        freeDateString(curDate);
     }
 
     // Print the last date and accumulated revenue
     if (prevDate != NULL) {
         printf("%s %.2f\n", prevDate, totalRevenue);
-        freeDateString(prevDate);
     }
 }
+
 
 void showParkRevenue(Park* p, Date* date) {
     LogNode *cur = sortListExitDate(p);
@@ -762,11 +754,13 @@ void commandF(ParkingSystem* system, Buffer* buffer) {
     if (date == NULL) {
         showParkRevenue(park, NULL);
     } else {
-        if (isValidDate(createDateStruct(date)) && isLogDateValid((createDateStruct(date)),system->lastDate)) {  // and logDateValid of last entry date
-            showParkRevenue(park, createDateStruct(date));
+        Date *d = createDateStruct(date);
+        if (isValidDate(d) && isLogDateValid((d),system->lastDate)) {  // and logDateValid of last entry date
+            showParkRevenue(park, d);
         } else {
             printf("invalid date.\n");
         }
+        free(d);
     }
     free(name);
     free(date);
