@@ -378,7 +378,7 @@ int enterPark(ParkingSystem *sys, Park *p, Vehicle *v, char *date, char *time) {
     if (v->parkName == NULL) {
         return 0;
     }
-    v->parkName = strdup(p->name);
+    v->parkName = p->name;
     
     v->date = createDateStruct(date);
     v->time = createTimeStruct(time);
