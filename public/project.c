@@ -649,7 +649,9 @@ void showParkRevenue(Park* p, Date* date) {
             } else {
                 if (isValidDate(date) && cur->log->type == 1) {
                     if (isLogDateValid(date, cur->log->exitDate) && isSameDate(cur->log->exitDate, date)) {
-                        printf("%s %s %.2f\n", cur->log->reg, timeToString(cur->log->exitTime), cur->log->value);
+                        char *t = timeToString(cur->log->exitTime);
+                        printf("%s %s %.2f\n", cur->log->reg, t, cur->log->value);
+                        free(t);
                     }
                 } 
             }
