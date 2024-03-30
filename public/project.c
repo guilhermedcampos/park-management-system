@@ -279,7 +279,7 @@ Vehicle *createVehicle(ParkingSystem *system, char *reg) {
     vehicle->time = NULL;
     vehicle->lHead = NULL; 
     vehicle->lTail = NULL; 
-    vehicle->lastLog = (Log *)malloc(sizeof(Log));
+    vehicle->lastLog = NULL;
 
     addVehicle(system, vehicle);
     return vehicle;
