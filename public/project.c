@@ -403,7 +403,7 @@ void printExit(Vehicle *v) {
     free(t2);
 }
 
-int exitPark(ParkingSystem *system, Park *p, Vehicle *v, char *date, char *time) {
+int exitPark(ParkingSystem *system, Park *p, Vehicle *v, char *date, char *time) {  
     v->parkName = NULL;
     v->date = createDateStruct(date);
     v->time = createTimeStruct(time);
