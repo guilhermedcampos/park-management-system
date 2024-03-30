@@ -337,6 +337,13 @@ void freeParkLogs(ParkingSystem *sys, Park *p) {
     while (cur != NULL) {
         LogNode *temp = cur;
         cur = cur->next;
+        if (temp->log->type == 0) {
+            Vehicle *v = getVehicle(sys, temp->log->reg);
+            if (v != NULL) {
+                v->isParked = 0;
+                v->parkName = NULL;
+            }
+        }
         removeVehicleLog(sys, p, temp->log->reg);
     }
 }

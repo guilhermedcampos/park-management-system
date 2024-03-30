@@ -333,6 +333,7 @@ void commandR(ParkingSystem* system, Buffer* buffer) {
         freeParkLogs(system, p);
         removePark(system, name);
         printRemainingParks(system);
+
     } else {
         printf("%s: no such parking.\n", name);
     }
