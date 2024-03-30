@@ -275,8 +275,6 @@ Vehicle *createVehicle(ParkingSystem *system, char *reg) {
     // Initialize other fields
     vehicle->parkName = NULL;
     vehicle->isParked = 0;
-    vehicle->date = NULL;
-    vehicle->time = NULL;
     vehicle->lHead = NULL; 
     vehicle->lTail = NULL; 
     vehicle->lastLog = NULL;
@@ -372,15 +370,12 @@ void commandE(ParkingSystem* system, Buffer* buffer) {
 
 int enterPark(ParkingSystem *sys, Park *p, Vehicle *v, char *date, char *time) {
     v->parkName = p->name;
-    
-    v->date = createDateStruct(date);
-    v->time = createTimeStruct(time);
 
-    sys->lastDate = v->date;
-    sys->lastTime = v->time;
+    sys->lastDate = createDateStruct(date);
+    sys->lastTime = createTimeStruct(time);
     v->isParked = 1;
     p->currentLots++;
-    v->lastLog = changeLog(v, p, 0);
+    v->lastLog = changeLog(v, p, date, time, 0);
     return 0;
 }
 
@@ -398,18 +393,16 @@ void printExit(Vehicle *v) {
 
 int exitPark(ParkingSystem *system, Park *p, Vehicle *v, char *date, char *time) {  
     v->parkName = NULL;
-    v->date = createDateStruct(date);
-    v->time = createTimeStruct(time);
-    v->isParked = 0;
+    v->isParked = 0;    
+    Date *d = createDateStruct(date);
+    Time *t = createTimeStruct(time);
 
-    if (v->date == NULL || v->time == NULL) {
-        return 1;
-    }
-
-    system->lastDate = v->date;
-    system->lastTime = v->time;
+    system->lastDate = realloc(system->lastDate, sizeof(d));
+    system->lastTime = realloc(system->lastTime, sizeof(t));
+    system->lastDate = d;
+    system->lastTime = t;
     p->currentLots--;
-    Log *l = changeLog(v, p, 1);
+    Log *l = changeLog(v, p, date, time, 1);
     if (l == NULL) {
         return 1;
     }
@@ -461,16 +454,16 @@ void addLogPark(Park *p, Log *l) {
     }
 }
 
-Log *updateEntryLog(Log *l, Date *date, Time *time, Park *park) {
+Log *updateEntryLog(Log *l, char *date, char *time, Park *park) {
 
     // Allocate memory for exitDate and exitTime and copy the new values
-    l->exitDate = createDate(date->day, date->month, date->year);
+    l->exitDate = createDateStruct(date);
     if (l->exitDate == NULL) {
         // Handle allocation failure
         return NULL;
     }
 
-    l->exitTime = createTime(time->hour, time->minute);
+    l->exitTime = createTimeStruct(time);
     if (l->exitTime == NULL) {
         // Handle allocation failure
         free(l->exitDate);  // Free previously allocated memory
@@ -484,15 +477,15 @@ Log *updateEntryLog(Log *l, Date *date, Time *time, Park *park) {
     return l;
 }
 
-Log *changeLog(Vehicle *v, Park *p, int type) {
+Log *changeLog(Vehicle *v, Park *p, char *d, char *t, int type) {
     if (type == 0) {
         Log *newLog = (Log *)malloc(sizeof(Log));
         if (newLog == NULL) {
             return NULL;
         }
 
-        newLog->entryDate = createDate(v->date->day, v->date->month, v->date->year);
-        newLog->entryTime = createTime(v->time->hour, v->time->minute);
+        newLog->entryDate = createDateStruct(d);
+        newLog->entryTime = createTimeStruct(t);
         newLog->type = 0;
 
         newLog->reg = v->registration;
@@ -509,7 +502,7 @@ Log *changeLog(Vehicle *v, Park *p, int type) {
 
     } else if (type == 1) {
 
-        Log *l = updateEntryLog(v->lastLog, v->date, v->time, p);
+        Log *l = updateEntryLog(v->lastLog, d, t, p);
         return l;
     }
     return NULL;

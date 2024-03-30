@@ -34,8 +34,6 @@ typedef struct LogNode {
 typedef struct Vehicle {
     char *parkName;
     char *registration;
-    Date *date;
-    Time *time;
     int isParked;
     // logs of entries and exits from the vehicle, will be in entry order
     LogNode *lHead;
@@ -103,7 +101,7 @@ void addVehicle(ParkingSystem *system, Vehicle *vehicle);
 int enterPark(ParkingSystem *system, Park *p, Vehicle *v, char *date, char *time);
 int exitPark(ParkingSystem *system, Park *p, Vehicle *v, char *date, char *time);
 void createPark(ParkingSystem *system, char *name, char *maxCapacity, char *billingValue15, char *billingValueAfter1Hour, char *maxDailyValue);
-Log *changeLog(Vehicle *v, Park *p, int type);
+Log *changeLog(Vehicle *v, Park *p, char *d, char *t, int type);
 int printVehicleLogs(ParkingSystem* system, char* reg);
 void printRemainingParks(ParkingSystem* system);
 void showParkRevenue(Park* p, Date* date);
