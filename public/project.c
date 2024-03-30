@@ -317,10 +317,8 @@ void commandP(ParkingSystem* system, Buffer* buffer) {
 }
 
 void printRemainingParks(ParkingSystem* system) {
-    ParkingNode *sortedNode = malloc(sizeof(ParkingNode));
     // Sort the list by park names alphabetically
-    sortedNode = sortListName(system);
-    ParkingNode *cur = sortedNode;
+    ParkingNode *cur = sortListName(system);
     while (cur != NULL) {
         printf("%s\n", cur->parking->name);
         cur = cur->next;
