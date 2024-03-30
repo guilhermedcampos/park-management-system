@@ -24,29 +24,9 @@ ParkingSystem* init() {
     system->pHead = NULL;
     system->vHead = NULL;
     system->vTail = NULL;
+    system->lastDate = NULL;
+    system->lastTime = NULL;
     system->numParks = 0;
-
-    // Initialize lastDate and lastTime
-    system->lastDate = (Date *)malloc(sizeof(Date));
-    if (system->lastDate == NULL) {
-        free(system);
-        system = NULL;
-        return NULL;
-    }
-    system->lastDate->day = 0;
-    system->lastDate->month = 0;
-    system->lastDate->year = 0;
-
-    system->lastTime = (Time *)malloc(sizeof(Time));
-    if (system->lastTime == NULL) {
-        free(system->lastDate);
-        system->lastDate = NULL;
-        free(system);
-        system = NULL;
-        return NULL;
-    }
-    system->lastTime->hour = 0;
-    system->lastTime->minute = 0;
 
     // Initialize parks array to NULL
     for (int i = 0; i < MAX_PARKING_LOTS; i++) {

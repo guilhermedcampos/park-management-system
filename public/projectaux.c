@@ -214,24 +214,22 @@ int isVehicleInParkExit(ParkingSystem *system, char *reg, char *name) {
 
     return 1;
 }
-
 // If d1 is sooner than d2, it's valid (1)
 int isLogDateValid(Date *d1, Date *d2) {
-    if (d1->year < d2->year) {
-        return 1;
-    } else if (d1->month < d2->month) {
-        return 1;
-    } else if (d1-> month == d2->month) {
-        if (d1->day < d2->day) {
-            return 1;
 
-        } else if (d1->day == d2->day) {
-            return 2;
-        }
-        return 0;
+    if (d1->year < d2->year) {
+        return 1; 
+    } else if (d1->year == d2->year && d1->month < d2->month) {
+        return 1; 
+    } else if (d1->year == d2->year && d1->month == d2->month && d1->day < d2->day) {
+        return 1; 
+    } else if (d1->year == d2->year && d1->month == d2->month && d1->day == d2->day) {
+        return 2;
     }
+
     return 0;
 }
+
 
 // If t1 is sooner than t2, it's valid (1)
 int isLogTimeValid(Time *t1, Time *t2) {
