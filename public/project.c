@@ -205,6 +205,7 @@ void createPark(ParkingSystem *system, char *name, char *maxCapacity, char *bill
     newParking->prev = NULL;
 
     // Assign other fields
+    newParking->parking->lHead = NULL;
     newParking->parking->maxCapacity = atoi(maxCapacity);
     newParking->parking->currentLots = 0;
     newParking->parking->billingValue15 = atof(billingValue15);

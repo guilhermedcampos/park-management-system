@@ -677,31 +677,6 @@ double calculateValue(Log *log, Park *park) {
     return completeDayRev;
 }
 
-Date *createDate(int day, int month, int year) {
-    Date *d = (Date *)malloc(sizeof(Date));
-    if (d == NULL) {
-        return NULL;
-    }
-
-    d->day = day;
-    d->month = month;
-    d->year = year;
-
-    return d;
-}
-
-Time *createTime(int hour, int minute) {
-    Time *t = (Time *)malloc(sizeof(Time));
-    if (t == NULL) {
-        return NULL;
-    }
-
-    t->hour = hour;
-    t->minute = minute;
-
-    return t;
-}
-
 Date *createDateStruct(char *date) {
     if (strlen(date) != 10) {
         return NULL;
