@@ -370,9 +370,13 @@ void commandE(ParkingSystem* system, Buffer* buffer) {
 
 int enterPark(ParkingSystem *sys, Park *p, Vehicle *v, char *date, char *time) {
     v->parkName = p->name;
+    Date *d = createDateStruct(date);
+    Time *t = createTimeStruct(time);
 
-    sys->lastDate = createDateStruct(date);
-    sys->lastTime = createTimeStruct(time);
+    sys->lastDate = realloc(sys->lastDate, sizeof(d));
+    sys->lastTime = realloc(sys->lastTime, sizeof(t));
+    sys->lastDate = d;
+    sys->lastTime = t;
     v->isParked = 1;
     p->currentLots++;
     v->lastLog = changeLog(v, p, date, time, 0);
