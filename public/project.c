@@ -371,11 +371,6 @@ void commandE(ParkingSystem* system, Buffer* buffer) {
 }
 
 int enterPark(ParkingSystem *sys, Park *p, Vehicle *v, char *date, char *time) {
-    // Allocate memory for park name in vehicle
-    v->parkName = (char *)malloc(strlen(p->name) + 1);
-    if (v->parkName == NULL) {
-        return 0;
-    }
     v->parkName = p->name;
     
     v->date = createDateStruct(date);
