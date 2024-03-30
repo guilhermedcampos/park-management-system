@@ -30,6 +30,7 @@ ParkingSystem* init() {
     system->lastDate = (Date *)malloc(sizeof(Date));
     if (system->lastDate == NULL) {
         free(system);
+        system = NULL;
         return NULL;
     }
     system->lastDate->day = 0;
@@ -39,7 +40,9 @@ ParkingSystem* init() {
     system->lastTime = (Time *)malloc(sizeof(Time));
     if (system->lastTime == NULL) {
         free(system->lastDate);
+        system->lastDate = NULL;
         free(system);
+        system = NULL;
         return NULL;
     }
     system->lastTime->hour = 0;
@@ -121,40 +124,6 @@ void addPark(ParkingSystem *system, ParkingNode *parking) {
     system->numParks++;
 }
 
-// Removes all logs of a vehicle in specific park
-void removeLogsVehicle(Vehicle *v, char* parkName) {
-    LogNode *cur = v->lHead;
-    LogNode *prev = NULL;
-    while (cur != NULL) {
-        if (strcmp(cur->log->parkName, parkName) == 0) {
-            // If the node to be removed is the head of the list
-            if (prev == NULL) {
-                v->lHead = cur->next;
-            } else {
-                prev->next = cur->next;
-            }
-
-            // If the node to be removed is not the last node in the list
-            if (cur->next != NULL) {
-                cur->next->prev = prev;
-            }
-
-            free(cur->log->reg);
-            free(cur->log->parkName);
-            free(cur->log->entryDate);
-            free(cur->log->entryTime);
-            free(cur->log->exitDate);
-            free(cur->log->exitTime);
-            free(cur->log);
-
-            free(cur);
-            return;
-        }
-        prev = cur;
-        cur = cur->next;
-    }
-}
-
 void updateParksArray(ParkingSystem *system, int index) {
 
     // Shift elements to the left starting from the index
@@ -200,8 +169,11 @@ void removePark(ParkingSystem *system, char *name) {
             }
             system->numParks--;
             free(cur->parking->name);
+            cur->parking->name = NULL;
             free(cur->parking);
+            cur->parking = NULL;
             free(cur);
+            cur = NULL;
             return;
         }
         prev = cur;
@@ -296,6 +268,7 @@ Vehicle *createVehicle(ParkingSystem *system, char *reg) {
     vehicle->registration = strdup(reg);
     if (vehicle->registration == NULL) {
         free(vehicle);
+        vehicle = NULL;
         return NULL;
     }
 
@@ -390,9 +363,13 @@ void commandE(ParkingSystem* system, Buffer* buffer) {
         }
     }
     free(name);
+    name = NULL;
     free(reg);
+    reg = NULL;
     free(date);
+    date = NULL;
     free(time);
+    time = NULL;
 }
 
 int enterPark(ParkingSystem *sys, Park *p, Vehicle *v, char *date, char *time) {
@@ -454,11 +431,6 @@ Log *addLogVehicle(Vehicle *v, Log *l) {
         return NULL;
     }
     
-    newLog->log = (Log *)malloc(sizeof(Log));
-    if (newLog->log == NULL) {
-        free(newLog);
-        return NULL;
-    }
     newLog->log = l;
     newLog->next = NULL;
     newLog->prev = NULL;
@@ -519,24 +491,6 @@ Log *updateEntryLog(Log *l, Date *date, Time *time, Park *park) {
     return l;
 }
 
-Log *initLog() {
-    Log *newLog = (Log *)malloc(sizeof(Log));
-    if (newLog == NULL) {
-        return NULL;
-    }
-    newLog->entryDate = (Date *)malloc(sizeof(Date));
-    newLog->exitDate = (Date *)malloc(sizeof(Date));
-    newLog->entryTime = NULL;
-    newLog->exitTime = NULL;
-    newLog->reg = NULL;
-    newLog->parkName = NULL;
-    newLog->type = -1;
-    newLog->value = 0.0;
-    return newLog;
-
-}
-
-
 Log *changeLog(Vehicle *v, Park *p, int type) {
     if (type == 0) {
         Log *newLog = (Log *)malloc(sizeof(Log));
@@ -548,24 +502,9 @@ Log *changeLog(Vehicle *v, Park *p, int type) {
         newLog->entryTime = createTime(v->time->hour, v->time->minute);
         newLog->type = 0;
 
-        // Allocate memory for reg and copy the string
-        newLog->reg = strdup(v->registration);
-        if (newLog->reg == NULL) {
-            free(newLog->entryDate);
-            free(newLog->entryTime);
-            free(newLog);
-            return NULL;
-        }
+        newLog->reg = v->registration;
 
-        // Allocate memory for parkName and copy the string
-        newLog->parkName = strdup(p->name);
-        if (newLog->parkName == NULL) {
-            free(newLog->entryDate);
-            free(newLog->entryTime);
-            free(newLog->reg);
-            free(newLog);
-            return NULL;
-        }
+        newLog->parkName = p->name;
 
         // Add the new log to vehicle's log list
         newLog = addLogVehicle(v, newLog);
@@ -767,7 +706,91 @@ void commandF(ParkingSystem* system, Buffer* buffer) {
     free(date);
 }
 
+void freeHashTable(ParkingSystem *system) {
+    for (int i = 0; i < HASH_TABLE_SIZE; i++) {
+        VehicleHashNode *cur = system->hashTable[i];
+        while (cur != NULL) {
+            VehicleHashNode *temp = cur;
+            cur = cur->next;
+            free(temp);
+            temp = NULL;
+        }
+    }
+}
+
+void freeLogs(ParkingSystem *system) {
+    ParkingNode *cur = system->pHead;
+    while (cur != NULL) {
+        LogNode *logCur = cur->parking->lHead;
+        while (logCur != NULL) {
+            LogNode *temp = logCur;
+            logCur = logCur->next;
+            free(temp->log->entryDate);
+            temp->log->entryDate = NULL;
+            free(temp->log->exitDate);
+            temp->log->exitDate = NULL;
+            free(temp->log->entryTime);
+            temp->log->entryTime = NULL;    
+            free(temp->log->exitTime);
+            temp->log->exitTime = NULL;
+            free(temp->log);
+            temp->log = NULL;
+            free(temp);
+            temp = NULL;
+        }
+        cur = cur->next;
+    }
+}
+
+void freeVehicles(ParkingSystem *system) {
+    VehicleNode *cur = system->vHead;
+    while (cur != NULL) {
+        free(cur->vehicle->registration);
+        cur->vehicle->registration = NULL;
+
+        LogNode *logCur = cur->vehicle->lHead;
+        while (logCur != NULL) {
+            LogNode *temp = logCur;
+            logCur = logCur->next;
+            free(temp);
+            temp = NULL;
+        }
+
+        free(cur->vehicle);
+        cur->vehicle = NULL;
+        VehicleNode *temp = cur;
+        cur = cur->next;
+        free(temp);
+        temp = NULL;
+    }
+}
+
+void freeParks(ParkingSystem *system) {
+    ParkingNode *cur = system->pHead;
+    while (cur != NULL) {
+        free(cur->parking->name);
+        cur->parking->name = NULL;
+        free(cur->parking);
+        cur->parking = NULL;
+        ParkingNode *temp = cur;
+        cur = cur->next;
+        free(temp);
+        temp = NULL;
+    }
+}
+
 void terminate(ParkingSystem* system, Buffer* buffer) {
+    free(system->lastDate);
+    system->lastDate = NULL;
+    free(system->lastTime);
+    system->lastTime = NULL;
+
+    // Free all the logs in the system
+    freeLogs(system);
+    freeVehicles(system);
+    freeParks(system);
+    freeHashTable(system);
+
     free(system);
     free(buffer->buffer);
     free(buffer);

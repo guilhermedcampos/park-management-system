@@ -14,11 +14,6 @@ typedef struct time {
     int minute;
 } Time;
 
-typedef struct TimeDiff {
-    Date *date;
-    Time *time;
-} TimeDiff;
-
 typedef struct Log {
     Date *entryDate;
     Date *exitDate;

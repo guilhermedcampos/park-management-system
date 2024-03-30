@@ -470,6 +470,7 @@ LogNode *sortLogListName(Vehicle *v) {
     v->lHead = arr[0];
 
     free(arr);
+    arr = NULL;
 
     return v->lHead;
 }
@@ -510,14 +511,16 @@ void freeLogNode(LogNode *node) {
     if (node == NULL) {
         return;
     }
-    free(node->log->reg);
-    free(node->log->parkName);
     free(node->log->exitDate);
+    node->log->exitDate = NULL;
     free(node->log->exitTime);
+    node->log->exitTime = NULL;
     free(node->log->entryDate);
+    node->log->entryDate = NULL;
     free(node->log->entryTime);
+    node->log->entryTime = NULL;
     free(node->log);
-
+    node->log = NULL;
 }
 
  // Partition function for quicksort
@@ -585,8 +588,10 @@ LogNode *sortListExitDate(Park *p) {
                 freeLogNode(arr[j]);
             }
             free(arr);
+            arr = NULL;
             // Free the last allocated node
-            free(newNode); // Corrected: Free the newNode itself
+            free(newNode); 
+            newNode = NULL;
             return NULL;
         }
         newNode->log = arr[i]->log;
@@ -601,6 +606,7 @@ LogNode *sortListExitDate(Park *p) {
     }
 
     free(arr);
+    arr = NULL;
 
     return head;
 }
@@ -716,6 +722,7 @@ Date *createDateStruct(char *date) {
     char *date_copy = strdup(date);
     if (date_copy == NULL) {
         free(d);
+        d = NULL;
         return NULL;
     }
 
@@ -725,7 +732,9 @@ Date *createDateStruct(char *date) {
 
     if (day == NULL || month == NULL || year == NULL) {
         free(date_copy); // Free the copy of the date string
+        date_copy = NULL;
         free(d);        // Free the allocated memory for the Date struct
+        d = NULL;
         return NULL;
     }
 
@@ -734,7 +743,7 @@ Date *createDateStruct(char *date) {
     d->year = atoi(year);
 
     free(date_copy); // Free the copy of the date string after tokenization
-
+    date_copy = NULL;
     return d;
 }
 
@@ -748,6 +757,7 @@ Time *createTimeStruct(char *time) {
     char *time_copy = strdup(time);
     if (time_copy == NULL) {
         free(t);
+        t = NULL;
         return NULL;
     }
 
@@ -756,7 +766,9 @@ Time *createTimeStruct(char *time) {
 
     if (hour == NULL || minute == NULL) {
         free(time_copy); // Free the copy of the time string
+        time_copy = NULL;
         free(t);        // Free the allocated memory for the Time struct
+        t = NULL;
         return NULL;    
     }
 
@@ -764,7 +776,7 @@ Time *createTimeStruct(char *time) {
     t->minute = atoi(minute);
 
     free(time_copy); // Free the copy of the time string after tokenization
-
+    time_copy = NULL;
     return t;
 }
 
