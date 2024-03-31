@@ -355,15 +355,33 @@ int enterPark(ParkingSystem *sys, Park *p, Vehicle *v, char *date, char *time) {
     Date *d = createDateStruct(date);
     Time *t = createTimeStruct(time);
 
-    sys->lastDate = realloc(sys->lastDate, sizeof(d));
-    sys->lastTime = realloc(sys->lastTime, sizeof(t));
-    sys->lastDate = d;
-    sys->lastTime = t;
+    Date *newDate = (Date *)realloc(sys->lastDate, sizeof(Date));
+    if (newDate == NULL) {
+        free(d); 
+        free(t);
+        return -1; 
+    }
+    sys->lastDate = newDate;
+    memcpy(sys->lastDate, d, sizeof(Date)); 
+
+    Time *newTime = (Time *)realloc(sys->lastTime, sizeof(Time));
+    if (newTime == NULL) {
+        free(d); 
+        free(t);
+        return -1; 
+    }
+    sys->lastTime = newTime;
+    memcpy(sys->lastTime, t, sizeof(Time));
+
+    free(d); 
+    free(t);
+    
     v->isParked = 1;
     p->currentLots++;
     v->lastLog = changeLog(v, p, date, time, 0);
     return 0;
 }
+
 
 void printExit(Vehicle *v) {
     char *d1 = dateToString(v->lastLog->entryDate);
