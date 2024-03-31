@@ -301,7 +301,7 @@ void removeVehicleLog(ParkingSystem *sys, Park *p, char *reg) {
     }
 
     // Create a new linked list with the sorted array
-    LogNode *head = (LogNode *)malloc(sizeof(LogNode));
+    LogNode *head =  v->lHead;
     if (head == NULL) {
         return;
     }
