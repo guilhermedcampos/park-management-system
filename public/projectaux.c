@@ -267,70 +267,59 @@ int isValidLog(ParkingSystem *system, Time *time, Date *date) {
     return isDateBefore(system->lastDate, date, system->lastTime, time);
 }
 
+void freeLogNode(LogNode *node) {
+    if (node == NULL) {
+        return;
+    }
+    free(node->log->exitDate);
+    node->log->exitDate = NULL;
+    free(node->log->exitTime);
+    node->log->exitTime = NULL;
+    free(node->log->entryDate);
+    node->log->entryDate = NULL;
+    free(node->log->entryTime);
+    node->log->entryTime = NULL;
+    free(node->log);
+    node->log = NULL;
+}
+
+
 void removeVehicleLog(ParkingSystem *sys, Park *p, char *reg) {
     Vehicle *v = getVehicle(sys, reg);
     if (v == NULL) {
         return;
     }
 
-    // Find number of elements in linked list
-    int n = 0;
     LogNode *current = v->lHead;
     while (current != NULL) {
-        if (strcmp(current->log->parkName, p->name) != 0) {
-            n++;
+        // Check if the log's park name matches the provided park name
+        if (strcmp(current->log->parkName, p->name) == 0) {
+            // If matched, remove this node from the linked list
+            if (current->prev != NULL) {
+                current->prev->next = current->next;
+            } else {
+                // If current node is the head node
+                v->lHead = current->next;
+            }
+            if (current->next != NULL) {
+                current->next->prev = current->prev;
+            }
+            // Free the memory for the removed node
+            LogNode *temp = current;
+            current = current->next;
+            freeLogNode(temp);
+            free(temp);
+            temp = NULL;     
+        } else {
+            // Move to the next node
+            current = current->next;
         }
-        current = current->next;
     }
-
-    if (n == 0) {
-        v->lHead = NULL;
-        return;
-    }
-
-    // Transform linked list into array
-    LogNode *arr[n];
-    current = v->lHead; 
-    int i = 0;
-    while (current != NULL) {
-        if (strcmp(current->log->parkName, p->name) != 0) {
-            arr[i] = current;
-            i++;
-        }
-        current = current->next;
-    }
-
-    // Create a new linked list with the sorted array
-    LogNode *head =  v->lHead;
-    if (head == NULL) {
-        return;
-    }
-    head->log = arr[0]->log;
-    head->next = NULL;
-    head->prev = NULL;
-    LogNode *currentNode = head;
-    for (int i = 1; i < n; i++) {
-        LogNode *newNode = (LogNode *)malloc(sizeof(LogNode));
-        if (newNode == NULL) {
-            return;
-        }
-        newNode->log = arr[i]->log;
-        newNode->next = NULL;
-        newNode->prev = currentNode;
-        currentNode->next = newNode;
-        currentNode = newNode;
-    }
-
-    // find head of the new list
-    while (head->prev != NULL) {
-        head = head->prev;
-    }
-    v->lHead = head;
 }
-
 
 void freeParkLogs(ParkingSystem *sys, Park *p) {
     LogNode *cur = p->lHead;
+    p->isSorted = 0;
 
     while (cur != NULL) {
         LogNode *temp = cur;
@@ -504,22 +493,6 @@ ParkingNode *sortListName(ParkingSystem *sys) {
     }
 
     return sys->pHead; 
-}
-
-void freeLogNode(LogNode *node) {
-    if (node == NULL) {
-        return;
-    }
-    free(node->log->exitDate);
-    node->log->exitDate = NULL;
-    free(node->log->exitTime);
-    node->log->exitTime = NULL;
-    free(node->log->entryDate);
-    node->log->entryDate = NULL;
-    free(node->log->entryTime);
-    node->log->entryTime = NULL;
-    free(node->log);
-    node->log = NULL;
 }
 
  // Partition function for quicksort

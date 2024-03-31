@@ -467,6 +467,7 @@ void addLogPark(Park *p, Log *l) {
     newLog->log = l;
     newLog->next = NULL;
     newLog->prev = NULL;
+    p->isSorted = 0;
 
     if (p->lHead == NULL) {
         p->lHead = newLog;
@@ -651,7 +652,13 @@ void printLogsByDate(LogNode *head) {
 
 
 void showParkRevenue(Park* p, Date* date) {
-    LogNode *cur = sortListExitDate(p);
+    LogNode *cur;
+    if (p->isSorted == 0) {
+        cur = sortListExitDate(p);
+        p->isSorted = 1;
+    } else {
+        cur = p->lHead;
+    }
 
     if (cur == NULL) {
         return;
