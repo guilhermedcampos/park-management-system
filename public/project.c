@@ -614,7 +614,9 @@ void commandV(ParkingSystem* system, Buffer* buffer) {
 
 void printLogsByDate(LogNode *head) {
     LogNode *cur = head;
-    char *prevDate = NULL;
+    int prevDay = -1;
+    int prevMonth = -1;
+    int prevYear = -1;
     double totalRevenue = 0.0;
 
     while (cur != NULL) {
@@ -622,23 +624,28 @@ void printLogsByDate(LogNode *head) {
             cur = cur->next;
             continue;
         }
-        char *curDate = dateToString(cur->log->exitDate);
+        int curDay = cur->log->exitDate->day;
+        int curMonth = cur->log->exitDate->month;
+        int curYear = cur->log->exitDate->year;
 
         // If the current date is different from the previous one, print accumulated revenue
-        if (prevDate != NULL && strcmp(curDate, prevDate) != 0) {
-            printf("%s %.2f\n", prevDate, totalRevenue);
+        if ((curDay != prevDay || curMonth != prevMonth || curYear != prevYear) && prevDay != -1 && prevMonth != -1 && prevYear != -1) {
+            printf("%02d-%02d-%04d %.2f\n", prevDay, prevMonth, prevYear, totalRevenue);
             totalRevenue = 0.0; // Reset accumulated revenue for the new date
         }
 
         // Accumulate revenue
         totalRevenue += cur->log->value;
-        prevDate = curDate; // Update previous date
+        prevDay = curDay; // Update previous date
+        prevMonth = curMonth;
+        prevYear = curYear;
         cur = cur->next;
     }
 
+
     // Print the last date and accumulated revenue
-    if (prevDate != NULL) {
-        printf("%s %.2f\n", prevDate, totalRevenue);
+    if (prevDay != -1 && prevMonth != -1 && prevYear != -1) {
+        printf("%02d-%02d-%04d %.2f\n", prevDay, prevMonth, prevYear, totalRevenue);
     }
 }
 

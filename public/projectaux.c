@@ -245,7 +245,7 @@ int isLogTimeValid(Time *t1, Time *t2) {
     return 0;
 }
 // If d1 and t1 are sooner than d2 and t2, it's valid (1)
-int isValidLogAux(Date *d1, Date *d2, Time *t1, Time *t2) {
+int isDateBefore(Date *d1, Date *d2, Time *t1, Time *t2) {
     int val = isLogDateValid(d1, d2);
     if (val == 1) {
         return 1;
@@ -264,7 +264,7 @@ int isValidLog(ParkingSystem *system, Time *time, Date *date) {
     if (system->lastDate == NULL || system->lastTime == NULL) {
         return 1;
     }
-    return isValidLogAux(system->lastDate, date, system->lastTime, time);
+    return isDateBefore(system->lastDate, date, system->lastTime, time);
 }
 
 void removeVehicleLog(ParkingSystem *sys, Park *p, char *reg) {
@@ -528,7 +528,7 @@ int partition(LogNode **arr, int low, int high) {
     int i = low - 1;
     for (int j = low; j < high; j++) {
         if (arr[j]->log->type == 1 && pivot->log->type == 1) {
-            if (isValidLogAux(arr[j]->log->exitDate, pivot->log->exitDate, arr[j]->log->exitTime, pivot->log->exitTime)) {
+            if (isDateBefore(arr[j]->log->exitDate, pivot->log->exitDate, arr[j]->log->exitTime, pivot->log->exitTime)) {
                 i++;
                 LogNode *temp = arr[i];
                 arr[i] = arr[j];

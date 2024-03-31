@@ -22,7 +22,7 @@ int isVehicleInParkExit(ParkingSystem *system, char *reg, char *name);
 int isVehicleParked(ParkingSystem *system, char *reg);
 int isLogDateValid(Date *d1, Date *d2);
 int isLogTimeValid(Time *t1, Time *t2);
-int isValidLogAux(Date *d1, Date *d2, Time *t1, Time *t2);
+int isDateBefore(Date *d1, Date *d2, Time *t1, Time *t2);
 int isValidLog(ParkingSystem *system, Time *time, Date *date);
 Vehicle *getVehicle(ParkingSystem *system, char *reg);
 ParkingNode *sortListName(ParkingSystem *sys);
