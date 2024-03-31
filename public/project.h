@@ -54,6 +54,7 @@ typedef struct Park {
     double billingValue15;
     double billingValueAfter1Hour;
     double maxDailyValue;
+    int isSorted;
     // logs of entries and exits in the park
     LogNode *lHead;
     LogNode *lTail;
