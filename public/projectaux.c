@@ -575,34 +575,18 @@ LogNode *sortListExitDate(Park *p) {
     // Quick sort the array 
     quicksort(arr, 0, n - 1);
 
-    // Create a new linked list with the sorted array
-    LogNode *head = NULL;
-    LogNode *currentNode = NULL;
-    for (int i = 0; i < n; i++) {
-        LogNode *newNode = (LogNode *)malloc(sizeof(LogNode));
-        if (newNode == NULL) {
-            // Handle allocation failure by manually freeing previously allocated memory
-            for (int j = 0; j < i; j++) {
-                free(newNode); // Free each newNode created before the failure
-            }
-            free(arr);
-            return NULL;
-        }
-        newNode->log = arr[i]->log;
-        newNode->next = NULL;
-        newNode->prev = currentNode;
-        if (head == NULL) {
-            head = newNode;
-        } else {
-            currentNode->next = newNode;
-        }
-        currentNode = newNode;
+    // return the new head
+    for (int i = 0; i < n - 1; i++) {
+        arr[i]->next = arr[i + 1];
+        arr[i + 1]->prev = arr[i];
     }
+    arr[0]->prev = NULL;
+    arr[n - 1]->next = NULL;
 
-    // Free the array of LogNode* after creating the linked list
+    p->lHead = arr[0];
     free(arr);
 
-    return head;
+    return p->lHead;
 }
 
 size_t dateInMinutes(Date *d, Time *t) {
