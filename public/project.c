@@ -401,10 +401,31 @@ int exitPark(ParkingSystem *system, Park *p, Vehicle *v, char *date, char *time)
     Date *d = createDateStruct(date);
     Time *t = createTimeStruct(time);
 
-    system->lastDate = realloc(system->lastDate, sizeof(d));
-    system->lastTime = realloc(system->lastTime, sizeof(t));
-    system->lastDate = d;
-    system->lastTime = t;
+    // Allocate memory for lastDate
+    Date *newDate = (Date *)realloc(system->lastDate, sizeof(Date));
+    if (newDate == NULL) {
+        // Handle memory allocation failure
+        free(d); // Free dynamically allocated memory
+        free(t);
+        return 1; // Indicate failure
+    }
+    system->lastDate = newDate;
+    memcpy(system->lastDate, d, sizeof(Date)); // Copy data to newly allocated memory
+
+    // Allocate memory for lastTime
+    Time *newTime = (Time *)realloc(system->lastTime, sizeof(Time));
+    if (newTime == NULL) {
+        // Handle memory allocation failure
+        free(d); // Free dynamically allocated memory
+        free(t);
+        return 1; // Indicate failure
+    }
+    system->lastTime = newTime;
+    memcpy(system->lastTime, t, sizeof(Time)); // Copy data to newly allocated memory
+
+    free(d); // Free dynamically allocated memory
+    free(t);
+    
     p->currentLots--;
     Log *l = changeLog(v, p, date, time, 1);
     if (l == NULL) {
