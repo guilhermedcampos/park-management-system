@@ -552,7 +552,6 @@ void quicksort(LogNode **arr, int low, int high) {
 }
 
 
-// Function to sort the log nodes by entry date
 LogNode *sortListExitDate(Park *p) {
     // Find number of elements in linked list
     int n = 0;
@@ -584,13 +583,9 @@ LogNode *sortListExitDate(Park *p) {
         if (newNode == NULL) {
             // Handle allocation failure by manually freeing previously allocated memory
             for (int j = 0; j < i; j++) {
-                freeLogNode(arr[j]);
+                free(newNode); // Free each newNode created before the failure
             }
             free(arr);
-            arr = NULL;
-            // Free the last allocated node
-            free(newNode); 
-            newNode = NULL;
             return NULL;
         }
         newNode->log = arr[i]->log;
@@ -604,12 +599,11 @@ LogNode *sortListExitDate(Park *p) {
         currentNode = newNode;
     }
 
+    // Free the array of LogNode* after creating the linked list
     free(arr);
-    arr = NULL;
 
     return head;
 }
-
 
 size_t dateInMinutes(Date *d, Time *t) {
     size_t totalMins = 0;
