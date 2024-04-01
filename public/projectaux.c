@@ -189,7 +189,7 @@ int isValidRegistration(char *reg) {
 
 /* Returns 1 if full, 0 if not full */
 int isParkFull(ParkingSystem* sys, char* name) {
-    ParkingNode *cur = sys->pHead;
+    ParkNode *cur = sys->pHead;
     while (cur != NULL) {
         if (strcmp(cur->parking->name, name) == 0) {
             if (cur->parking->currentLots == cur->parking->maxCapacity) {
@@ -478,10 +478,10 @@ LogNode *sortLogListName(Vehicle *v) {
     return v->lHead;
 }
 
-ParkingNode *sortListName(ParkingSystem *sys) {
+ParkNode *sortListName(ParkingSystem *sys) {
     Park *temp;
-    ParkingNode *current = sys->pHead;
-    ParkingNode *index = NULL;
+    ParkNode *current = sys->pHead;
+    ParkNode *index = NULL;
 
     if (current == NULL) {
         return NULL; 

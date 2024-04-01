@@ -60,11 +60,11 @@ typedef struct Park {
     LogNode *lTail;
 } Park;
 
-typedef struct ParkingNode {
+typedef struct ParkNode {
     Park *parking;
-    struct ParkingNode *next;
-    struct ParkingNode *prev;
-} ParkingNode;
+    struct ParkNode *next;
+    struct ParkNode *prev;
+} ParkNode;
 
 
 typedef struct Buffer {
@@ -80,7 +80,7 @@ typedef struct VehicleHashNode {
 
 typedef struct ParkingSystem {
     Park *parks[MAX_PARKING_LOTS];
-    ParkingNode *pHead;
+    ParkNode *pHead;
     VehicleNode *vHead;
     VehicleNode *vTail;
     VehicleHashNode *hashTable[HASH_TABLE_SIZE];
@@ -93,28 +93,30 @@ typedef struct ParkingSystem {
 ParkingSystem* init();
 void initParksArray(ParkingSystem* system);
 void initHashTable(ParkingSystem* system);
-void addToHashTable(ParkingSystem *system, Vehicle *vehicle);
 void addParkToArray(ParkingSystem *system, Park *park);
-void addParkToList(ParkingSystem *system, ParkingNode *parking);
-void addPark(ParkingSystem *system, ParkingNode *parking);
+void addParkToList(ParkingSystem *system, ParkNode *parking);
+void addPark(ParkingSystem *system, ParkNode *parking);
 void updateParksArray(ParkingSystem *system, int index);
 void removeParkFromArray(ParkingSystem *system, char *name);
 void removeParkFromList(ParkingSystem *system, char *name);
 void removePark(ParkingSystem *system, char *name);
-
 void printParks(ParkingSystem* system);
+void printRemainingParks(ParkingSystem* system);
 Park* getPark(ParkingSystem* sys, char* name);
-int isParkFull(ParkingSystem* sys, char* name);
-void addPark(ParkingSystem *system, ParkingNode *parking);
-Vehicle *createVehicle(ParkingSystem *system, char *reg);
-ParkingNode *createPark(char *name, char *maxCapacity, char *billingValue15, char *billingValueAfter1Hour, char *maxDailyValue);
-void removePark(ParkingSystem *system, char *name);
+ParkNode *createPark(char *name, char *maxCapacity, char *billingValue15, char *billingValueAfter1Hour, char *maxDailyValue);
+Park *createParkData(char *name, char *maxCapacity, char *billingValue15, char *billingValueAfter1Hour, char *maxDailyValue);
+
+void addVehicleToList(ParkingSystem *system, Vehicle *vehicle); 
+unsigned int hash(const char *reg);
+void addToHashTable(ParkingSystem *system, Vehicle *vehicle);
 void addVehicle(ParkingSystem *system, Vehicle *vehicle);
+Vehicle *createVehicleData(char *reg);
+Vehicle *createVehicle(char *reg);
+
 int enterPark(ParkingSystem *system, Park *p, Vehicle *v, char *date, char *time);
 int exitPark(ParkingSystem *system, Park *p, Vehicle *v, char *date, char *time);
 Log *changeLog(Vehicle *v, Park *p, char *d, char *t, int type);
 int printVehicleLogs(ParkingSystem* system, char* reg);
-void printRemainingParks(ParkingSystem* system);
 void showParkRevenue(Park* p, Date* date);
 unsigned int hash(const char *reg);
 void commandP(ParkingSystem* system, Buffer* buffer);
