@@ -674,6 +674,8 @@ Log *createLog(Vehicle *v, Park *p, char *d, char *t) {
 
     newLog->entryDate = createDateStruct(d);
     newLog->entryTime = createTimeStruct(t);
+    newLog->exitDate = NULL;
+    newLog->exitTime = NULL;
     newLog->type = 0;
 
     newLog->reg = v->registration;
