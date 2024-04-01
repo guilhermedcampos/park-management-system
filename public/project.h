@@ -116,14 +116,15 @@ Vehicle *createVehicle(char *reg);
 int enterPark(ParkingSystem *system, Park *p, Vehicle *v, char *date, char *time);
 void printExit(Vehicle *v);
 int exitPark(ParkingSystem *system, Park *p, Vehicle *v, char *date, char *time);
+void updateSystem(ParkingSystem *system, char *date, char *time);
 
 Log *addLogToVehicle(Vehicle *v, Log *l);
 void addLogToPark(Park *p, Log *log);
 void addLog(Log *newLog, Vehicle *v, Park *p);
-
 Log *updateEntryLog(Log *l, char *date, char *time, Park *park);
 Log *createLog(Vehicle *v, Park *p, char *d, char *t);
-int printVehicleLogs(ParkingSystem* system, char* reg);
+
+int printVehicleLogs(Vehicle* v);
 void showParkRevenue(Park* p, Date* date);
 
 void commandP(ParkingSystem* system, Buffer* buffer);

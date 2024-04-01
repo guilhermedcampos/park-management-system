@@ -464,31 +464,9 @@ Vehicle *createVehicle(char *reg) {
  * @return 0 if the operation is successful, -1 if memory allocation fails.
  */
 int enterPark(ParkingSystem *sys, Park *p, Vehicle *v, char *date, char *time) {
+
+    updateSystem(sys, date, time);
     v->parkName = p->name;
-    Date *d = createDateStruct(date);
-    Time *t = createTimeStruct(time);
-
-    Date *newDate = (Date *)realloc(sys->lastDate, sizeof(Date));
-    if (newDate == NULL) {
-        free(d); 
-        free(t);
-        return -1; 
-    }
-    sys->lastDate = newDate;
-    memcpy(sys->lastDate, d, sizeof(Date)); 
-
-    Time *newTime = (Time *)realloc(sys->lastTime, sizeof(Time));
-    if (newTime == NULL) {
-        free(d); 
-        free(t);
-        return -1; 
-    }
-    sys->lastTime = newTime;
-    memcpy(sys->lastTime, t, sizeof(Time));
-
-    free(d); 
-    free(t);
-    
     v->isParked = 1;
     p->currentLots++;
     v->lastLog = createLog(v, p, date, time);
@@ -530,37 +508,10 @@ void printExit(Vehicle *v) {
  * @param time A string representing the exit time of the vehicle.
  * @return Returns 0 upon successful exit, or 1 if there is a failure in the process.
  */
-int exitPark(ParkingSystem *system, Park *p, Vehicle *v, char *date, char *time) {  
+int exitPark(ParkingSystem *system, Park *p, Vehicle *v, char *date, char *time) {
+    updateSystem(system, date, time);  
     v->parkName = NULL;
     v->isParked = 0;    
-    Date *d = createDateStruct(date);
-    Time *t = createTimeStruct(time);
-
-    // Allocate memory for lastDate
-    Date *newDate = (Date *)realloc(system->lastDate, sizeof(Date));
-    if (newDate == NULL) {
-        // Handle memory allocation failure
-        free(d); // Free dynamically allocated memory
-        free(t);
-        return 1; // Indicate failure
-    }
-    system->lastDate = newDate;
-    memcpy(system->lastDate, d, sizeof(Date)); // Copy data to newly allocated memory
-
-    // Allocate memory for lastTime
-    Time *newTime = (Time *)realloc(system->lastTime, sizeof(Time));
-    if (newTime == NULL) {
-        // Handle memory allocation failure
-        free(d); // Free dynamically allocated memory
-        free(t);
-        return 1; // Indicate failure
-    }
-    system->lastTime = newTime;
-    memcpy(system->lastTime, t, sizeof(Time)); // Copy data to newly allocated memory
-
-    free(d); // Free dynamically allocated memory
-    free(t);
-    
     p->currentLots--;
     Log *l = updateEntryLog(v->lastLog, date, time, p);
     if (l == NULL) {
@@ -570,8 +521,49 @@ int exitPark(ParkingSystem *system, Park *p, Vehicle *v, char *date, char *time)
     return 0;
 }
 
+/**
+ * @brief Updates the system's last date and time.
+ *
+ * This function updates the last date and time of the system with the provided date and time values.
+ *
+ * @param system A pointer to the parking system to be updated.
+ * @param date A string representing the new date.
+ * @param time A string representing the new time.
+ */
+void updateSystem(ParkingSystem *system, char *date, char *time) {
+    Date *d = createDateStruct(date);
+    Time *t = createTimeStruct(time);
+
+    Date *newDate = (Date *)realloc(system->lastDate, sizeof(Date));
+    if (newDate == NULL) {
+        free(d); 
+        free(t);
+        return; 
+    }
+    system->lastDate = newDate;
+    memcpy(system->lastDate, d, sizeof(Date)); 
+
+    Time *newTime = (Time *)realloc(system->lastTime, sizeof(Time));
+    if (newTime == NULL) {
+        free(d); 
+        free(t);
+        return; 
+    }
+    system->lastTime = newTime;
+    memcpy(system->lastTime, t, sizeof(Time));
+
+    free(d); 
+    free(t);
+}
 
 
+/**
+ * @brief Adds a log to the log list of a vehicle.
+ *
+ * @param v A pointer to the vehicle to which the log is being added.
+ * @param l A pointer to the log to be added.
+ * @return Returns a pointer to the added log if successful, or NULL if memory allocation fails.
+ */
 Log *addLogToVehicle(Vehicle *v, Log *l) {
     LogNode *newLog = (LogNode *)malloc(sizeof(LogNode));
     if (newLog == NULL) {
@@ -595,6 +587,12 @@ Log *addLogToVehicle(Vehicle *v, Log *l) {
     return l;
 }
 
+/**
+ * @brief Adds a log to the log list of a park.
+ *
+ * @param p A pointer to the park to which the log is being added.
+ * @param l A pointer to the log to be added.
+ */
 void addLogToPark(Park *p, Log *l) {
     LogNode *newLog = (LogNode *)malloc(sizeof(LogNode));
     if (newLog == NULL) {
@@ -616,6 +614,30 @@ void addLogToPark(Park *p, Log *l) {
     }
 }
 
+/**
+ * @brief Adds a log to both the vehicle's log list and the park's log list.
+ *
+ * @param newLog A pointer to the log to be added.
+ * @param v A pointer to the vehicle to which the log is being added.
+ * @param p A pointer to the park to which the log is being added.
+ */
+void addLog(Log *newLog, Vehicle *v, Park *p) {
+     // Add the new log to vehicle's log list
+    newLog = addLogToVehicle(v, newLog);
+
+    // Add the new log to park's log list
+    addLogToPark(p, newLog);
+}
+
+/**
+ * @brief Updates an entry log with exit date, exit time, and calculates the value.
+ *
+ * @param l A pointer to the entry log to be updated.
+ * @param date A string representing the exit date.
+ * @param time A string representing the exit time.
+ * @param park A pointer to the park where the vehicle is exiting from.
+ * @return A pointer to the updated log if successful, or NULL if memory allocation fails.
+ */
 Log *updateEntryLog(Log *l, char *date, char *time, Park *park) {
 
     // Allocate memory for exitDate and exitTime and copy the new values
@@ -627,27 +649,24 @@ Log *updateEntryLog(Log *l, char *date, char *time, Park *park) {
 
     l->exitTime = createTimeStruct(time);
     if (l->exitTime == NULL) {
-        // Handle allocation failure
         free(l->exitDate);  // Free previously allocated memory
         return NULL;
     }
 
-    // Update other fields of the Log struct
     l->value = calculateValue(l, park);
-    l->type = 1;
-
+    l->type = 1; // Update the type to indicate it's an exit log
     return l;
 }
 
-void addLog(Log *newLog, Vehicle *v, Park *p) {
-     // Add the new log to vehicle's log list
-    newLog = addLogToVehicle(v, newLog);
-
-    // Add the new log to park's log list
-    addLogToPark(p, newLog);
-}
-
-
+/**
+ * @brief Creates a new log for a vehicle entering a park.
+ *
+ * @param v A pointer to the vehicle associated with the log.
+ * @param p A pointer to the park where the vehicle is entering.
+ * @param d A string representing the entry date.
+ * @param t A string representing the entry time.
+ * @return A pointer to the newly created log if successful, or NULL if memory allocation fails.
+ */
 Log *createLog(Vehicle *v, Park *p, char *d, char *t) {
     Log *newLog = (Log *)malloc(sizeof(Log));
     if (newLog == NULL) {
@@ -659,12 +678,136 @@ Log *createLog(Vehicle *v, Park *p, char *d, char *t) {
     newLog->type = 0;
 
     newLog->reg = v->registration;
-
     newLog->parkName = p->name;
     addLog(newLog, v, p);
 
     return newLog;
-    } 
+} 
+
+int printVehicleLogs(Vehicle *v) {
+    LogNode *cur = v->lHead;
+    cur = sortLogListName(v);
+    int numLogs = 0;
+    while (cur != NULL) {
+        // If its an entry log, print only entry info
+        char *dEntry = dateToString(cur->log->entryDate);
+        char *tEntry = timeToString(cur->log->entryTime);
+        if (cur->log->type == 0) {
+            printf("%s %s %s\n", cur->log->parkName, dEntry, tEntry);
+            free(dEntry);
+            free(tEntry);
+        } else {
+            // If its an exit log, print entry and exit info
+            char *dExit = dateToString(cur->log->exitDate);
+            char *tExit = timeToString(cur->log->exitTime);
+            printf("%s %s %s %s %s\n", cur->log->parkName, 
+            dEntry, 
+            tEntry, 
+            dExit, 
+            tExit);
+            free(dEntry);
+            free(tEntry);
+            free(dExit);
+            free(tExit);
+        }
+        numLogs++;
+        cur = cur->next;
+    }
+    return numLogs;   
+}
+
+void printLogsByDate(LogNode *head) {
+    LogNode *cur = head;
+    int prevDay = -1;
+    int prevMonth = -1;
+    int prevYear = -1;
+    double totalRevenue = 0.0;
+
+    while (cur != NULL) {
+        if (cur->log->type == 0) {
+            cur = cur->next;
+            continue;
+        }
+        int curDay = cur->log->exitDate->day;
+        int curMonth = cur->log->exitDate->month;
+        int curYear = cur->log->exitDate->year;
+
+        // If the current date is different from the previous one, print accumulated revenue
+        if ((curDay != prevDay || curMonth != prevMonth || curYear != prevYear) && prevDay != -1 && prevMonth != -1 && prevYear != -1) {
+            printf("%02d-%02d-%04d %.2f\n", prevDay, prevMonth, prevYear, totalRevenue);
+            totalRevenue = 0.0; // Reset accumulated revenue for the new date
+        }
+
+        // Accumulate revenue
+        totalRevenue += cur->log->value;
+        prevDay = curDay; // Update previous date
+        prevMonth = curMonth;
+        prevYear = curYear;
+        cur = cur->next;
+    }
+
+
+    // Print the last date and accumulated revenue
+    if (prevDay != -1 && prevMonth != -1 && prevYear != -1) {
+        printf("%02d-%02d-%04d %.2f\n", prevDay, prevMonth, prevYear, totalRevenue);
+    }
+}
+
+
+void showParkRevenue(Park* p, Date* date) {
+    LogNode *cur;
+    if (p->isSorted == 0) {
+        cur = sortListExitDate(p);
+        p->isSorted = 1;
+    } else {
+        cur = p->lHead;
+    }
+
+    if (cur == NULL) {
+        return;
+    }
+    
+    while (cur != NULL) {
+        if (strcmp(cur->log->parkName, p->name) == 0) {
+            if (date == NULL) {
+                if (cur->log->type == 1) {
+                    printLogsByDate(cur);
+                    break;
+                } 
+            } else {
+                if (isValidDate(date) && cur->log->type == 1) {
+                    if (isLogDateValid(date, cur->log->exitDate) && isSameDate(cur->log->exitDate, date)) {
+                        char *t = timeToString(cur->log->exitTime);
+                        printf("%s %s %.2f\n", cur->log->reg, t, cur->log->value);
+                        free(t);
+                    }
+                } 
+            }
+        }
+        cur = cur->next;
+    }
+}
+
+void printParkLogs(Park* p) {
+    LogNode *cur = p->lHead;
+    if (cur == NULL) {
+        return;
+    }
+    while (cur != NULL) {
+            if (cur->log->type == 1) {
+                char *dEntry = dateToString(cur->log->entryDate);
+                char *tEntry = timeToString(cur->log->entryTime);
+                char *dExit = dateToString(cur->log->exitDate);
+                char *tExit = timeToString(cur->log->exitTime);
+                printf("%s %s %s %s %s %.2f\n", cur->log->reg, dEntry, tEntry, dExit, tExit, cur->log->value);
+                free(dEntry);
+                free(tEntry);
+                free(dExit);
+                free(tExit);
+            }
+        cur = cur->next;
+    }
+}
 
 void commandP(ParkingSystem* system, Buffer* buffer) {   
     char *name, *maxCapacity, *billingValue15, *billingValueAfter1Hour, *maxDailyValue;
@@ -766,51 +909,6 @@ void commandS(ParkingSystem* system, Buffer* buffer) {
     free(time);
 }
 
-
-int printVehicleLogs(ParkingSystem* system, char* reg) {
-    Vehicle *v = getVehicle(system, reg);
-    if (v == NULL) {
-        printf("%s: no entries found in any parking.\n", reg);
-        return 0;
-    }
-    LogNode *cur = v->lHead;
-    // Sort the list by park names, since the logs are in order of entry
-    if (cur == NULL) {
-        printf("%s: no entries found in any parking.\n", reg);
-        return 0;
-    }
-    cur = sortLogListName(v);
-    int numLogs = 0;
-    while (cur != NULL) {
-        if (strcmp(cur->log->reg, reg) == 0) {
-            // If its an entry log, print only entry info
-            char *dEntry = dateToString(cur->log->entryDate);
-            char *tEntry = timeToString(cur->log->entryTime);
-            if (cur->log->type == 0) {
-                printf("%s %s %s\n", cur->log->parkName, dEntry, tEntry);
-                free(dEntry);
-                free(tEntry);
-            } else {
-                // If its an exit log, print entry and exit info
-                char *dExit = dateToString(cur->log->exitDate);
-                char *tExit = timeToString(cur->log->exitTime);
-                printf("%s %s %s %s %s\n", cur->log->parkName, 
-                dEntry, 
-                tEntry, 
-                dExit, 
-                tExit);
-                free(dEntry);
-                free(tEntry);
-                free(dExit);
-                free(tExit);
-            }
-            numLogs++;
-        }
-        cur = cur->next;
-    }
-    return numLogs;   
-}
-
 void commandV(ParkingSystem* system, Buffer* buffer) {
     char *reg;
 
@@ -821,101 +919,19 @@ void commandV(ParkingSystem* system, Buffer* buffer) {
         return;
     }
 
-    printVehicleLogs(system, reg);
+    Vehicle *v = getVehicle(system, reg);
+    if (v == NULL) {
+        printf("%s: no entries found in any parking.\n", reg);
+        return;
+    }
+
+    if (v->lHead == NULL) {
+        printf("%s: no entries found in any parking.\n", reg);
+        return;
+    }
+
+    printVehicleLogs(v);
     free(reg);
-}
-
-void printLogsByDate(LogNode *head) {
-    LogNode *cur = head;
-    int prevDay = -1;
-    int prevMonth = -1;
-    int prevYear = -1;
-    double totalRevenue = 0.0;
-
-    while (cur != NULL) {
-        if (cur->log->type == 0) {
-            cur = cur->next;
-            continue;
-        }
-        int curDay = cur->log->exitDate->day;
-        int curMonth = cur->log->exitDate->month;
-        int curYear = cur->log->exitDate->year;
-
-        // If the current date is different from the previous one, print accumulated revenue
-        if ((curDay != prevDay || curMonth != prevMonth || curYear != prevYear) && prevDay != -1 && prevMonth != -1 && prevYear != -1) {
-            printf("%02d-%02d-%04d %.2f\n", prevDay, prevMonth, prevYear, totalRevenue);
-            totalRevenue = 0.0; // Reset accumulated revenue for the new date
-        }
-
-        // Accumulate revenue
-        totalRevenue += cur->log->value;
-        prevDay = curDay; // Update previous date
-        prevMonth = curMonth;
-        prevYear = curYear;
-        cur = cur->next;
-    }
-
-
-    // Print the last date and accumulated revenue
-    if (prevDay != -1 && prevMonth != -1 && prevYear != -1) {
-        printf("%02d-%02d-%04d %.2f\n", prevDay, prevMonth, prevYear, totalRevenue);
-    }
-}
-
-
-void showParkRevenue(Park* p, Date* date) {
-    LogNode *cur;
-    if (p->isSorted == 0) {
-        cur = sortListExitDate(p);
-        p->isSorted = 1;
-    } else {
-        cur = p->lHead;
-    }
-
-    if (cur == NULL) {
-        return;
-    }
-    
-    while (cur != NULL) {
-        if (strcmp(cur->log->parkName, p->name) == 0) {
-            if (date == NULL) {
-                if (cur->log->type == 1) {
-                    printLogsByDate(cur);
-                    break;
-                } 
-            } else {
-                if (isValidDate(date) && cur->log->type == 1) {
-                    if (isLogDateValid(date, cur->log->exitDate) && isSameDate(cur->log->exitDate, date)) {
-                        char *t = timeToString(cur->log->exitTime);
-                        printf("%s %s %.2f\n", cur->log->reg, t, cur->log->value);
-                        free(t);
-                    }
-                } 
-            }
-        }
-        cur = cur->next;
-    }
-}
-
-void printParkLogs(Park* p) {
-    LogNode *cur = p->lHead;
-    if (cur == NULL) {
-        return;
-    }
-    while (cur != NULL) {
-            if (cur->log->type == 1) {
-                char *dEntry = dateToString(cur->log->entryDate);
-                char *tEntry = timeToString(cur->log->entryTime);
-                char *dExit = dateToString(cur->log->exitDate);
-                char *tExit = timeToString(cur->log->exitTime);
-                printf("%s %s %s %s %s %.2f\n", cur->log->reg, dEntry, tEntry, dExit, tExit, cur->log->value);
-                free(dEntry);
-                free(tEntry);
-                free(dExit);
-                free(tExit);
-            }
-        cur = cur->next;
-    }
 }
 
 // Checks total revenue of a park
