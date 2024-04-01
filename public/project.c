@@ -16,63 +16,63 @@
  *
  * @return A pointer to the initialized parking system if successful, otherwise NULL.
  */
-ParkingSystem* init() {
+System* init() {
     // Allocate memory for the parking system
-    ParkingSystem *system = (ParkingSystem *)malloc(sizeof(ParkingSystem));
-    if (system == NULL) {
+    System *sys = (System *)malloc(sizeof(System));
+    if (sys == NULL) {
         return NULL; // Memory allocation failed
     }
 
     // Initialize fields of the parking system structure
-    system->pHead = NULL;
-    system->vHead = NULL;
-    system->vTail = NULL;
-    system->lastDate = NULL;
-    system->lastTime = NULL;
-    system->numParks = 0;
+    sys->pHead = NULL;
+    sys->vHead = NULL;
+    sys->vTail = NULL;
+    sys->lastDate = NULL;
+    sys->lastTime = NULL;
+    sys->numParks = 0;
 
     // Initialize the parks array and the hash table
-    initParksArray(system);
-    initHashTable(system);
+    initParksArray(sys);
+    initHashTable(sys);
 
-    return system;
+    return sys;
 }
 
 /**
  * @brief Initializes the parks array in the parking system.
  *
- * @param system A pointer to the parking system.
+ * @param sys A pointer to the parking system.
  */
-void initParksArray(ParkingSystem *system) {
+void initParksArray(System *sys) {
     for (int i = 0; i < MAX_PARKING_LOTS; i++) {
-        system->parks[i] = NULL;
+        sys->parks[i] = NULL;
     }
 }
 
 /**
  * @brief Initializes the hash table in the parking system.
  *
- * @param system A pointer to the parking system.
+ * @param sys A pointer to the parking system.
  */
-void initHashTable(ParkingSystem *system) {
+void initHashTable(System *sys) {
     // Set all buckets of the hash table to NULL
     for (int i = 0; i < HASH_TABLE_SIZE; i++) {
-        system->hashTable[i] = NULL;
+        sys->hashTable[i] = NULL;
     }
 }
 
 /**
  * @brief Adds a park to the array of parks in the parking system.
  *
- * @param system A pointer to the parking system.
+ * @param sys A pointer to the parking system.
  * @param park A pointer to the park to be added.
  */
-void addParkToArray(ParkingSystem *system, Park *park) {
+void addParkToArray(System *sys, Park *park) {
     // Iterate through the array of parks to find the first available slot
     for (int i = 0; i < MAX_PARKING_LOTS; i++) {
-        if (system->parks[i] == NULL) {
+        if (sys->parks[i] == NULL) {
             // Insert the park into the first available slot and return
-            system->parks[i] = park;
+            sys->parks[i] = park;
             return;
         }
     }
@@ -81,18 +81,18 @@ void addParkToArray(ParkingSystem *system, Park *park) {
 /**
  * @brief Adds a parking node to the linked list of parks in the parking system.
  *
- * @param system A pointer to the parking system.
+ * @param sys A pointer to the parking system.
  * @param parking A pointer to the parking node to be added.
  */
-void addParkToList(ParkingSystem *system, ParkNode *parking) {
+void addParkToList(System *sys, ParkNode *parking) {
     // Iterate through the list to find an empty spot
-    if (system->pHead == NULL) {
+    if (sys->pHead == NULL) {
         // If the list is empty, set the parking node as the head
-        system->pHead = parking;
+        sys->pHead = parking;
         parking->next = NULL;
     } else {
         // Otherwise, iterate through the list to find the last node
-        ParkNode *cur = system->pHead;
+        ParkNode *cur = sys->pHead;
         while (cur->next != NULL) {
             cur = cur->next;
         }
@@ -106,47 +106,47 @@ void addParkToList(ParkingSystem *system, ParkNode *parking) {
 /**
  * @brief Adds a park to the parking system.
  *
- * @param system A pointer to the parking system.
+ * @param sys A pointer to the parking system.
  * @param parking A pointer to the parking node containing the park to be added.
  */
-void addPark(ParkingSystem *system, ParkNode *parking) {
+void addPark(System *sys, ParkNode *parking) {
     // Add the park to the array of parks
-    addParkToArray(system, parking->parking);
+    addParkToArray(sys, parking->parking);
 
     // Add the park to the linked list of parks
-    addParkToList(system, parking);
+    addParkToList(sys, parking);
 
     // Increment the count of parks in the system
-    system->numParks++;
+    sys->numParks++;
 }
 
 /**
  * @brief Updates the array of parks in the parking system.
  *
- * @param system A pointer to the parking system.
+ * @param sys A pointer to the parking system.
  * @param index The index from which elements are to be shifted.
  */
-void updateParksArray(ParkingSystem *system, int index) {
+void updateParksArray(System *sys, int index) {
     // Shift elements to the left starting from the index
     for (int i = index; i < MAX_PARKING_LOTS - 1; i++) {
-        system->parks[i] = system->parks[i + 1];
+        sys->parks[i] = sys->parks[i + 1];
     }
 
     // Set the last element to NULL (as it's shifted left)
-    system->parks[MAX_PARKING_LOTS - 1] = NULL;
+    sys->parks[MAX_PARKING_LOTS - 1] = NULL;
 }
 
 /**
  * @brief Removes a park from the array of parks in the parking system.
  *
- * @param system A pointer to the parking system.
+ * @param sys A pointer to the parking system.
  * @param name The name of the park to be removed.
  */
-void removeParkFromArray(ParkingSystem *system, char *name) {
+void removeParkFromArray(System *sys, char *name) {
     for (int i = 0; i < MAX_PARKING_LOTS; i++) {
-        if (system->parks[i] != NULL && strcmp(system->parks[i]->name, name) == 0) {
+        if (sys->parks[i] != NULL && strcmp(sys->parks[i]->name, name) == 0) {
             // First element of the list, shift left the array after removing first element
-            updateParksArray(system, i);
+            updateParksArray(sys, i);
         }
     }
 }
@@ -154,13 +154,13 @@ void removeParkFromArray(ParkingSystem *system, char *name) {
 /**
  * @brief Removes a park node from the list in the parking system.
  *
- * This function removes the park node with the specified name from the list in the parking system.
+ * This function removes the park node with the specified name from the list.
  *
- * @param system A pointer to the parking system.
+ * @param sys A pointer to the parking system.
  * @param name The name of the park to be removed.
  */
-void removeParkFromList(ParkingSystem *system, char *name) {
-    ParkNode *cur = system->pHead; /**< Current node pointer */
+void removeParkFromList(System *sys, char *name) {
+    ParkNode *cur = sys->pHead; /**< Current node pointer */
     ParkNode *prev = NULL; /**< Previous node pointer */
     
     // Iterate through the list to find the node with the specified name
@@ -168,7 +168,7 @@ void removeParkFromList(ParkingSystem *system, char *name) {
         if (strcmp(cur->parking->name, name) == 0) {
             // If the node to be removed is the head of the list
             if (prev == NULL) {
-                system->pHead = cur->next;
+                sys->pHead = cur->next;
             } else {
                 prev->next = cur->next;
             }
@@ -192,35 +192,35 @@ void removeParkFromList(ParkingSystem *system, char *name) {
 /**
  * @brief Removes a park from the parking system.
  *
- * @param system A pointer to the parking system.
+ * @param sys A pointer to the parking system.
  * @param name The name of the park to be removed.
  */
-void removePark(ParkingSystem *system, char *name) {
+void removePark(System *sys, char *name) {
     // If the list of parks is empty, return
-    if (system->pHead == NULL) {
+    if (sys->pHead == NULL) {
         return;
     }
 
     // Remove the park from the array and the linked list
-    removeParkFromArray(system, name);
-    removeParkFromList(system, name);
+    removeParkFromArray(sys, name);
+    removeParkFromList(sys, name);
     
     // Decrement the number of parks in the system
-    system->numParks--;
+    sys->numParks--;
 }
 
 /**
  * @brief Prints information about all parks in the parking system.
  *
- * @param system A pointer to the parking system.
+ * @param sys A pointer to the parking system.
  */
-void printParks(ParkingSystem* system) {
+void printParks(System* sys) {
     // Iterate through the parks array
     for (int i = 0; i < MAX_PARKING_LOTS; i++) {
         // Check if the park at index i is not NULL
-        if (system->parks[i] != NULL) {
+        if (sys->parks[i] != NULL) {
             // Print park information: name, max capacity, and available parking lots
-            printf("%s %d %d\n", system->parks[i]->name, system->parks[i]->maxCapacity, system->parks[i]->maxCapacity - system->parks[i]->currentLots);
+            printf("%s %d %d\n", sys->parks[i]->name, sys->parks[i]->maxCapacity, sys->parks[i]->maxCapacity - sys->parks[i]->currentLots);
         }
     }
 }
@@ -231,9 +231,9 @@ void printParks(ParkingSystem* system) {
  * @param sys A pointer to the parking system.
  * @return A pointer to the head of the sorted list.
  */
-void printRemainingParks(ParkingSystem* system) {
+void printRemainingParks(System* sys) {
     // Sort the list by park names alphabetically
-    ParkNode *cur = sortListName(system);
+    ParkNode *cur = sortListName(sys);
     while (cur != NULL) {
         printf("%s\n", cur->parking->name);
         cur = cur->next;
@@ -247,7 +247,7 @@ void printRemainingParks(ParkingSystem* system) {
  * @param name The name of the park to retrieve.
  * @return A pointer to the park if found, otherwise NULL.
  */
-Park* getPark(ParkingSystem* sys, char* name) {
+Park* getPark(System* sys, char* name) {
     ParkNode *cur = sys->pHead;
 
     // Iterate through the list of parks
@@ -263,8 +263,6 @@ Park* getPark(ParkingSystem* sys, char* name) {
 
 /**
  * @brief Creates a new park node.
- *
- * This function creates a new park node with the provided parameters.
  *
  * @param name The name of the park.
  * @param maxCapacity The maximum capacity of the park.
@@ -295,8 +293,6 @@ ParkNode *createPark(char *name, char *maxCapacity, char *quarterCost, char *aft
 
 /**
  * @brief Creates a new park structure.
- *
- * This function creates a new park structure and initializes its fields.
  *
  * @param name The name of the park.
  * @param maxCapacity The maximum capacity of the park.
@@ -330,13 +326,10 @@ Park *createParkData(char *name, char *maxCapacity, char *quarterCost, char *aft
 /**
  * @brief Adds a vehicle to the linked list of vehicles in the parking system.
  *
- * This function creates a new node for the given vehicle and adds it to the linked list
- * of vehicles in the parking system.
- *
- * @param system A pointer to the parking system.
+ * @param sys A pointer to the parking system.
  * @param vehicle A pointer to the vehicle to be added.
  */
-void addVehicleToList(ParkingSystem *system, Vehicle *vehicle) {
+void addVehicleToList(System *sys, Vehicle *vehicle) {
     // Initialize the vehicle node pointers
     VehicleNode *vehicleNode = (VehicleNode *)malloc(sizeof(VehicleNode));
     if (vehicleNode == NULL) {
@@ -347,19 +340,24 @@ void addVehicleToList(ParkingSystem *system, Vehicle *vehicle) {
     vehicleNode->next = NULL;
     vehicleNode->vehicle = vehicle;
 
-    if (system->vHead == NULL) {
+    if (sys->vHead == NULL) {
         // If the list is empty, set both head and tail to the new node
-        system->vHead = vehicleNode;
-        system->vTail = vehicleNode;
+        sys->vHead = vehicleNode;
+        sys->vTail = vehicleNode;
     } else {
         // Otherwise, append the new node to the tail
-        system->vTail->next = vehicleNode;
-        vehicleNode->prev = system->vTail;
-        system->vTail = vehicleNode; // Update the tail pointer
+        sys->vTail->next = vehicleNode;
+        vehicleNode->prev = sys->vTail;
+        sys->vTail = vehicleNode; // Update the tail pointer
     }
 }
 
-// Hash function to map registration strings to indices
+/**
+ * @brief Hash function to map registration strings to indices.
+ *
+ * @param reg The registration string to be hashed.
+ * @return The hashed value representing the index in the hash table.
+ */
 unsigned int hash(const char *reg) {
     unsigned int hashValue = 0;
     while (*reg) {
@@ -371,10 +369,10 @@ unsigned int hash(const char *reg) {
 /**
  * @brief Adds a vehicle to the hash table in the parking system.
  *
- * @param system A pointer to the parking system.
+ * @param sys A pointer to the parking system.
  * @param vehicle A pointer to the vehicle to be added.
  */
-void addToHashTable(ParkingSystem *system, Vehicle *vehicle) {
+void addToHashTable(System *sys, Vehicle *vehicle) {
     // Calculate the index for the vehicle based on its registration number
     unsigned int index = hash(vehicle->registration);
     
@@ -387,22 +385,22 @@ void addToHashTable(ParkingSystem *system, Vehicle *vehicle) {
     
     // Initialize the new node with the vehicle and insert it into the appropriate bucket
     newNode->vehicle = vehicle;
-    newNode->next = system->hashTable[index];
-    system->hashTable[index] = newNode;
+    newNode->next = sys->hashTable[index];
+    sys->hashTable[index] = newNode;
 }
 
 /**
  * @brief Adds a vehicle to the parking system.
  *
- * @param system A pointer to the parking system.
+ * @param sys A pointer to the parking system.
  * @param vehicle A pointer to the vehicle to be added.
  */
-void addVehicle(ParkingSystem *system, Vehicle *vehicle) {
+void addVehicle(System *sys, Vehicle *vehicle) {
     // Add the vehicle to the linked list of vehicles
-    addVehicleToList(system, vehicle);
+    addVehicleToList(sys, vehicle);
 
     // Add the vehicle to the hash table for efficient lookup
-    addToHashTable(system, vehicle);
+    addToHashTable(sys, vehicle);
 }
 
 /**
@@ -437,25 +435,22 @@ Vehicle *createVehicleData(char *reg) {
 /**
  * @brief Creates a new vehicle and adds it to the parking system.
  *
- * @param system A pointer to the parking system.
+ * @param sys A pointer to the parking system.
  * @param reg The registration number of the vehicle.
  * @return A pointer to the newly created vehicle if successful, or NULL on failure.
  */
-Vehicle *createVehicle(ParkingSystem *system, char *reg) {
+Vehicle *createVehicle(System *sys, char *reg) {
     Vehicle *vehicle = createVehicleData(reg);
     if (vehicle == NULL) {
         return NULL; // Creation of vehicle data failed
     }
-    // Add the vehicle to the parking system
-    addVehicle(system, vehicle);
+    // Add the vehicle to the parking sys
+    addVehicle(sys, vehicle);
     return vehicle;
 }
 
 /**
  * @brief Enters a vehicle into a park in the parking system.
- *
- * Updates the necessary data structures to indicate that the vehicle
- * has entered the specified park at the given date and time.
  *
  * @param sys A pointer to the parking system.
  * @param p A pointer to the park where the vehicle is entering.
@@ -464,7 +459,7 @@ Vehicle *createVehicle(ParkingSystem *system, char *reg) {
  * @param time The time of entry in "HH:MM" format.
  * @return 0 if the operation is successful, -1 if memory allocation fails.
  */
-int enterPark(ParkingSystem *sys, Park *p, Vehicle *v, char *date, char *time) {
+int enterPark(System *sys, Park *p, Vehicle *v, char *date, char *time) {
 
     updateSystem(sys, date, time);
     v->parkName = p->name;
@@ -476,9 +471,6 @@ int enterPark(ParkingSystem *sys, Park *p, Vehicle *v, char *date, char *time) {
 
 /**
  * @brief Prints the exit details of a vehicle.
- *
- * This function prints the registration number of the vehicle along with its entry
- * and exit date and time, as well as the parking fee incurred.
  *
  * @param v A pointer to the vehicle whose exit details are to be printed.
  */
@@ -502,15 +494,15 @@ void printExit(Vehicle *v) {
 /**
  * @brief Handles the exit of a vehicle from the parking system.
  *
- * @param system A pointer to the parking system.
+ * @param sys A pointer to the parking system.
  * @param p A pointer to the park from which the vehicle is exiting.
  * @param v A pointer to the vehicle exiting the park.
  * @param date A string representing the exit date of the vehicle.
  * @param time A string representing the exit time of the vehicle.
  * @return Returns 0 upon successful exit, or 1 if there is a failure in the process.
  */
-int exitPark(ParkingSystem *system, Park *p, Vehicle *v, char *date, char *time) {
-    updateSystem(system, date, time);  
+int exitPark(System *sys, Park *p, Vehicle *v, char *date, char *time) {
+    updateSystem(sys, date, time);  
     v->parkName = NULL;
     v->isParked = 0;    
     p->currentLots--;
@@ -527,31 +519,31 @@ int exitPark(ParkingSystem *system, Park *p, Vehicle *v, char *date, char *time)
  *
  * This function updates the last date and time of the system with the provided date and time values.
  *
- * @param system A pointer to the parking system to be updated.
+ * @param sys A pointer to the parking system to be updated.
  * @param date A string representing the new date.
  * @param time A string representing the new time.
  */
-void updateSystem(ParkingSystem *system, char *date, char *time) {
+void updateSystem(System *sys, char *date, char *time) {
     Date *d = createDateStruct(date);
     Time *t = createTimeStruct(time);
 
-    Date *newDate = (Date *)realloc(system->lastDate, sizeof(Date));
+    Date *newDate = (Date *)realloc(sys->lastDate, sizeof(Date));
     if (newDate == NULL) {
         free(d); 
         free(t);
         return; 
     }
-    system->lastDate = newDate;
-    memcpy(system->lastDate, d, sizeof(Date)); 
+    sys->lastDate = newDate;
+    memcpy(sys->lastDate, d, sizeof(Date)); 
 
-    Time *newTime = (Time *)realloc(system->lastTime, sizeof(Time));
+    Time *newTime = (Time *)realloc(sys->lastTime, sizeof(Time));
     if (newTime == NULL) {
         free(d); 
         free(t);
         return; 
     }
-    system->lastTime = newTime;
-    memcpy(system->lastTime, t, sizeof(Time));
+    sys->lastTime = newTime;
+    memcpy(sys->lastTime, t, sizeof(Time));
 
     free(d); 
     free(t);
@@ -795,7 +787,7 @@ void printRevenue(LogNode *cur, Date *date) {
  * @brief Shows revenue information for a park.
  *
  * @param p A pointer to the park for which revenue information is to be shown.
- * @param date A pointer to the date for which revenue information is to be shown. Pass NULL
+ * @param date A pointer to the date for which revenue is to be shown. Pass NULL
  *             to show revenue for all logs associated with the park.
  */
 void showParkRevenue(Park* p, Date* date) {
@@ -811,7 +803,7 @@ void showParkRevenue(Park* p, Date* date) {
                     break;
                 } 
             } else {
-                printRevenue(cur, date); // Print revenue information for logs corresponding to the provided date
+                printRevenue(cur, date); // Print revenue for logs with the provided date
             }
         }
         cur = cur->next; // Move to the next log node
@@ -821,11 +813,11 @@ void showParkRevenue(Park* p, Date* date) {
 /**
  * @brief Processes a new park request, creating a new Park.
  *
- * @param system A pointer to the parking system.
+ * @param sys A pointer to the parking system.
  * @param buffer A pointer to the buffer containing park information.
  * @param name The name of the park.
  */
-void newParkRequest(ParkingSystem* system, Buffer* buffer, char* name) {
+void newParkRequest(System* sys, Buffer* buffer, char* name) {
     char *maxCapacity, *quarterCost, *afterHourCost, *dailyCost;
 
     // Extract park information from the buffer
@@ -834,10 +826,10 @@ void newParkRequest(ParkingSystem* system, Buffer* buffer, char* name) {
     afterHourCost = nextWord(buffer);
     dailyCost = nextWord(buffer);
     // Check if the park request is valid
-    if (isValidParkRequest(system, name, atoi(maxCapacity), atof(quarterCost), atof(afterHourCost), atof(dailyCost))) {
+    if (isValidParkRequest(sys, name, atoi(maxCapacity), atof(quarterCost), atof(afterHourCost), atof(dailyCost))) {
         ParkNode *park = createPark(name, maxCapacity, quarterCost, afterHourCost, dailyCost);
         if (park != NULL) {
-            addPark(system, park);  // Add the new park to the parking system
+            addPark(sys, park);  // Add the new park to the parking system.
         }
     } 
     free(maxCapacity);
@@ -846,9 +838,9 @@ void newParkRequest(ParkingSystem* system, Buffer* buffer, char* name) {
     free(dailyCost);
 }
 
-void processRevenueCheck(ParkingSystem *system, Park *park, char *date) {
+void processRevenueCheck(System *sys, Park *park, char *date) {
         Date *d = createDateStruct(date);
-    if (isValidDate(d) && isLogDateValid(d, system->lastDate)) { // Validate date 
+    if (isValidDate(d) && isLogDateValid(d, sys->lastDate)) { // Validate date 
         showParkRevenue(park, d);
     } else {
         printf("invalid date.\n");
@@ -859,17 +851,17 @@ void processRevenueCheck(ParkingSystem *system, Park *park, char *date) {
 /**
  * @brief Creates a park or prints all parks in the system.
  *
- * @param system A pointer to the parking system.
+ * @param sys A pointer to the parking system.
  * @param buffer A pointer to the buffer containing the command and its arguments.
  */
-void commandP(ParkingSystem* system, Buffer* buffer) {   
+void commandP(System* sys, Buffer* buffer) {   
     char *name; // Declare a variable to store the park name
     name = nextWord(buffer);
 
     if (name == NULL) {
-        printParks(system); // Print all parks in the system
+        printParks(sys); // Print all parks in the system
     } else {
-        newParkRequest(system, buffer, name); // Process a new park request
+        newParkRequest(sys, buffer, name); // Process a new park request
     }
     free(name);
 }
@@ -877,18 +869,18 @@ void commandP(ParkingSystem* system, Buffer* buffer) {
 /**
  * @brief Processes a request to remove a park from the parking system.
  *
- * @param system A pointer to the parking system.
+ * @param sys A pointer to the parking system.
  * @param buffer A pointer to the buffer containing the park name to be removed.
  */
-void commandR(ParkingSystem* system, Buffer* buffer) {
+void commandR(System* sys, Buffer* buffer) {
     char *name; // Declare a variable to store the park name
 
     name = nextWord(buffer);
-    Park *p = getPark(system, name); // Get the park by name
+    Park *p = getPark(sys, name); // Get the park by name
     if (p != NULL) {
-        freeParkLogs(system, p); // Free memory for logs associated with the park
-        removePark(system, name); // Remove the park from the system
-        printRemainingParks(system); // Print the remaining parks in the system
+        freeParkLogs(sys, p); // Free memory for logs associated with the park
+        removePark(sys, name); // Remove the park from the system.
+        printRemainingParks(sys); // Print the remaining parks in the system.
 
     } else {
         printf("%s: no such parking.\n", name);
@@ -900,24 +892,24 @@ void commandR(ParkingSystem* system, Buffer* buffer) {
 /**
  * @brief Executes the command for vehicle entry in a park.
  *
- * @param system A pointer to the parking system.
+ * @param sys A pointer to the parking system.
  * @param buffer A pointer to the buffer containing command arguments.
  */
-void commandE(ParkingSystem* system, Buffer* buffer) {
+void commandE(System* sys, Buffer* buffer) {
     char *name, *reg, *date, *time;
     name = nextWord(buffer);
     reg = nextWord(buffer);
     date = nextWord(buffer);
     time = nextWord(buffer);
     // Check if the entry is valid 
-    if (isValidRequest(system, name, reg, date, time, 0)) {
-        Park *park = getPark(system, name);
-        Vehicle *vehicle = getVehicle(system, reg);
+    if (isValidRequest(sys, name, reg, date, time, 0)) {
+        Park *park = getPark(sys, name);
+        Vehicle *vehicle = getVehicle(sys, reg);
         if (vehicle == NULL) {
-            Vehicle *v = createVehicle(system, reg);
-            enterPark(system, park, v, date, time);
+            Vehicle *v = createVehicle(sys, reg);
+            enterPark(sys, park, v, date, time);
         } else {
-            enterPark(system, park, vehicle, date, time);
+            enterPark(sys, park, vehicle, date, time);
         }
         printf("%s %d\n", name, park->maxCapacity - park->currentLots);
     }
@@ -927,10 +919,10 @@ void commandE(ParkingSystem* system, Buffer* buffer) {
 /**
  * @brief Executes the command for vehicle exit from the parking system.
  *
- * @param system A pointer to the parking system.
+ * @param sys A pointer to the parking system.
  * @param buffer A pointer to the buffer containing command arguments.
  */
-void commandS(ParkingSystem* system, Buffer* buffer) {
+void commandS(System* sys, Buffer* buffer) {
     char *name, *reg, *date, *time;
 
     name = nextWord(buffer);
@@ -939,10 +931,10 @@ void commandS(ParkingSystem* system, Buffer* buffer) {
     time = nextWord(buffer);
 
     // Check if the exit is valid (registration is valid, time is valid)
-    if (isValidRequest(system, name, reg, date, time, 1)) {
-        Park *park = getPark(system, name);
-        Vehicle *vehicle = getVehicle(system, reg);
-        exitPark(system, park, vehicle, date, time);
+    if (isValidRequest(sys, name, reg, date, time, 1)) {
+        Park *park = getPark(sys, name);
+        Vehicle *vehicle = getVehicle(sys, reg);
+        exitPark(sys, park, vehicle, date, time);
     } 
     freeArgs(name, reg, time, date);
 }
@@ -950,10 +942,10 @@ void commandS(ParkingSystem* system, Buffer* buffer) {
 /**
  * @brief Executes the command for printing vehicle logs.
  *
- * @param system A pointer to the parking system.
+ * @param sys A pointer to the parking system.
  * @param buffer A pointer to the buffer containing command arguments.
  */
-void commandV(ParkingSystem* system, Buffer* buffer) {
+void commandV(System* sys, Buffer* buffer) {
     char *reg;
     reg = nextWord(buffer);
 
@@ -963,7 +955,7 @@ void commandV(ParkingSystem* system, Buffer* buffer) {
         return;
     }
     
-    Vehicle *v = getVehicle(system, reg); // Retrieve vehicle information
+    Vehicle *v = getVehicle(sys, reg); // Retrieve vehicle information
 
     // Check if printing logs request is valid
     if (isValidPrintLogsRequest(v, reg) == 1) {
@@ -977,14 +969,14 @@ void commandV(ParkingSystem* system, Buffer* buffer) {
 /**
  * @brief Executes the command for displaying park revenue.
  *
- * @param system A pointer to the parking system.
+ * @param sys A pointer to the parking system.
  * @param buffer A pointer to the buffer containing command arguments.
  */
-void commandF(ParkingSystem* system, Buffer* buffer) {
+void commandF(System* sys, Buffer* buffer) {
     char *name, *date;
     name = nextWord(buffer);
     date = nextWord(buffer);
-    Park *park = getPark(system, name); // Retrieve park information
+    Park *park = getPark(sys, name); // Retrieve park information
 
     if (isValidRevenueCheck(park, name)) {
         if (park->isSorted == 0) { // If list is not sorted, sort it
@@ -995,7 +987,7 @@ void commandF(ParkingSystem* system, Buffer* buffer) {
         if (date == NULL) { // Display park revenue daily
             showParkRevenue(park, NULL);
         } else {
-            processRevenueCheck(system, park, date); // Display park revenue based on date
+            processRevenueCheck(sys, park, date); // Display park revenue based on date
         }
     }
     free(name); // Free allocated memory for name and date
@@ -1024,11 +1016,11 @@ void freeArgs(char *name, char *reg, char *time, char *date) {
 /**
  * @brief Frees the memory allocated for the hash table.
  *
- * @param system A pointer to the parking system.
+ * @param sys A pointer to the parking system.
  */
-void freeHashTable(ParkingSystem *system) {
+void freeHashTable(System *sys) {
     for (int i = 0; i < HASH_TABLE_SIZE; i++) {
-        VehicleHashNode *cur = system->hashTable[i];
+        VehicleHashNode *cur = sys->hashTable[i];
         while (cur != NULL) {
             VehicleHashNode *temp = cur;
             cur = cur->next;
@@ -1041,10 +1033,10 @@ void freeHashTable(ParkingSystem *system) {
 /**
  * @brief Frees the memory allocated for all logs in the system.
  *
- * @param system A pointer to the parking system.
+ * @param sys A pointer to the parking system.
  */
-void freeLogs(ParkingSystem *system) {
-    ParkNode *cur = system->pHead;
+void freeLogs(System *sys) {
+    ParkNode *cur = sys->pHead;
     while (cur != NULL) {
         LogNode *logCur = cur->parking->lHead;
         while (logCur != NULL) {
@@ -1070,10 +1062,10 @@ void freeLogs(ParkingSystem *system) {
 /**
  * @brief Frees the memory allocated for all vehicles in the system.
  *
- * @param system A pointer to the parking system.
+ * @param sys A pointer to the parking system.
  */
-void freeVehicles(ParkingSystem *system) {
-    VehicleNode *cur = system->vHead;
+void freeVehicles(System *sys) {
+    VehicleNode *cur = sys->vHead;
     while (cur != NULL) {
         free(cur->vehicle->registration);
         cur->vehicle->registration = NULL;
@@ -1098,10 +1090,10 @@ void freeVehicles(ParkingSystem *system) {
 /**
  * @brief Frees the memory allocated for all parks in the system.
  *
- * @param system A pointer to the parking system.
+ * @param sys A pointer to the parking system.
  */
-void freeParks(ParkingSystem *system) {
-    ParkNode *cur = system->pHead;
+void freeParks(System *sys) {
+    ParkNode *cur = sys->pHead;
     while (cur != NULL) {
         free(cur->parking->name);
         cur->parking->name = NULL;
@@ -1117,22 +1109,22 @@ void freeParks(ParkingSystem *system) {
 /**
  * @brief Terminates the parking system and frees all allocated memory.
  *
- * @param system A pointer to the parking system.
+ * @param sys A pointer to the parking system.
  * @param buffer A pointer to the buffer used for command inputs.
  */
-void terminate(ParkingSystem* system, Buffer* buffer) {
-    free(system->lastDate);
-    system->lastDate = NULL;
-    free(system->lastTime);
-    system->lastTime = NULL;
+void terminate(System* sys, Buffer* buffer) {
+    free(sys->lastDate);
+    sys->lastDate = NULL;
+    free(sys->lastTime);
+    sys->lastTime = NULL;
 
     // Free all the logs in the system
-    freeLogs(system);
-    freeVehicles(system);
-    freeParks(system);
-    freeHashTable(system);
+    freeLogs(sys);
+    freeVehicles(sys);
+    freeParks(sys);
+    freeHashTable(sys);
 
-    free(system);
+    free(sys);
     free(buffer->buffer);
     free(buffer);
 }
@@ -1140,12 +1132,12 @@ void terminate(ParkingSystem* system, Buffer* buffer) {
 int main() {
     // Initializes the buffer
     Buffer *buffer = (Buffer *)malloc(sizeof(Buffer));
-    ParkingSystem *system;
+    System *sys;
     buffer->buffer = (char *)malloc(BUFSIZE);
 
     // Initializes the parking system
-    system = init();
-    if (system == NULL) {
+    sys = init();
+    if (sys == NULL) {
         exit(1);
     }
     
@@ -1157,42 +1149,42 @@ int main() {
 
             // Closes the program
             case 'q':
-                terminate(system, buffer);
+                terminate(sys, buffer);
                 return 0;
 
             // Creates a parking lot or lists the existing parking lots
             case 'p':
                 buffer->index = 2;
-                commandP(system, buffer);
+                commandP(sys, buffer);
                 break;
 
             // Registers the entry of a vehicle
             case 'e':
                 buffer->index = 2;
-                commandE(system, buffer);
+                commandE(sys, buffer);
                 break;
 
             // Registers the exit of a vehicle
             case 's':
                 buffer->index = 2;
-                commandS(system, buffer);
+                commandS(sys, buffer);
                 break;
 
             // Lists the entries and exits of a vehicle
             case 'v':
                  buffer->index = 2;
-                commandV(system, buffer);
+                commandV(sys, buffer);
                 break;
             
             // Shows revenue of a park
             case 'f':
                 buffer->index = 2;
-                commandF(system, buffer);
+                commandF(sys, buffer);
                 break;
 
              case 'r':
                 buffer->index = 2;
-                commandR(system, buffer);
+                commandR(sys, buffer);
                 break;
             default:
                 break;

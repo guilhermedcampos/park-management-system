@@ -78,7 +78,7 @@ typedef struct VehicleHashNode {
     struct VehicleHashNode *next;
 } VehicleHashNode;
 
-typedef struct ParkingSystem {
+typedef struct System {
     Park *parks[MAX_PARKING_LOTS];
     ParkNode *pHead;
     VehicleNode *vHead;
@@ -87,37 +87,37 @@ typedef struct ParkingSystem {
     int numParks;
     Date *lastDate;
     Time *lastTime;
-} ParkingSystem;
+} System;
 
 
-ParkingSystem* init();
-void initParksArray(ParkingSystem* system);
-void initHashTable(ParkingSystem* system);
-void addParkToArray(ParkingSystem *system, Park *park);
-void addParkToList(ParkingSystem *system, ParkNode *parking);
-void addPark(ParkingSystem *system, ParkNode *parking);
-void updateParksArray(ParkingSystem *system, int index);
-void removeParkFromArray(ParkingSystem *system, char *name);
-void removeParkFromList(ParkingSystem *system, char *name);
-void removePark(ParkingSystem *system, char *name);
-void printParks(ParkingSystem* system);
-void printRemainingParks(ParkingSystem* system);
-Park* getPark(ParkingSystem* sys, char* name);
+System* init();
+void initParksArray(System* sys);
+void initHashTable(System* sys);
+void addParkToArray(System *sys, Park *park);
+void addParkToList(System *sys, ParkNode *parking);
+void addPark(System *sys, ParkNode *parking);
+void updateParksArray(System *sys, int index);
+void removeParkFromArray(System *sys, char *name);
+void removeParkFromList(System *sys, char *name);
+void removePark(System *sys, char *name);
+void printParks(System* sys);
+void printRemainingParks(System* sys);
+Park* getPark(System* sys, char* name);
 ParkNode *createPark(char *name, char *maxCapacity, char *quarterCost, char *afterHourCost, char *dailyCost);
 Park *createParkData(char *name, char *maxCapacity, char *quarterCost, char *afterHourCost, char *dailyCost);
-void newParkRequest(ParkingSystem* system, Buffer* buffer, char* name);
+void newParkRequest(System* sys, Buffer* buffer, char* name);
 
-void addVehicleToList(ParkingSystem *system, Vehicle *vehicle); 
+void addVehicleToList(System *sys, Vehicle *vehicle); 
 unsigned int hash(const char *reg);
-void addToHashTable(ParkingSystem *system, Vehicle *vehicle);
-void addVehicle(ParkingSystem *system, Vehicle *vehicle);
+void addToHashTable(System *sys, Vehicle *vehicle);
+void addVehicle(System *sys, Vehicle *vehicle);
 Vehicle *createVehicleData(char *reg);
-Vehicle *createVehicle(ParkingSystem *sys, char *reg);
+Vehicle *createVehicle(System *sys, char *reg);
 
-int enterPark(ParkingSystem *system, Park *p, Vehicle *v, char *date, char *time);
+int enterPark(System *sys, Park *p, Vehicle *v, char *date, char *time);
 void printExit(Vehicle *v);
-int exitPark(ParkingSystem *system, Park *p, Vehicle *v, char *date, char *time);
-void updateSystem(ParkingSystem *system, char *date, char *time);
+int exitPark(System *sys, Park *p, Vehicle *v, char *date, char *time);
+void updateSystem(System *sys, char *date, char *time);
 
 Log *addLogToVehicle(Vehicle *v, Log *l);
 void addLogToPark(Park *p, Log *log);
@@ -130,14 +130,14 @@ void printVehicleLogs(Vehicle *v);
 void printLogsByDate(LogNode *head);
 void printRevenue(LogNode *cur, Date *date);
 void showParkRevenue(Park* p, Date* date);
-void processRevenueCheck(ParkingSystem *system, Park *park, char *date);
+void processRevenueCheck(System *sys, Park *park, char *date);
 
-void commandP(ParkingSystem* system, Buffer* buffer);
-void commandR(ParkingSystem* system, Buffer* buffer);
-void commandE(ParkingSystem* system, Buffer* buffer);
-void commandS(ParkingSystem* system, Buffer* buffer);
-void commandV(ParkingSystem* system, Buffer* buffer);
-void commandF(ParkingSystem* system, Buffer* buffer);
+void commandP(System* sys, Buffer* buffer);
+void commandR(System* sys, Buffer* buffer);
+void commandE(System* sys, Buffer* buffer);
+void commandS(System* sys, Buffer* buffer);
+void commandV(System* sys, Buffer* buffer);
+void commandF(System* sys, Buffer* buffer);
 
 void freeArgs(char *name, char *reg, char *time, char *date);
 

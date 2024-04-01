@@ -6,9 +6,8 @@
 #include <string.h>
 #include <stdlib.h>
 
-int isValidParkRequest(ParkingSystem *system, char* name, int cap, double x, double y, double z) {
-    // Checks if the parking lot already exists
-    if (getPark(system, name) != NULL) {
+int isValidParkRequest(System *sys, char* name, int cap, double x, double y, double z) {
+    if (getPark(sys, name) != NULL) { // Checks if the parking lot already exists
         printf("%s: parking already exists.\n", name);
         return 0;
     }
@@ -17,18 +16,16 @@ int isValidParkRequest(ParkingSystem *system, char* name, int cap, double x, dou
         printf("%d: invalid capacity.\n", cap);
         return 0;
     }
-
-    // Check for invalid costs
-    if (x <= 0 || y <= 0 || z <= 0 || x >= y|| y>= z) {
+    
+    if (x <= 0 || y <= 0 || z <= 0 || x >= y|| y>= z) { // Check for invalid costs
         printf("invalid cost.\n");
         return 0;
     }
 
-    if (system->numParks == MAX_PARKING_LOTS ) {
+    if (sys->numParks == MAX_PARKING_LOTS ) {
         printf("too many parks.\n");
         return 0;
     }
-
     return 1;
 }
 
@@ -109,8 +106,8 @@ int isValidRevenueCheck(Park *park, char *name) {
     return 1;
 }
 
-int isValidRequest(ParkingSystem *system, char *name, char *reg, char *date, char *time, int type) {
-    Park *park = getPark(system, name);
+int isValidRequest(System *sys, char *name, char *reg, char *date, char *time, int type) {
+    Park *park = getPark(sys, name);
 
     if (park == NULL) {
         printf("%s: no such parking.\n", name);
@@ -130,14 +127,14 @@ int isValidRequest(ParkingSystem *system, char *name, char *reg, char *date, cha
     }
 
     if (type == 0) {
-        if (isVehicleParked(system, reg)) {
+        if (isVehicleParked(sys, reg)) {
             printf("%s: invalid vehicle entry.\n", reg);
             return 0;
         }
     }
 
     if (type == 1) {
-        if (!isVehicleInParkExit(system, reg, name)) {
+        if (!isVehicleInParkExit(sys, reg, name)) {
             printf("%s: invalid vehicle exit.\n", reg);
             return 0;
         }
@@ -156,7 +153,7 @@ int isValidRequest(ParkingSystem *system, char *name, char *reg, char *date, cha
         return 0;
     }
 
-    if (!isValidLog(system, t, d)) {
+    if (!isValidLog(sys, t, d)) {
         printf("invalid date.\n");
         return 0;
     }
@@ -218,7 +215,7 @@ int isValidRegistration(char *reg) {
 }
 
 /* Returns 1 if full, 0 if not full */
-int isParkFull(ParkingSystem* sys, char* name) {
+int isParkFull(System* sys, char* name) {
     ParkNode *cur = sys->pHead;
     while (cur != NULL) {
         if (strcmp(cur->parking->name, name) == 0) {
@@ -232,8 +229,8 @@ int isParkFull(ParkingSystem* sys, char* name) {
 }
 
 
-int isVehicleParked(ParkingSystem *system, char *reg) {
-    Vehicle *v = getVehicle(system, reg);
+int isVehicleParked(System *sys, char *reg) {
+    Vehicle *v = getVehicle(sys, reg);
     // First entry, vehicle not created yet
     if (v == NULL) {
         return 0;
@@ -246,8 +243,8 @@ int isVehicleParked(ParkingSystem *system, char *reg) {
     return 1;
 }
 
-int isVehicleInParkExit(ParkingSystem *system, char *reg, char *name) {
-    Vehicle *v = getVehicle(system, reg);
+int isVehicleInParkExit(System *sys, char *reg, char *name) {
+    Vehicle *v = getVehicle(sys, reg);
     if (v == NULL) {
         return 0;
     } if (v->parkName != NULL) {
@@ -304,12 +301,12 @@ int isDateBefore(Date *d1, Date *d2, Time *t1, Time *t2) {
 
 }
 
-// Checks if the date and time of the last log in the system is sooner
-int isValidLog(ParkingSystem *system, Time *time, Date *date) {
-    if (system->lastDate == NULL || system->lastTime == NULL) {
+// Checks if the date and time of the last log in the sys is sooner
+int isValidLog(System *sys, Time *time, Date *date) {
+    if (sys->lastDate == NULL || sys->lastTime == NULL) {
         return 1;
     }
-    return isDateBefore(system->lastDate, date, system->lastTime, time);
+    return isDateBefore(sys->lastDate, date, sys->lastTime, time);
 }
 
 void freeLogNode(LogNode *node) {
@@ -328,7 +325,7 @@ void freeLogNode(LogNode *node) {
     node->log = NULL;
 }
 
-void removeVehicleLog(ParkingSystem *sys, Park *p, char *reg) {
+void removeVehicleLog(System *sys, Park *p, char *reg) {
     Vehicle *v = getVehicle(sys, reg);
     if (v == NULL) {
         return;
@@ -361,7 +358,7 @@ void removeVehicleLog(ParkingSystem *sys, Park *p, char *reg) {
     }
 }
 
-void freeParkLogs(ParkingSystem *sys, Park *p) {
+void freeParkLogs(System *sys, Park *p) {
     LogNode *cur = p->lHead;
     p->isSorted = 0;
 
@@ -380,9 +377,9 @@ void freeParkLogs(ParkingSystem *sys, Park *p) {
 }
 
 // Function to get a vehicle by registration using the hash table
-Vehicle *getVehicle(ParkingSystem *system, char *reg) {
+Vehicle *getVehicle(System *sys, char *reg) {
     unsigned int index = hash(reg);
-    VehicleHashNode *current = system->hashTable[index];
+    VehicleHashNode *current = sys->hashTable[index];
 
     while (current != NULL) {
         if (strcmp(current->vehicle->registration, reg) == 0) {
@@ -507,7 +504,7 @@ LogNode *sortLogListName(Vehicle *v) {
     return v->lHead;
 }
 
-ParkNode *sortListName(ParkingSystem *sys) {
+ParkNode *sortListName(System *sys) {
     Park *temp;
     ParkNode *current = sys->pHead;
     ParkNode *index = NULL;
