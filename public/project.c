@@ -846,6 +846,16 @@ void newParkRequest(ParkingSystem* system, Buffer* buffer, char* name) {
     free(dailyCost);
 }
 
+void processRevenueCheck(ParkingSystem *system, Park *park, char *date) {
+        Date *d = createDateStruct(date);
+    if (isValidDate(d) && isLogDateValid(d, system->lastDate)) { // Validate date 
+        showParkRevenue(park, d);
+    } else {
+        printf("invalid date.\n");
+    }
+    free(d);
+}
+
 /**
  * @brief Creates a park or prints all parks in the system.
  *
@@ -964,44 +974,42 @@ void commandV(ParkingSystem* system, Buffer* buffer) {
     reg = NULL;
 }
 
-
-// Checks total revenue of a park
+/**
+ * @brief Executes the command for displaying park revenue.
+ *
+ * @param system A pointer to the parking system.
+ * @param buffer A pointer to the buffer containing command arguments.
+ */
 void commandF(ParkingSystem* system, Buffer* buffer) {
     char *name, *date;
-
     name = nextWord(buffer);
     date = nextWord(buffer);
+    Park *park = getPark(system, name); // Retrieve park information
 
-    Park *park = getPark(system, name);
-    if (park == NULL) {
-        printf("%s: no such parking.\n", name);
-        return;
-    }
-
-    if (park->lHead == NULL) {
-        return;
-    }
-
-    if (park->isSorted == 0) {
-        sortListExitDate(park);
-        park->isSorted = 1;
-    } 
-
-    if (date == NULL) {
-        showParkRevenue(park, NULL);
-    } else {
-        Date *d = createDateStruct(date);
-        if (isValidDate(d) && isLogDateValid((d),system->lastDate)) {  // and logDateValid of last entry date
-            showParkRevenue(park, d);
+    if (isValidRevenueCheck(park, name)) {
+        if (park->isSorted == 0) { // If list is not sorted, sort it
+            sortListExitDate(park);
+            park->isSorted = 1;
+        } 
+        
+        if (date == NULL) { // Display park revenue daily
+            showParkRevenue(park, NULL);
         } else {
-            printf("invalid date.\n");
+            processRevenueCheck(system, park, date); // Display park revenue based on date
         }
-        free(d);
     }
-    free(name);
+    free(name); // Free allocated memory for name and date
     free(date);
 }
 
+/**
+ * @brief Frees the memory allocated for command arguments.
+ *
+ * @param name A pointer to the name argument.
+ * @param reg A pointer to the registration argument.
+ * @param time A pointer to the time argument.
+ * @param date A pointer to the date argument.
+ */
 void freeArgs(char *name, char *reg, char *time, char *date) {
     free(name);
     name = NULL;
@@ -1013,6 +1021,11 @@ void freeArgs(char *name, char *reg, char *time, char *date) {
     date = NULL;
 }
 
+/**
+ * @brief Frees the memory allocated for the hash table.
+ *
+ * @param system A pointer to the parking system.
+ */
 void freeHashTable(ParkingSystem *system) {
     for (int i = 0; i < HASH_TABLE_SIZE; i++) {
         VehicleHashNode *cur = system->hashTable[i];
@@ -1025,6 +1038,11 @@ void freeHashTable(ParkingSystem *system) {
     }
 }
 
+/**
+ * @brief Frees the memory allocated for all logs in the system.
+ *
+ * @param system A pointer to the parking system.
+ */
 void freeLogs(ParkingSystem *system) {
     ParkNode *cur = system->pHead;
     while (cur != NULL) {
@@ -1049,6 +1067,11 @@ void freeLogs(ParkingSystem *system) {
     }
 }
 
+/**
+ * @brief Frees the memory allocated for all vehicles in the system.
+ *
+ * @param system A pointer to the parking system.
+ */
 void freeVehicles(ParkingSystem *system) {
     VehicleNode *cur = system->vHead;
     while (cur != NULL) {
@@ -1072,6 +1095,11 @@ void freeVehicles(ParkingSystem *system) {
     }
 }
 
+/**
+ * @brief Frees the memory allocated for all parks in the system.
+ *
+ * @param system A pointer to the parking system.
+ */
 void freeParks(ParkingSystem *system) {
     ParkNode *cur = system->pHead;
     while (cur != NULL) {
@@ -1086,6 +1114,12 @@ void freeParks(ParkingSystem *system) {
     }
 }
 
+/**
+ * @brief Terminates the parking system and frees all allocated memory.
+ *
+ * @param system A pointer to the parking system.
+ * @param buffer A pointer to the buffer used for command inputs.
+ */
 void terminate(ParkingSystem* system, Buffer* buffer) {
     free(system->lastDate);
     system->lastDate = NULL;
@@ -1109,12 +1143,14 @@ int main() {
     ParkingSystem *system;
     buffer->buffer = (char *)malloc(BUFSIZE);
 
+    // Initializes the parking system
     system = init();
     if (system == NULL) {
         exit(1);
     }
     
     while (1) {
+        // Reads the input and stores it in the buffer
         buffer = getBuffer(buffer);
 
         switch (buffer->buffer[0]) {
@@ -1122,30 +1158,24 @@ int main() {
             // Closes the program
             case 'q':
                 terminate(system, buffer);
-
                 return 0;
 
             // Creates a parking lot or lists the existing parking lots
             case 'p':
                 buffer->index = 2;
-
                 commandP(system, buffer);
                 break;
 
             // Registers the entry of a vehicle
             case 'e':
                 buffer->index = 2;
-
                 commandE(system, buffer);
-
                 break;
 
             // Registers the exit of a vehicle
             case 's':
                 buffer->index = 2;
-
                 commandS(system, buffer);
-                
                 break;
 
             // Lists the entries and exits of a vehicle
@@ -1154,17 +1184,15 @@ int main() {
                 commandV(system, buffer);
                 break;
             
-            // Shows revenue of a parking lot
+            // Shows revenue of a park
             case 'f':
                 buffer->index = 2;
                 commandF(system, buffer);
-
                 break;
 
              case 'r':
                 buffer->index = 2;
                 commandR(system, buffer);
-
                 break;
             default:
                 break;

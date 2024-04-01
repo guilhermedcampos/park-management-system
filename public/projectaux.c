@@ -97,6 +97,18 @@ int isValidPrintLogsRequest(Vehicle *v, char *reg) {
     return 1;
 }
 
+int isValidRevenueCheck(Park *park, char *name) {
+    if (park == NULL) { // Check if park exists
+        printf("%s: no such parking.\n", name);
+        return 0;
+    }
+
+    if (park->lHead == NULL) { // If park log list is empty, return
+        return 0;
+    }
+    return 1;
+}
+
 int isValidRequest(ParkingSystem *system, char *name, char *reg, char *date, char *time, int type) {
     Park *park = getPark(system, name);
 

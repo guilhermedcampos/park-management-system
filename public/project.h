@@ -130,6 +130,7 @@ void printVehicleLogs(Vehicle *v);
 void printLogsByDate(LogNode *head);
 void printRevenue(LogNode *cur, Date *date);
 void showParkRevenue(Park* p, Date* date);
+void processRevenueCheck(ParkingSystem *system, Park *park, char *date);
 
 void commandP(ParkingSystem* system, Buffer* buffer);
 void commandR(ParkingSystem* system, Buffer* buffer);

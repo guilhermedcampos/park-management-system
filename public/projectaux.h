@@ -12,6 +12,7 @@ void sortListExitDate(Park *park);
 
 int isValidParkRequest(ParkingSystem *system, char *name, int cap, double x, double y, double z);
 int isValidPrintLogsRequest(Vehicle *v, char *reg);
+int isValidRevenueCheck(Park *park, char *name);
 int isValidDate(Date *date);
 int isValidTime(Time *time);
 int isSameDate(Date *d1, Date *d2);
