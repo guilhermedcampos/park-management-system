@@ -404,6 +404,26 @@ void addVehicle(System *sys, Vehicle *vehicle) {
 }
 
 /**
+ * @brief Retrieves the vehicle associated with the given registration
+ *
+ * @param sys Pointer to the ParkingSystem struct representing the system.
+ * @param reg Pointer to the character array representing the registration.
+ * @return Returns a pointer to the Vehicle struct if found, or NULL if the vehicle is not found.
+ */
+Vehicle *getVehicle(System *sys, char *reg) {
+    unsigned int index = hash(reg);
+    VehicleHashNode *current = sys->hashTable[index];
+
+    while (current != NULL) {
+        if (strcmp(current->vehicle->registration, reg) == 0) {
+            return current->vehicle;
+        }
+        current = current->next;
+    }
+    return NULL; // Vehicle not found
+}
+
+/**
  * @brief Creates vehicle data with the given registration number.
  *
  * @param reg The registration number of the vehicle.
@@ -774,7 +794,7 @@ void printRevenue(LogNode *cur, Date *date) {
     // Check if the provided date is valid and if the log represents an exit
     if (isValidDate(date) && cur->log->type == 1) {
         // Check if the log's exit date matches the provided date
-        if (isLogDateValid(date, cur->log->exitDate) && isSameDate(cur->log->exitDate, date)) {
+        if (isLogDateBefore(date, cur->log->exitDate) && isSameDate(cur->log->exitDate, date)) {
             char *t = timeToString(cur->log->exitTime); // Convert exit time to string
             // Print registration number, exit time, and value
             printf("%s %s %.2f\n", cur->log->reg, t, cur->log->value); 
@@ -840,7 +860,7 @@ void newParkRequest(System* sys, Buffer* buffer, char* name) {
 
 void processRevenueCheck(System *sys, Park *park, char *date) {
         Date *d = createDateStruct(date);
-    if (isValidDate(d) && isLogDateValid(d, sys->lastDate)) { // Validate date 
+    if (isValidDate(d) && isLogDateBefore(d, sys->lastDate)) { // Validate date 
         showParkRevenue(park, d);
     } else {
         printf("invalid date.\n");
@@ -1132,11 +1152,10 @@ void terminate(System* sys, Buffer* buffer) {
 int main() {
     // Initializes the buffer
     Buffer *buffer = (Buffer *)malloc(sizeof(Buffer));
-    System *sys;
     buffer->buffer = (char *)malloc(BUFSIZE);
 
     // Initializes the parking system
-    sys = init();
+    System *sys = init();
     if (sys == NULL) {
         exit(1);
     }

@@ -111,6 +111,7 @@ void addVehicleToList(System *sys, Vehicle *vehicle);
 unsigned int hash(const char *reg);
 void addToHashTable(System *sys, Vehicle *vehicle);
 void addVehicle(System *sys, Vehicle *vehicle);
+Vehicle *getVehicle(System *sys, char *reg);
 Vehicle *createVehicleData(char *reg);
 Vehicle *createVehicle(System *sys, char *reg);
 

@@ -6,29 +6,45 @@
 #include <string.h>
 #include <stdlib.h>
 
-int isValidParkRequest(System *sys, char* name, int cap, double x, double y, double z) {
-    if (getPark(sys, name) != NULL) { // Checks if the parking lot already exists
-        printf("%s: parking already exists.\n", name);
-        return 0;
+
+/**
+ * @brief Converts a Date structure to a string representation.
+ *
+ * @param date Pointer to the Date structure to be converted.
+ * @return String containing the date in the format "DD-MM-YYYY".
+ */
+char *dateToString(Date *date) {
+    char *dateString = (char *)malloc(11 * sizeof(char));
+    if (dateString == NULL) {
+        return NULL;
     }
 
-    if (cap == 0) {
-        printf("%d: invalid capacity.\n", cap);
-        return 0;
-    }
-    
-    if (x <= 0 || y <= 0 || z <= 0 || x >= y|| y>= z) { // Check for invalid costs
-        printf("invalid cost.\n");
-        return 0;
-    }
-
-    if (sys->numParks == MAX_PARKING_LOTS ) {
-        printf("too many parks.\n");
-        return 0;
-    }
-    return 1;
+    sprintf(dateString, "%02d-%02d-%04d", date->day, date->month, date->year); 
+    return dateString;
 }
 
+/**
+ * @brief Converts a Time structure to a string representation.
+ *
+ * @param time Pointer to the Time structure to be converted.
+ * @return String containing the time in the format "HH:MM".
+ */
+char *timeToString(Time *time){
+    char *timeString = (char *)malloc(6 * sizeof(char));
+    if (timeString == NULL) {
+        return NULL;
+    }
+
+    sprintf(timeString, "%02d:%02d", time->hour, time->minute);
+    return timeString;
+}
+
+/**
+ * @brief Checks if the given Time structure is valid.
+ *
+ * @param time Pointer to the Time structure to be validated.
+ * @return Returns 1 if the Time structure is valid, 0 otherwise.
+ */
 int isValidTime(Time *time) {
     if (time == NULL) {
         return 0;
@@ -42,8 +58,13 @@ int isValidTime(Time *time) {
     return 1;
 }
 
+/**
+ * @brief Checks if the given Date structure is valid.
+ *
+ * @param date Pointer to the Date structure to be validated.
+ * @return Returns 1 if the Date structure is valid, 0 otherwise.
+ */
 int isValidDate(Date *date) {
-
     if (date == NULL) {
         return 0;
     }   
@@ -61,51 +82,264 @@ int isValidDate(Date *date) {
     return 1;
 }
 
-char *dateToString(Date *date) {
-    char *dateString = (char *)malloc(11 * sizeof(char));
-    if (dateString == NULL) {
-        return NULL;
+/**
+ * @brief Checks if two Date structures represent the same date.
+ *
+ * @param d1 Pointer to the first Date structure.
+ * @param d2 Pointer to the second Date structure.
+ * @return Returns 1 if both Date structures represent the same date, 0 otherwise.
+ */
+int isSameDate(Date *d1, Date *d2) {
+    if (d1->day == d2->day && d1->month == d2->month && d1->year == d2->year) {
+        return 1;
     }
-
-    sprintf(dateString, "%02d-%02d-%04d", date->day, date->month, date->year); 
-    return dateString;
+    return 0;
 }
 
-char *timeToString(Time *time){
-    char *timeString = (char *)malloc(6 * sizeof(char));
-    if (timeString == NULL) {
-        return NULL;
+/**
+ * @brief Checks if the first date is before the second date.
+ *
+ * @param d1 Pointer to the first Date structure.
+ * @param d2 Pointer to the second Date structure.
+ * @return Returns 1 if the first date is before the second date, 0 otherwise.
+ */
+int isLogDateBefore(Date *d1, Date *d2) {
+
+    if (d1->year < d2->year) {
+        return 1; 
+    } else if (d1->year == d2->year && d1->month < d2->month) {
+        return 1; 
+    } else if (d1->year == d2->year && d1->month == d2->month && d1->day < d2->day) {
+        return 1; 
+    } else if (d1->year == d2->year && d1->month == d2->month && d1->day == d2->day) {
+        return 2;
     }
 
-    sprintf(timeString, "%02d:%02d", time->hour, time->minute);
-    return timeString;
+    return 0;
 }
 
-int isValidPrintLogsRequest(Vehicle *v, char *reg) {
-    if (v == NULL) {
-        printf("%s: no entries found in any parking.\n", reg);
+/**
+ * @brief Checks if the first time is before the second time.
+ *
+ * @param t1 Pointer to the first Time structure.
+ * @param t2 Pointer to the second Time structure.
+ * @return Returns 1 if the first time is before the second time, 0 otherwise.
+ */
+int isLogTimeBefore(Time *t1, Time *t2) {
+
+    if (t1->hour < t2->hour) {
+        return 1;
+    }   else if (t1->hour == t2->hour) {
+            if (t1->minute <= t2->minute) {
+                return 1;
+            }
         return 0;
     }
+    return 0;
+}
 
-    if (v->lHead == NULL) {
-        printf("%s: no entries found in any parking.\n", v->registration);
+/**
+ * @brief Checks if the first date is before the second date.
+ *
+ * @param d1 Pointer to the first Date structure.
+ * @param d2 Pointer to the second Date structure.
+ * @param t1 Pointer to the first Time structure.
+ * @param t2 Pointer to the second Time structure.
+ * @return Returns 1 if the first date is before the second date, 0 otherwise.
+ */
+int isDateBefore(Date *d1, Date *d2, Time *t1, Time *t2) {
+    int val = isLogDateBefore(d1, d2);
+    if (val == 1) {
+        return 1;
+    } else if (val == 2) {
+        if (isLogTimeBefore(t1, t2) == 1) {
+            return 1;
+        }
+        return 0;
+    }
+    return 0;
+
+}
+
+/**
+ * @brief Calculates the total number of minutes represented by a date and time.
+ *
+ * @param d Pointer to the Date struct representing the date.
+ * @param t Pointer to the Time struct representing the time.
+ * @return Returns the total number of minutes.
+ */
+size_t dateInMinutes(Date *d, Time *t) {
+    size_t totalMins = 0;
+    totalMins += d->year * 365 * 24 * 60;
+    for (int i = 1; i< d->month; i++) {
+        totalMins += daysByMonth(i) * 24 * 60;
+    }
+    totalMins += d->day * 24 * 60;
+    totalMins += t->hour * 60;
+    totalMins += t->minute;
+    return totalMins;
+}
+
+/**
+ * @brief Calculates the time difference in minutes between two date-time pairs.
+ *
+ * @param t1 Pointer to the Time struct representing the first time.
+ * @param d1 Pointer to the Date struct representing the first date.
+ * @param t2 Pointer to the Time struct representing the second time.
+ * @param d2 Pointer to the Date struct representing the second date.
+ * @return Returns the time difference in minutes.
+ */
+size_t getTimeDiff(Time *t1, Date *d1, Time *t2, Date *d2) {
+    size_t firstDateMins = dateInMinutes(d1, t1);
+    size_t secondDateMins = dateInMinutes(d2, t2);
+    return secondDateMins - firstDateMins;
+}
+
+/**
+ * @brief Creates a Date structure from a string representation of date.
+ *
+ * @param date A string representing the date in the format "DD-MM-YYYY".
+ * @return A pointer to the created Date structure.
+ */
+Date *createDateStruct(char *date) {
+    if (strlen(date) != 10) {
+        return NULL;
+    }
+
+    Date *d = (Date *)malloc(sizeof(Date));
+    if (d == NULL) {
+        return NULL;
+    }
+
+    // Make a copy of the date string
+    char *date_copy = strdup(date);
+    if (date_copy == NULL) {
+        free(d);
+        d = NULL;
+        return NULL;
+    }
+
+    char *day = strtok(date_copy, "-");
+    char *month = strtok(NULL, "-");
+    char *year = strtok(NULL, "-");
+
+    if (day == NULL || month == NULL || year == NULL) {
+        free(date_copy); // Free the copy of the date string
+        date_copy = NULL;
+        free(d);        // Free the allocated memory for the Date struct
+        d = NULL;
+        return NULL;
+    }
+
+    d->day = atoi(day);
+    d->month = atoi(month);
+    d->year = atoi(year);
+
+    free(date_copy); // Free the copy of the date string after tokenization
+    date_copy = NULL;
+    return d;
+}
+
+
+/**
+ * @brief Creates a Time structure from a string representation of time.
+ *
+ * @param time A string representing the time in the format "HH:MM".
+ * @return A pointer to the created Time structure.
+ *         The caller is responsible for freeing the allocated memory.
+ *         Returns NULL if the input time string is invalid or memory allocation fails.
+ */
+Time *createTimeStruct(char *time) {
+    Time *t = (Time *)malloc(sizeof(Time));
+    if (t == NULL) {
+        return NULL;
+    }
+
+    // Make a copy of the time string
+    char *time_copy = strdup(time);
+    if (time_copy == NULL) {
+        free(t);
+        t = NULL;
+        return NULL;
+    }
+
+    char *hour = strtok(time_copy, ":");
+    char *minute = strtok(NULL, ":");
+
+    if (hour == NULL || minute == NULL) {
+        free(time_copy); // Free the copy of the time string
+        time_copy = NULL;
+        free(t);        // Free the allocated memory for the Time struct
+        t = NULL;
+        return NULL;    
+    }
+
+    t->hour = atoi(hour);
+    t->minute = atoi(minute);
+
+    free(time_copy); // Free the copy of the time string after tokenization
+    time_copy = NULL;
+    return t;
+}
+
+/**
+ * @brief Checks if the date of last log in system is sooner.
+ *
+ * @param sys Pointer to the ParkingSystem structure.
+ * @param time Pointer to the Time structure representing the time to compare.
+ * @param date Pointer to the Date structure representing the date to compare.
+ * @return Returns 1 if the date of the last log in the system is sooner, 0 otherwise.
+ */
+int isValidLog(System *sys, Time *time, Date *date) {
+    if (sys->lastDate == NULL || sys->lastTime == NULL) {
+        return 1;
+    }
+    return isDateBefore(sys->lastDate, date, sys->lastTime, time);
+}
+
+
+/**
+ * @brief Checks if a park request is valid. Used for command "p".
+ *
+ * @param sys Pointer to the ParkingSystem structure.
+ * @param name Pointer to a character array representing the name of the park.
+ * @param cap Integer representing the capacity of the parking lot.
+ * @param x Double representing the cost per quarter-hour.
+ * @param y Double representing the cost per hour after the first hour.
+ * @param z Double representing the cost per 24 hours.
+ * @return Returns 1 if the park request is valid, 0 otherwise.
+ */
+int isValidParkRequest(System *sys, char* name, int cap, double x, double y, double z) {
+    if (getPark(sys, name) != NULL) { // Checks if the parking lot already exists
+        printf("%s: parking already exists.\n", name);
+        return 0;
+    }
+    if (cap == 0) { // Check for invalid capacity
+        printf("%d: invalid capacity.\n", cap);
+        return 0;
+    }
+    if (x <= 0 || y <= 0 || z <= 0 || x >= y|| y>= z) { // Check for invalid costs
+        printf("invalid cost.\n");
+        return 0;
+    }
+    if (sys->numParks == MAX_PARKING_LOTS ) { // Check if reached the maximum number
+        printf("too many parks.\n");
         return 0;
     }
     return 1;
 }
 
-int isValidRevenueCheck(Park *park, char *name) {
-    if (park == NULL) { // Check if park exists
-        printf("%s: no such parking.\n", name);
-        return 0;
-    }
-
-    if (park->lHead == NULL) { // If park log list is empty, return
-        return 0;
-    }
-    return 1;
-}
-
+/**
+ * @brief Checks if a request (entry or exit) is valid.
+ *
+ * @param sys Pointer to the ParkingSystem structure.
+ * @param name Pointer to a character array representing the name of the parking lot.
+ * @param reg Pointer to a character array representing the vehicle registration.
+ * @param date Pointer to a character array representing the date of the request.
+ * @param time Pointer to a character array representing the time of the request.
+ * @param type Integer representing the type of request (0 for entry, 1 for exit).
+ * @return Returns 1 if the request is valid, 0 otherwise.
+ */
 int isValidRequest(System *sys, char *name, char *reg, char *date, char *time, int type) {
     Park *park = getPark(sys, name);
 
@@ -160,10 +394,55 @@ int isValidRequest(System *sys, char *name, char *reg, char *date, char *time, i
 
     free(t);
     free(d);
-
     return 1;
 }
 
+/**
+ * @brief Checks if a vehicle has valid logs for printing.
+ *
+ * @param v Pointer to the Vehicle structure.
+ * @param reg Pointer to a character array representing the vehicle registration.
+ * @return Returns 1 if the vehicle has valid logs for printing, 0 otherwise.
+ */
+int isValidPrintLogsRequest(Vehicle *v, char *reg) {
+    if (v == NULL) {
+        printf("%s: no entries found in any parking.\n", reg);
+        return 0;
+    }
+
+    if (v->lHead == NULL) {
+        printf("%s: no entries found in any parking.\n", v->registration);
+        return 0;
+    }
+    return 1;
+}
+
+/**
+ * @brief Checks if a revenue information request is valid.
+ *
+ * @param park Pointer to the Park structure.
+ * @param name Pointer to a character array representing the park name.
+ * @return Returns 1 if the revenue check is valid, 0 otherwise.
+ */
+int isValidRevenueCheck(Park *park, char *name) {
+    if (park == NULL) { // Check if park exists
+        printf("%s: no such parking.\n", name);
+        return 0;
+    }
+
+    if (park->lHead == NULL) { // If park log list is empty, return
+        return 0;
+    }
+    return 1;
+}
+
+/**
+ * @brief Checks if a pair of characters is valid.
+ *
+ * @param cur The current character.
+ * @param next The next character.
+ * @return Returns 0 if both characters are uppercase letters, 1 if both are digits, and 2 otherwise.
+ */
 int isValidPair(char cur, char next) {
     if ((cur >= 'A' && cur <= 'Z') && (next >= 'A' && next <= 'Z')) {
         return 0;
@@ -174,6 +453,12 @@ int isValidPair(char cur, char next) {
     }
 }
 
+/**
+ * @brief Checks if a vehicle registration string is valid.
+ *
+ * @param reg The vehicle registration string to be validated.
+ * @return Returns 1 if the registration string is valid, and 0 otherwise.
+ */
 int isValidRegistration(char *reg) {
     // Check if the length of the registration is valid
     if (strlen(reg) != REGISTRATION_LENGTH) {
@@ -214,7 +499,13 @@ int isValidRegistration(char *reg) {
     return 0;
 }
 
-/* Returns 1 if full, 0 if not full */
+/**
+ * @brief Checks if a parking lot is full.
+ *
+ * @param sys The parking system containing the parking lot.
+ * @param name The name of the parking lot to check.
+ * @return Returns 1 if the parking lot is full, and 0 if it is not full.
+ */
 int isParkFull(System* sys, char* name) {
     ParkNode *cur = sys->pHead;
     while (cur != NULL) {
@@ -228,7 +519,13 @@ int isParkFull(System* sys, char* name) {
     return 0;
 }
 
-
+/**
+ * @brief Checks if a vehicle is currently parked in any parking lot.
+ *
+ * @param sys The parking system containing the parking lots.
+ * @param reg The registration number of the vehicle to check.
+ * @return Returns 1 if the vehicle is parked, and 0 if it is not parked.
+ */
 int isVehicleParked(System *sys, char *reg) {
     Vehicle *v = getVehicle(sys, reg);
     // First entry, vehicle not created yet
@@ -243,6 +540,14 @@ int isVehicleParked(System *sys, char *reg) {
     return 1;
 }
 
+/**
+ * @brief Checks if a vehicle is eligible for exit from a specific parking lot.
+ *
+ * @param sys The parking system containing the parking lots.
+ * @param reg The registration number of the vehicle to check.
+ * @param name The name of the park from which the vehicle is expected to exit.
+ * @return Returns 1 if the vehicle is eligible for exit, and 0 otherwise.
+ */
 int isVehicleInParkExit(System *sys, char *reg, char *name) {
     Vehicle *v = getVehicle(sys, reg);
     if (v == NULL) {
@@ -255,58 +560,6 @@ int isVehicleInParkExit(System *sys, char *reg, char *name) {
     }
 
     return 1;
-}
-// If d1 is sooner than d2, it's valid (1)
-int isLogDateValid(Date *d1, Date *d2) {
-
-    if (d1->year < d2->year) {
-        return 1; 
-    } else if (d1->year == d2->year && d1->month < d2->month) {
-        return 1; 
-    } else if (d1->year == d2->year && d1->month == d2->month && d1->day < d2->day) {
-        return 1; 
-    } else if (d1->year == d2->year && d1->month == d2->month && d1->day == d2->day) {
-        return 2;
-    }
-
-    return 0;
-}
-
-
-// If t1 is sooner than t2, it's valid (1)
-int isLogTimeValid(Time *t1, Time *t2) {
-
-    if (t1->hour < t2->hour) {
-        return 1;
-    }   else if (t1->hour == t2->hour) {
-            if (t1->minute <= t2->minute) {
-                return 1;
-            }
-        return 0;
-    }
-    return 0;
-}
-// If d1 and t1 are sooner than d2 and t2, it's valid (1)
-int isDateBefore(Date *d1, Date *d2, Time *t1, Time *t2) {
-    int val = isLogDateValid(d1, d2);
-    if (val == 1) {
-        return 1;
-    } else if (val == 2) {
-        if (isLogTimeValid(t1, t2) == 1) {
-            return 1;
-        }
-        return 0;
-    }
-    return 0;
-
-}
-
-// Checks if the date and time of the last log in the sys is sooner
-int isValidLog(System *sys, Time *time, Date *date) {
-    if (sys->lastDate == NULL || sys->lastTime == NULL) {
-        return 1;
-    }
-    return isDateBefore(sys->lastDate, date, sys->lastTime, time);
 }
 
 void freeLogNode(LogNode *node) {
@@ -374,20 +627,6 @@ void freeParkLogs(System *sys, Park *p) {
         }
         removeVehicleLog(sys, p, temp->log->reg);
     }
-}
-
-// Function to get a vehicle by registration using the hash table
-Vehicle *getVehicle(System *sys, char *reg) {
-    unsigned int index = hash(reg);
-    VehicleHashNode *current = sys->hashTable[index];
-
-    while (current != NULL) {
-        if (strcmp(current->vehicle->registration, reg) == 0) {
-            return current->vehicle;
-        }
-        current = current->next;
-    }
-    return NULL; // Vehicle not found
 }
 
 /*
@@ -603,30 +842,6 @@ void sortListExitDate(Park *p) {
     return;
 }
 
-size_t dateInMinutes(Date *d, Time *t) {
-    size_t totalMins = 0;
-    totalMins += d->year * 365 * 24 * 60;
-    for (int i = 1; i< d->month; i++) {
-        totalMins += daysByMonth(i) * 24 * 60;
-    }
-    totalMins += d->day * 24 * 60;
-    totalMins += t->hour * 60;
-    totalMins += t->minute;
-    return totalMins;
-}
-
-int isSameDate(Date *d1, Date *d2) {
-    if (d1->day == d2->day && d1->month == d2->month && d1->year == d2->year) { return 1; }
-    return 0;
-}
-
-
-size_t getTimeDiff(Time *t1, Date *d1, Time *t2, Date *d2) {
-    size_t firstDateMins = dateInMinutes(d1, t1);
-    size_t secondDateMins = dateInMinutes(d2, t2);
-    return secondDateMins - firstDateMins;
-}
-
 int getTotalMonthDays(int month) {
     int days = 0;
     for( int i = 1; i <= month; i++) {
@@ -672,78 +887,6 @@ double calculateValue(Log *log, Park *park) {
     }
     completeDayRev += min(remainingRev, park->dailyCost);
     return completeDayRev;
-}
-
-Date *createDateStruct(char *date) {
-    if (strlen(date) != 10) {
-        return NULL;
-    }
-
-    Date *d = (Date *)malloc(sizeof(Date));
-    if (d == NULL) {
-        return NULL;
-    }
-
-    // Make a copy of the date string
-    char *date_copy = strdup(date);
-    if (date_copy == NULL) {
-        free(d);
-        d = NULL;
-        return NULL;
-    }
-
-    char *day = strtok(date_copy, "-");
-    char *month = strtok(NULL, "-");
-    char *year = strtok(NULL, "-");
-
-    if (day == NULL || month == NULL || year == NULL) {
-        free(date_copy); // Free the copy of the date string
-        date_copy = NULL;
-        free(d);        // Free the allocated memory for the Date struct
-        d = NULL;
-        return NULL;
-    }
-
-    d->day = atoi(day);
-    d->month = atoi(month);
-    d->year = atoi(year);
-
-    free(date_copy); // Free the copy of the date string after tokenization
-    date_copy = NULL;
-    return d;
-}
-
-Time *createTimeStruct(char *time) {
-    Time *t = (Time *)malloc(sizeof(Time));
-    if (t == NULL) {
-        return NULL;
-    }
-
-    // Make a copy of the time string
-    char *time_copy = strdup(time);
-    if (time_copy == NULL) {
-        free(t);
-        t = NULL;
-        return NULL;
-    }
-
-    char *hour = strtok(time_copy, ":");
-    char *minute = strtok(NULL, ":");
-
-    if (hour == NULL || minute == NULL) {
-        free(time_copy); // Free the copy of the time string
-        time_copy = NULL;
-        free(t);        // Free the allocated memory for the Time struct
-        t = NULL;
-        return NULL;    
-    }
-
-    t->hour = atoi(hour);
-    t->minute = atoi(minute);
-
-    free(time_copy); // Free the copy of the time string after tokenization
-    time_copy = NULL;
-    return t;
 }
 
 char *nextWord(Buffer *buffer) {
