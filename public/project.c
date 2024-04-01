@@ -6,7 +6,25 @@
 #include "constants.h"
 #include "projectaux.h"
 
-//
+/**
+ * @brief Reads the input from the user and inserts it into the buffer.
+ *
+ * @param buffer Pointer to the Buffer struct where the input will be stored.
+ * @return Returns a pointer to the updated Buffer struct containing the user input.
+ */
+Buffer *getBuffer(Buffer *buffer) {
+    char c;
+    int count;
+
+    memset(buffer->buffer, 0, BUFSIZE);
+    buffer->index = 0;
+
+    for (count = 0; (c = getchar()) != '\n'; count++) {
+        buffer->buffer[count] = c;
+    }
+
+    return buffer;
+}
 
 /**
  * @brief Initializes the parking system.
@@ -858,6 +876,13 @@ void newParkRequest(System* sys, Buffer* buffer, char* name) {
     free(dailyCost);
 }
 
+/**
+ * @brief Processes a revenue check for a specific park on a given date.
+ * 
+ * @param sys The parking system.
+ * @param park The park for which revenue is to be checked.
+ * @param date The date for which revenue is to be checked.
+ */
 void processRevenueCheck(System *sys, Park *park, char *date) {
         Date *d = createDateStruct(date);
     if (isValidDate(d) && isLogDateBefore(d, sys->lastDate)) { // Validate date 
@@ -866,6 +891,29 @@ void processRevenueCheck(System *sys, Park *park, char *date) {
         printf("invalid date.\n");
     }
     free(d);
+}
+
+/**
+ * @brief Calculates the parking fee for a given log.
+ *
+ * @param log Pointer to the log for which the fee is calculated.
+ * @param park Pointer to the park where the vehicle was parked.
+ * @return The calculated parking fee.
+ */
+double calculateValue(Log *log, Park *park) {
+    size_t minsInDay = 24 * 60;
+    size_t diff = getTimeDiff(log->entryTime, log->entryDate, log->exitTime, log->exitDate);
+    size_t days = diff / minsInDay;
+    double completeDayRev = park->dailyCost * days;
+    size_t remainingQuarters = ((diff % minsInDay) + 14) / 15;
+    double remainingRev = 0;
+    if (remainingQuarters <= 4) {
+        remainingRev = park->quarterCost * remainingQuarters;
+    } else {
+        remainingRev = 4 * park->quarterCost + (remainingQuarters - 4) * park->afterHourCost;
+    }
+    completeDayRev += min(remainingRev, park->dailyCost);
+    return completeDayRev;
 }
 
 /**
@@ -1051,6 +1099,27 @@ void freeHashTable(System *sys) {
 }
 
 /**
+ * @brief Frees the memory allocated for a LogNode.
+ *
+ * @param node Pointer to the LogNode structure to be freed.
+ */
+void freeLogNode(LogNode *node) {
+    if (node == NULL) {
+        return;
+    }
+    free(node->log->exitDate);
+    node->log->exitDate = NULL;
+    free(node->log->exitTime);
+    node->log->exitTime = NULL;
+    free(node->log->entryDate);
+    node->log->entryDate = NULL;
+    free(node->log->entryTime);
+    node->log->entryTime = NULL;
+    free(node->log);
+    node->log = NULL;
+}
+
+/**
  * @brief Frees the memory allocated for all logs in the system.
  *
  * @param sys A pointer to the parking system.
@@ -1149,6 +1218,47 @@ void terminate(System* sys, Buffer* buffer) {
     free(buffer);
 }
 
+/**
+ * @brief Processes a request based on the command provided in the buffer.
+ * 
+ * @param sys The parking system.
+ * @param buffer The buffer containing the command.
+ */
+void processRequest(System *sys, Buffer *buffer) {
+    switch (buffer->buffer[0]) {
+        case 'p':
+            buffer->index = 2;
+            commandP(sys, buffer);
+            break;
+        case 'e':
+            buffer->index = 2;
+            commandE(sys, buffer);
+            break;
+        case 's':
+            buffer->index = 2;
+            commandS(sys, buffer);
+            break;
+        case 'v':
+            buffer->index = 2;
+            commandV(sys, buffer);
+            break;
+        case 'f':
+            buffer->index = 2;
+            commandF(sys, buffer);
+            break;
+        case 'r':
+            buffer->index = 2;
+            commandR(sys, buffer);
+            break;
+        case 'q':
+            terminate(sys, buffer);
+            exit(0);
+            break;
+        default:
+            break;
+    }
+}
+
 int main() {
     // Initializes the buffer
     Buffer *buffer = (Buffer *)malloc(sizeof(Buffer));
@@ -1163,51 +1273,7 @@ int main() {
     while (1) {
         // Reads the input and stores it in the buffer
         buffer = getBuffer(buffer);
-
-        switch (buffer->buffer[0]) {
-
-            // Closes the program
-            case 'q':
-                terminate(sys, buffer);
-                return 0;
-
-            // Creates a parking lot or lists the existing parking lots
-            case 'p':
-                buffer->index = 2;
-                commandP(sys, buffer);
-                break;
-
-            // Registers the entry of a vehicle
-            case 'e':
-                buffer->index = 2;
-                commandE(sys, buffer);
-                break;
-
-            // Registers the exit of a vehicle
-            case 's':
-                buffer->index = 2;
-                commandS(sys, buffer);
-                break;
-
-            // Lists the entries and exits of a vehicle
-            case 'v':
-                 buffer->index = 2;
-                commandV(sys, buffer);
-                break;
-            
-            // Shows revenue of a park
-            case 'f':
-                buffer->index = 2;
-                commandF(sys, buffer);
-                break;
-
-             case 'r':
-                buffer->index = 2;
-                commandR(sys, buffer);
-                break;
-            default:
-                break;
-        }
+        processRequest(sys, buffer);
     }
     return 0;
 }

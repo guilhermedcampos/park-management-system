@@ -6,7 +6,6 @@
 #include <string.h>
 #include <stdlib.h>
 
-
 /**
  * @brief Converts a Date structure to a string representation.
  *
@@ -193,6 +192,56 @@ size_t getTimeDiff(Time *t1, Date *d1, Time *t2, Date *d2) {
     size_t firstDateMins = dateInMinutes(d1, t1);
     size_t secondDateMins = dateInMinutes(d2, t2);
     return secondDateMins - firstDateMins;
+}
+
+/**
+ * @brief Returns total number of days in the months up to the given month.
+ *
+ * @param month The month for which to calculate the total number of days.
+ * @return The total number of days in the months up to the given month.
+ */
+int getTotalMonthDays(int month) {
+    int days = 0;
+    for( int i = 1; i <= month; i++) {
+        days += daysByMonth(i);
+    }
+    return days;
+}
+
+/**
+ * @brief Returns the number of days in the specified month.
+ *
+ * @param month The month for which to determine the number of days.
+ * @return The number of days in the specified month.
+ */
+int daysByMonth(int month) {
+    switch (month) {
+        case 1: return 31;
+        case 2: return 28;
+        case 3: return 31;
+        case 4: return 30;
+        case 5: return 31;
+        case 6: return 30;
+        case 7: return 31;
+        case 8: return 31;
+        case 9: return 30;
+        case 10: return 31;
+        case 11: return 30;
+        case 12: return 31;
+        default: return 0;
+    }
+
+}
+
+/**
+ * @brief Returns the minimum of two double values.
+ *
+ * @param a The first double value.
+ * @param b The second double value.
+ * @return The minimum of the two double values.
+ */
+double min(double a, double b) {
+    return a < b ? a : b;
 }
 
 /**
@@ -562,22 +611,13 @@ int isVehicleInParkExit(System *sys, char *reg, char *name) {
     return 1;
 }
 
-void freeLogNode(LogNode *node) {
-    if (node == NULL) {
-        return;
-    }
-    free(node->log->exitDate);
-    node->log->exitDate = NULL;
-    free(node->log->exitTime);
-    node->log->exitTime = NULL;
-    free(node->log->entryDate);
-    node->log->entryDate = NULL;
-    free(node->log->entryTime);
-    node->log->entryTime = NULL;
-    free(node->log);
-    node->log = NULL;
-}
-
+/**
+ * @brief Removes vehicle logs associated with a specific park from the system.
+ *
+ * @param sys Pointer to the ParkingSystem structure.
+ * @param p Pointer to the Park structure representing the park.
+ * @param reg Pointer to the character array representing the registration of the vehicle.
+ */
 void removeVehicleLog(System *sys, Park *p, char *reg) {
     Vehicle *v = getVehicle(sys, reg);
     if (v == NULL) {
@@ -611,6 +651,12 @@ void removeVehicleLog(System *sys, Park *p, char *reg) {
     }
 }
 
+/**
+ * @brief Frees the logs associated with a specific park.
+ *
+ * @param sys Pointer to the ParkingSystem structure.
+ * @param p Pointer to the Park structure representing the park.
+ */
 void freeParkLogs(System *sys, Park *p) {
     LogNode *cur = p->lHead;
     p->isSorted = 0;
@@ -629,24 +675,14 @@ void freeParkLogs(System *sys, Park *p) {
     }
 }
 
-/*
- * Reads the input from the user and inserts it into the buffer.
+/**
+ * @brief Merge function for mergesort.
+ *
+ * @param arr The array of LogNode pointers to be merged.
+ * @param l The left index of the first subarray.
+ * @param m The middle index.
+ * @param r The right index of the second subarray.
  */
-Buffer *getBuffer(Buffer *buffer) {
-    char c;
-    int count;
-
-    memset(buffer->buffer, 0, BUFSIZE);
-    buffer->index = 0;
-
-    for (count = 0; (c = getchar()) != '\n'; count++) {
-        buffer->buffer[count] = c;
-    }
-
-    return buffer;
-}
-
-// Merge function for mergesort
 void merge(LogNode **arr, int l, int m, int r) {
     int i, j, k;
     int n1 = m - l + 1;
@@ -687,7 +723,13 @@ void merge(LogNode **arr, int l, int m, int r) {
     }
 }
 
-// Mergesort function
+/**
+ * @brief Mergesort function.
+ *
+ * @param arr The array of LogNode pointers to be sorted.
+ * @param l The left index of the array to be sorted.
+ * @param r The right index of the array to be sorted.
+ */
 void mergeSort(LogNode **arr, int l, int r) {
     if (l < r) {
         int m = l + (r - l) / 2;
@@ -699,7 +741,12 @@ void mergeSort(LogNode **arr, int l, int r) {
     }
 }
 
-// Sort by name
+/**
+ * @brief Sorts a linked list of log nodes by park name.
+ *
+ * @param v Pointer to the vehicle whose log list is to be sorted.
+ * @return Pointer to the head of the sorted log list.
+ */
 LogNode *sortLogListName(Vehicle *v) {
     if (v == NULL || v->lHead == NULL) {
         return NULL;
@@ -743,6 +790,12 @@ LogNode *sortLogListName(Vehicle *v) {
     return v->lHead;
 }
 
+/**
+ * @brief Sorts the linked list of parks by name.
+ *
+ * @param sys Pointer to the parking system.
+ * @return Pointer to the head of the sorted park list.
+ */
 ParkNode *sortListName(System *sys) {
     Park *temp;
     ParkNode *current = sys->pHead;
@@ -752,7 +805,6 @@ ParkNode *sortListName(System *sys) {
         return NULL; 
     }
 
-    // ordenar por outras coisas
     while (current != NULL) {
         index = current->next;
 
@@ -775,7 +827,14 @@ ParkNode *sortListName(System *sys) {
     return sys->pHead; 
 }
 
- // Partition function for quicksort
+/**
+ * @brief Partitions the array for the quicksort algorithm.
+ *
+ * @param arr Array of log nodes to be partitioned.
+ * @param low The starting index of the partition.
+ * @param high The ending index of the partition.
+ * @return The partition index.
+ */
 int partition(LogNode **arr, int low, int high) {
     LogNode *pivot = arr[high];
     int i = low - 1;
@@ -795,7 +854,13 @@ int partition(LogNode **arr, int low, int high) {
     return i + 1;
 }
 
-// Quicksort function
+/**
+ * @brief Sorts an array of log nodes using the quicksort algorithm.
+ *
+ * @param arr Array of log nodes to be sorted.
+ * @param low The starting index of the array.
+ * @param high The ending index of the array.
+ */
 void quicksort(LogNode **arr, int low, int high) {
     if (low < high) {
         int pi = partition(arr, low, high);
@@ -804,7 +869,11 @@ void quicksort(LogNode **arr, int low, int high) {
     }
 }
 
-
+/**
+ * @brief Sorts the linked list of logs in a park by exit date.
+ *
+ * @param p Pointer to the park whose log list is to be sorted.
+ */
 void sortListExitDate(Park *p) {
     // Find number of elements in linked list
     int n = 0;
@@ -828,7 +897,7 @@ void sortListExitDate(Park *p) {
     // Quick sort the array 
     quicksort(arr, 0, n - 1);
 
-    // return the new head
+    // Return the new head
     for (int i = 0; i < n - 1; i++) {
         arr[i]->next = arr[i + 1];
         arr[i + 1]->prev = arr[i];
@@ -842,65 +911,22 @@ void sortListExitDate(Park *p) {
     return;
 }
 
-int getTotalMonthDays(int month) {
-    int days = 0;
-    for( int i = 1; i <= month; i++) {
-        days += daysByMonth(i);
-    }
-    return days;
-}
-
-int daysByMonth(int month) {
-    switch (month) {
-        case 1: return 31;
-        case 2: return 28;
-        case 3: return 31;
-        case 4: return 30;
-        case 5: return 31;
-        case 6: return 30;
-        case 7: return 31;
-        case 8: return 31;
-        case 9: return 30;
-        case 10: return 31;
-        case 11: return 30;
-        case 12: return 31;
-        default: return 0;
-    }
-
-}
-
-double min(double a, double b) {
-    return a < b ? a : b;
-}
-
-double calculateValue(Log *log, Park *park) {
-    size_t minsInDay = 24 * 60;
-    size_t diff = getTimeDiff(log->entryTime, log->entryDate, log->exitTime, log->exitDate);
-    size_t days = diff / minsInDay;
-    double completeDayRev = park->dailyCost * days;
-    size_t remainingQuarters = ((diff % minsInDay) + 14) / 15;
-    double remainingRev = 0;
-    if (remainingQuarters <= 4) {
-        remainingRev = park->quarterCost * remainingQuarters;
-    } else {
-        remainingRev = 4 * park->quarterCost + (remainingQuarters - 4) * park->afterHourCost;
-    }
-    completeDayRev += min(remainingRev, park->dailyCost);
-    return completeDayRev;
-}
-
+/**
+ * @brief Retrieves the next word from the buffer.
+ *
+ * @param buffer Pointer to the buffer.
+ * @return Pointer to the next word, or NULL if there are no more words in the buffer.
+ */
 char *nextWord(Buffer *buffer) {
     int i = 0;
     char *next_word = (char *)malloc(strlen(buffer->buffer) * sizeof(char));
-
     if (next_word == NULL) {
         return NULL;
     }
-
-    while (buffer->buffer[buffer->index] == ' ' || buffer->buffer[buffer->index] == '\n') {
+    while (buffer->buffer[buffer->index] == ' ' 
+        || buffer->buffer[buffer->index] == '\n') {
         buffer->index++;
     }
-
     if (buffer->buffer[buffer->index] == '"') {
         buffer->index++;
         while (buffer->buffer[buffer->index] != '"') {
@@ -909,14 +935,14 @@ char *nextWord(Buffer *buffer) {
         }
         buffer->index++;
     } else {
-        while (buffer->buffer[buffer->index] != ' ' && buffer->buffer[buffer->index] != '\n' &&
+        while (buffer->buffer[buffer->index] != ' ' && 
+               buffer->buffer[buffer->index] != '\n' &&
                buffer->buffer[buffer->index] != '\0') {
             next_word[i] = buffer->buffer[buffer->index];
             i++, buffer->index++;
         }
     }
     next_word[i] = '\0';
-
     if (i == 0) {
         free(next_word);
         return NULL;

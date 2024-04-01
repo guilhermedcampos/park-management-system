@@ -16,8 +16,11 @@ int isSameDate(Date *d1, Date *d2);
 int isLogDateBefore(Date *d1, Date *d2);
 int isLogTimeBefore(Time *t1, Time *t2);
 int isDateBefore(Date *d1, Date *d2, Time *t1, Time *t2);
-size_t getTimeDiff(Time *t1, Date *d1, Time *t2, Date *d2);
 size_t dateInMinutes(Date *d, Time *t);
+size_t getTimeDiff(Time *t1, Date *d1, Time *t2, Date *d2);
+int getTotalMonthDays(int month);
+int daysByMonth(int month);
+double min(double a, double b); 
 Time *createTimeStruct(char *time);
 Date *createDateStruct(char *date);
 
@@ -34,19 +37,15 @@ int isParkFull(System* sys, char* name);
 int isVehicleParked(System *sys, char *reg);    
 int isVehicleInParkExit(System *sys, char *reg, char *name);
 
-
-LogNode *sortLogListName(Vehicle *vehicle);
-void sortListExitDate(Park *park);
-
-
+void removeVehicleLog(System *sys, Park *p, char *reg);
 void freeParkLogs(System *sys, Park *p);
 
-Vehicle *getVehicle(System *sys, char *reg);
+void merge(LogNode **arr, int l, int m, int r);
+void mergeSort(LogNode **arr, int l, int r);
+LogNode *sortLogListName(Vehicle *v);
 ParkNode *sortListName(System *sys);
-int getTotalMonthDays(int month);
-double calculateValue(Log *log, Park *park);
-int daysByMonth(int month);
-Buffer *getBuffer(Buffer *buffer);
+void sortListExitDate(Park *park);
+
 char *nextWord(Buffer *buffer);
 
 #endif // PROJECTAUX_H

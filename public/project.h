@@ -3,93 +3,122 @@
 
 #include "constants.h"
 
+/**
+ * @brief Represents a date with day, month, and year components.
+ */
 typedef struct date {
-    int day;
-    int month;
-    int year;
+    int day; 
+    int month; 
+    int year;  
 } Date;
 
+/**
+ * @brief Represents a time with hour and minute components.
+ */
 typedef struct time {
-    int hour;
-    int minute;
+    int hour;   
+    int minute;  
 } Time;
 
+/**
+ * @brief Represents a log for entry or exit of a vehicle from a park.
+ */
 typedef struct Log {
-    Date *entryDate;
-    Date *exitDate;
-    Time *entryTime;
-    Time *exitTime;
-    char *reg;
-    char *parkName;
-    int type;  // 0 corresponds to an entry, 1 to a leave
-    double value;  // value to be paid
+    Date *entryDate;    /**<  Date of entry. */
+    Date *exitDate;     /**<  Date of exit. */
+    Time *entryTime;    /**<  Time of entry. */
+    Time *exitTime;     /**<  Time of exit. */
+    char *reg;          /**<  Vehicle registration. */
+    char *parkName;     /**<  Name of the park. */
+    int type;           /**<  Type of log (0 for entry, 1 for exit). */
+    double value;       /**<  Value associated with the log. */
 } Log;
 
+/**
+ * @brief Represents a node in a log linked list.
+ */
 typedef struct LogNode {
-    Log *log;
-    struct LogNode *next;
-    struct LogNode *prev;
+    Log *log;               /**< Log */
+    struct LogNode *next;   /**< Pointer to the next log node. */
+    struct LogNode *prev;   /**< Pointer to the previous log node. */
 } LogNode;
 
+/**
+ * @brief Represents a vehicle.
+ */
 typedef struct Vehicle {
-    char *parkName;
-    char *registration;
-    int isParked;
-    // logs of entries and exits from the vehicle, will be in entry order
-    LogNode *lHead;
-    LogNode *lTail;
-    Log *lastLog;
+    char *parkName;     /**< Name of the park where the vehicle is parked. */
+    char *registration; /**< Vehicle registration number. */
+    int isParked;       /**< Flag indicating whether the vehicle is parked. */
+    LogNode *lHead;     /**< Pointer to the head of the log linked list. */
+    LogNode *lTail;     /**< Pointer to the tail of the log linked list. */
+    Log *lastLog;       /**< Pointer to the last log entry. */
 } Vehicle;
 
+/**
+ * @brief Represents a node in a vehicle linked list.
+ */
 typedef struct VehicleNode {
-    Vehicle *vehicle;
-    struct VehicleNode *next;
-    struct VehicleNode *prev;
+    Vehicle *vehicle;           /**< Vehicle. */
+    struct VehicleNode *next;   /**< Pointer to the next vehicle node. */
+    struct VehicleNode *prev;   /**< Pointer to the previous vehicle node. */
 } VehicleNode;
 
+/**
+ * @brief Represents a Park.
+ */
 typedef struct Park {
-    char *name;
-    int maxCapacity;
-    int currentLots;
-    double quarterCost;
-    double afterHourCost;
-    double dailyCost;
-    int isSorted;
-    // logs of entries and exits in the park
-    LogNode *lHead;
-    LogNode *lTail;
+    char *name;             /**< Name of the park. */
+    int maxCapacity;        /**< Maximum capacity of the park. */
+    int currentLots;        /**< Current occupancy of the parking lot. */
+    double quarterCost;     /**< Cost per quarter-hour. */
+    double afterHourCost;   /**< Cost after first hour. */
+    double dailyCost;       /**< Daily cost. */
+    int isSorted;           /**< Flag indicating whether logs are sorted. */
+    LogNode *lHead;         /**< Head of the log linked list. */
+    LogNode *lTail;         /**< Tail of the log linked list. */
 } Park;
 
+/**
+ * @brief Represents a node in a parking lot linked list.
+ */
 typedef struct ParkNode {
-    Park *parking;
-    struct ParkNode *next;
-    struct ParkNode *prev;
+    Park *parking;              /**< Park */
+    struct ParkNode *next;      /**< Next Park node */
+    struct ParkNode *prev;      /**< Previous Park node */
 } ParkNode;
 
-
+/**
+ * @brief Represents a Buffer.
+ */
 typedef struct Buffer {
-    char *buffer;
-    int index;
+    char *buffer;   /**<  Buffer storing character data. */
+    int index;      /**<  Current position in the buffer. */
 } Buffer;
 
-
+/**
+ * @brief Represents a node in a hash table for storing vehicles.
+ */
 typedef struct VehicleHashNode {
-    Vehicle *vehicle;
-    struct VehicleHashNode *next;
+    Vehicle *vehicle;               /**< Vehicle. */
+    struct VehicleHashNode *next;   /**< Next hash node. */
 } VehicleHashNode;
 
-typedef struct System {
-    Park *parks[MAX_PARKING_LOTS];
-    ParkNode *pHead;
-    VehicleNode *vHead;
-    VehicleNode *vTail;
-    VehicleHashNode *hashTable[HASH_TABLE_SIZE];
-    int numParks;
-    Date *lastDate;
-    Time *lastTime;
+/**
+ * @brief Represents the  System.
+ */
+typedef struct System { 
+    Park *parks[MAX_PARKING_LOTS];              /**< Array of parking lots. */
+    ParkNode *pHead;                            /**< Head of the parks linked list. */
+    VehicleNode *vHead;                         /**< Head of the vehicle linked list. */
+    VehicleNode *vTail;                         /**< Tail of the vehicle linked list. */
+    VehicleHashNode *hashTable[HASH_TABLE_SIZE];/**< Hash table for quick vehicle lookup. */
+    int numParks;                               /**< Number of parks. */
+    Date *lastDate;                             /**< Last date recorded in the system. */
+    Time *lastTime;                             /**< Last time recorded in the system. */
 } System;
 
-
+Buffer *getBuffer(Buffer *buffer);
 System* init();
 void initParksArray(System* sys);
 void initHashTable(System* sys);
@@ -132,6 +161,7 @@ void printLogsByDate(LogNode *head);
 void printRevenue(LogNode *cur, Date *date);
 void showParkRevenue(Park* p, Date* date);
 void processRevenueCheck(System *sys, Park *park, char *date);
+double calculateValue(Log *log, Park *park);
 
 void commandP(System* sys, Buffer* buffer);
 void commandR(System* sys, Buffer* buffer);
@@ -141,6 +171,11 @@ void commandV(System* sys, Buffer* buffer);
 void commandF(System* sys, Buffer* buffer);
 
 void freeArgs(char *name, char *reg, char *time, char *date);
+void freeHashTable(System *sys);
+void freeLogNode(LogNode *node);
+void freeVehicles(System *sys);
+void freeParks(System *sys);
+void terminate(System* sys, Buffer* buffer);
 
 #endif // PROJECT_H
 
