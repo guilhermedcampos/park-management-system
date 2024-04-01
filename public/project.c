@@ -437,15 +437,17 @@ Vehicle *createVehicleData(char *reg) {
 /**
  * @brief Creates a new vehicle and adds it to the parking system.
  *
+ * @param system A pointer to the parking system.
  * @param reg The registration number of the vehicle.
  * @return A pointer to the newly created vehicle if successful, or NULL on failure.
  */
-Vehicle *createVehicle(char *reg) {
+Vehicle *createVehicle(ParkingSystem *system, char *reg) {
     Vehicle *vehicle = createVehicleData(reg);
     if (vehicle == NULL) {
         return NULL; // Creation of vehicle data failed
     }
-
+    // Add the vehicle to the parking system
+    addVehicle(system, vehicle);
     return vehicle;
 }
 
@@ -882,39 +884,42 @@ void commandR(ParkingSystem* system, Buffer* buffer) {
         printf("%s: no such parking.\n", name);
     }
     free(name);
+    name = NULL;
 }
 
+/**
+ * @brief Executes the command for vehicle entry in a park.
+ *
+ * @param system A pointer to the parking system.
+ * @param buffer A pointer to the buffer containing command arguments.
+ */
 void commandE(ParkingSystem* system, Buffer* buffer) {
     char *name, *reg, *date, *time;
-
     name = nextWord(buffer);
     reg = nextWord(buffer);
     date = nextWord(buffer);
     time = nextWord(buffer);
-    // Check if the entry is valid (park exists, park is not full, registration is valid, time is valid)
+    // Check if the entry is valid 
     if (isValidRequest(system, name, reg, date, time, 0)) {
         Park *park = getPark(system, name);
         Vehicle *vehicle = getVehicle(system, reg);
         if (vehicle == NULL) {
-            Vehicle *v = createVehicle(reg);
-            addVehicle(system, v);
+            Vehicle *v = createVehicle(system, reg);
             enterPark(system, park, v, date, time);
-            printf("%s %d\n", name, park->maxCapacity - park->currentLots);
         } else {
             enterPark(system, park, vehicle, date, time);
-            printf("%s %d\n", name, park->maxCapacity - park->currentLots);
         }
+        printf("%s %d\n", name, park->maxCapacity - park->currentLots);
     }
-    free(name);
-    name = NULL;
-    free(reg);
-    reg = NULL;
-    free(date);
-    date = NULL;
-    free(time);
-    time = NULL;
+    freeArgs(name, reg, time, date);
 }
 
+/**
+ * @brief Executes the command for vehicle exit from the parking system.
+ *
+ * @param system A pointer to the parking system.
+ * @param buffer A pointer to the buffer containing command arguments.
+ */
 void commandS(ParkingSystem* system, Buffer* buffer) {
     char *name, *reg, *date, *time;
 
@@ -929,36 +934,36 @@ void commandS(ParkingSystem* system, Buffer* buffer) {
         Vehicle *vehicle = getVehicle(system, reg);
         exitPark(system, park, vehicle, date, time);
     } 
-    free(name);
-    free(reg);
-    free(date);
-    free(time);
+    freeArgs(name, reg, time, date);
 }
 
+/**
+ * @brief Executes the command for printing vehicle logs.
+ *
+ * @param system A pointer to the parking system.
+ * @param buffer A pointer to the buffer containing command arguments.
+ */
 void commandV(ParkingSystem* system, Buffer* buffer) {
     char *reg;
-
     reg = nextWord(buffer);
 
+    // Check if registration is valid
     if (reg == NULL || !isValidRegistration(reg)) {
         printf("%s: invalid licence plate.\n", reg);
         return;
     }
+    
+    Vehicle *v = getVehicle(system, reg); // Retrieve vehicle information
 
-    Vehicle *v = getVehicle(system, reg);
-    if (v == NULL) {
-        printf("%s: no entries found in any parking.\n", reg);
-        return;
+    // Check if printing logs request is valid
+    if (isValidPrintLogsRequest(v, reg) == 1) {
+        printVehicleLogs(v);
     }
 
-    if (v->lHead == NULL) {
-        printf("%s: no entries found in any parking.\n", reg);
-        return;
-    }
-
-    printVehicleLogs(v);
     free(reg);
+    reg = NULL;
 }
+
 
 // Checks total revenue of a park
 void commandF(ParkingSystem* system, Buffer* buffer) {
@@ -995,6 +1000,17 @@ void commandF(ParkingSystem* system, Buffer* buffer) {
     }
     free(name);
     free(date);
+}
+
+void freeArgs(char *name, char *reg, char *time, char *date) {
+    free(name);
+    name = NULL;
+    free(reg);
+    reg = NULL;
+    free(time);
+    time = NULL;
+    free(date);
+    date = NULL;
 }
 
 void freeHashTable(ParkingSystem *system) {

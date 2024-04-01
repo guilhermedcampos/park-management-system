@@ -84,6 +84,19 @@ char *timeToString(Time *time){
     return timeString;
 }
 
+int isValidPrintLogsRequest(Vehicle *v, char *reg) {
+    if (v == NULL) {
+        printf("%s: no entries found in any parking.\n", reg);
+        return 0;
+    }
+
+    if (v->lHead == NULL) {
+        printf("%s: no entries found in any parking.\n", v->registration);
+        return 0;
+    }
+    return 1;
+}
+
 int isValidRequest(ParkingSystem *system, char *name, char *reg, char *date, char *time, int type) {
     Park *park = getPark(system, name);
 
@@ -302,7 +315,6 @@ void freeLogNode(LogNode *node) {
     free(node->log);
     node->log = NULL;
 }
-
 
 void removeVehicleLog(ParkingSystem *sys, Park *p, char *reg) {
     Vehicle *v = getVehicle(sys, reg);

@@ -112,7 +112,7 @@ unsigned int hash(const char *reg);
 void addToHashTable(ParkingSystem *system, Vehicle *vehicle);
 void addVehicle(ParkingSystem *system, Vehicle *vehicle);
 Vehicle *createVehicleData(char *reg);
-Vehicle *createVehicle(char *reg);
+Vehicle *createVehicle(ParkingSystem *sys, char *reg);
 
 int enterPark(ParkingSystem *system, Park *p, Vehicle *v, char *date, char *time);
 void printExit(Vehicle *v);
@@ -137,6 +137,8 @@ void commandE(ParkingSystem* system, Buffer* buffer);
 void commandS(ParkingSystem* system, Buffer* buffer);
 void commandV(ParkingSystem* system, Buffer* buffer);
 void commandF(ParkingSystem* system, Buffer* buffer);
+
+void freeArgs(char *name, char *reg, char *time, char *date);
 
 #endif // PROJECT_H
 
