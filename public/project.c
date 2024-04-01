@@ -437,7 +437,6 @@ Vehicle *createVehicleData(char *reg) {
 /**
  * @brief Creates a new vehicle and adds it to the parking system.
  *
- * @param system A pointer to the parking system.
  * @param reg The registration number of the vehicle.
  * @return A pointer to the newly created vehicle if successful, or NULL on failure.
  */
@@ -684,10 +683,35 @@ Log *createLog(Vehicle *v, Park *p, char *d, char *t) {
     return newLog;
 } 
 
-int printVehicleLogs(Vehicle *v) {
+/**
+ * @brief Prints the entry and exit information for a log node.
+ *
+ * @param cur The current log node whose entry and exit information to print.
+ * @param dEntry A string representing the entry date.
+ * @param tEntry A string representing the entry time.
+ */
+void printExits(LogNode *cur, char *dEntry, char *tEntry) {
+    char *dExit = dateToString(cur->log->exitDate);
+    char *tExit = timeToString(cur->log->exitTime);
+    printf("%s %s %s %s %s\n", cur->log->parkName, 
+    dEntry, 
+    tEntry, 
+    dExit, 
+    tExit);
+    free(dEntry);
+    free(tEntry);
+    free(dExit);
+    free(tExit);
+}
+
+/**
+ * @brief Prints the logs associated with a vehicle.
+ *
+ * @param v A pointer to the vehicle whose logs to print.
+ */
+void printVehicleLogs(Vehicle *v) {
     LogNode *cur = v->lHead;
     cur = sortLogListName(v);
-    int numLogs = 0;
     while (cur != NULL) {
         // If its an entry log, print only entry info
         char *dEntry = dateToString(cur->log->entryDate);
@@ -697,23 +721,10 @@ int printVehicleLogs(Vehicle *v) {
             free(dEntry);
             free(tEntry);
         } else {
-            // If its an exit log, print entry and exit info
-            char *dExit = dateToString(cur->log->exitDate);
-            char *tExit = timeToString(cur->log->exitTime);
-            printf("%s %s %s %s %s\n", cur->log->parkName, 
-            dEntry, 
-            tEntry, 
-            dExit, 
-            tExit);
-            free(dEntry);
-            free(tEntry);
-            free(dExit);
-            free(tExit);
+            printExits(cur, dEntry, tEntry);
         }
-        numLogs++;
         cur = cur->next;
     }
-    return numLogs;   
 }
 
 void printLogsByDate(LogNode *head) {

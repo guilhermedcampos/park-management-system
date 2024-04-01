@@ -124,7 +124,8 @@ void addLog(Log *newLog, Vehicle *v, Park *p);
 Log *updateEntryLog(Log *l, char *date, char *time, Park *park);
 Log *createLog(Vehicle *v, Park *p, char *d, char *t);
 
-int printVehicleLogs(Vehicle* v);
+void printExits(LogNode *cur, char *dEntry, char *tEntry);
+void printVehicleLogs(Vehicle *v);
 void showParkRevenue(Park* p, Date* date);
 
 void commandP(ParkingSystem* system, Buffer* buffer);
