@@ -114,11 +114,18 @@ Vehicle *createVehicleData(char *reg);
 Vehicle *createVehicle(char *reg);
 
 int enterPark(ParkingSystem *system, Park *p, Vehicle *v, char *date, char *time);
+void printExit(Vehicle *v);
 int exitPark(ParkingSystem *system, Park *p, Vehicle *v, char *date, char *time);
-Log *changeLog(Vehicle *v, Park *p, char *d, char *t, int type);
+
+Log *addLogToVehicle(Vehicle *v, Log *l);
+void addLogToPark(Park *p, Log *log);
+void addLog(Log *newLog, Vehicle *v, Park *p);
+
+Log *updateEntryLog(Log *l, char *date, char *time, Park *park);
+Log *createLog(Vehicle *v, Park *p, char *d, char *t);
 int printVehicleLogs(ParkingSystem* system, char* reg);
 void showParkRevenue(Park* p, Date* date);
-unsigned int hash(const char *reg);
+
 void commandP(ParkingSystem* system, Buffer* buffer);
 void commandR(ParkingSystem* system, Buffer* buffer);
 void commandE(ParkingSystem* system, Buffer* buffer);

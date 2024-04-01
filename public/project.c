@@ -450,6 +450,19 @@ Vehicle *createVehicle(char *reg) {
     return vehicle;
 }
 
+/**
+ * @brief Enters a vehicle into a park in the parking system.
+ *
+ * Updates the necessary data structures to indicate that the vehicle
+ * has entered the specified park at the given date and time.
+ *
+ * @param sys A pointer to the parking system.
+ * @param p A pointer to the park where the vehicle is entering.
+ * @param v A pointer to the vehicle entering the park.
+ * @param date The date of entry in "YYYY-MM-DD" format.
+ * @param time The time of entry in "HH:MM" format.
+ * @return 0 if the operation is successful, -1 if memory allocation fails.
+ */
 int enterPark(ParkingSystem *sys, Park *p, Vehicle *v, char *date, char *time) {
     v->parkName = p->name;
     Date *d = createDateStruct(date);
@@ -478,23 +491,45 @@ int enterPark(ParkingSystem *sys, Park *p, Vehicle *v, char *date, char *time) {
     
     v->isParked = 1;
     p->currentLots++;
-    v->lastLog = changeLog(v, p, date, time, 0);
+    v->lastLog = createLog(v, p, date, time);
     return 0;
 }
 
-
+/**
+ * @brief Prints the exit details of a vehicle.
+ *
+ * This function prints the registration number of the vehicle along with its entry
+ * and exit date and time, as well as the parking fee incurred.
+ *
+ * @param v A pointer to the vehicle whose exit details are to be printed.
+ */
 void printExit(Vehicle *v) {
+    // Convert entry and exit date/time to string representations
     char *d1 = dateToString(v->lastLog->entryDate);
     char *t1 = timeToString(v->lastLog->entryTime);
     char *d2 = dateToString(v->lastLog->exitDate);
     char *t2 = timeToString(v->lastLog->exitTime);
+
+    // Print vehicle exit details
     printf("%s %s %s %s %s %.2f\n", v->registration, d1, t1, d2, t2, v->lastLog->value);
+
+    // Free dynamically allocated memory for date/time strings
     free(d1);
     free(t1);
     free(d2);
     free(t2);
 }
 
+/**
+ * @brief Handles the exit of a vehicle from the parking system.
+ *
+ * @param system A pointer to the parking system.
+ * @param p A pointer to the park from which the vehicle is exiting.
+ * @param v A pointer to the vehicle exiting the park.
+ * @param date A string representing the exit date of the vehicle.
+ * @param time A string representing the exit time of the vehicle.
+ * @return Returns 0 upon successful exit, or 1 if there is a failure in the process.
+ */
 int exitPark(ParkingSystem *system, Park *p, Vehicle *v, char *date, char *time) {  
     v->parkName = NULL;
     v->isParked = 0;    
@@ -527,7 +562,7 @@ int exitPark(ParkingSystem *system, Park *p, Vehicle *v, char *date, char *time)
     free(t);
     
     p->currentLots--;
-    Log *l = changeLog(v, p, date, time, 1);
+    Log *l = updateEntryLog(v->lastLog, date, time, p);
     if (l == NULL) {
         return 1;
     }
@@ -536,6 +571,100 @@ int exitPark(ParkingSystem *system, Park *p, Vehicle *v, char *date, char *time)
 }
 
 
+
+Log *addLogToVehicle(Vehicle *v, Log *l) {
+    LogNode *newLog = (LogNode *)malloc(sizeof(LogNode));
+    if (newLog == NULL) {
+        return NULL;
+    }
+    
+    newLog->log = l;
+    newLog->next = NULL;
+    newLog->prev = NULL;
+
+    if (v->lHead == NULL) {
+        // If the list is empty, set both head and tail to the new node
+        v->lHead = newLog;
+        v->lTail = newLog;
+    } else {
+        // Otherwise, append the new node to the tail
+        v->lTail->next = newLog;
+        newLog->prev = v->lTail;
+        v->lTail = newLog; // Update the tail pointer
+    }
+    return l;
+}
+
+void addLogToPark(Park *p, Log *l) {
+    LogNode *newLog = (LogNode *)malloc(sizeof(LogNode));
+    if (newLog == NULL) {
+        return;
+    }
+    newLog->log = l;
+    newLog->next = NULL;
+    newLog->prev = NULL;
+    p->isSorted = 0;
+
+    if (p->lHead == NULL) {
+        p->lHead = newLog;
+        p->lTail = newLog;
+    } else {
+        // Otherwise, append the new node to the tail
+        p->lTail->next = newLog;
+        newLog->prev = p->lTail;
+        p->lTail = newLog; // Update the tail pointer
+    }
+}
+
+Log *updateEntryLog(Log *l, char *date, char *time, Park *park) {
+
+    // Allocate memory for exitDate and exitTime and copy the new values
+    l->exitDate = createDateStruct(date);
+    if (l->exitDate == NULL) {
+        // Handle allocation failure
+        return NULL;
+    }
+
+    l->exitTime = createTimeStruct(time);
+    if (l->exitTime == NULL) {
+        // Handle allocation failure
+        free(l->exitDate);  // Free previously allocated memory
+        return NULL;
+    }
+
+    // Update other fields of the Log struct
+    l->value = calculateValue(l, park);
+    l->type = 1;
+
+    return l;
+}
+
+void addLog(Log *newLog, Vehicle *v, Park *p) {
+     // Add the new log to vehicle's log list
+    newLog = addLogToVehicle(v, newLog);
+
+    // Add the new log to park's log list
+    addLogToPark(p, newLog);
+}
+
+
+Log *createLog(Vehicle *v, Park *p, char *d, char *t) {
+    Log *newLog = (Log *)malloc(sizeof(Log));
+    if (newLog == NULL) {
+        return NULL;
+    }
+
+    newLog->entryDate = createDateStruct(d);
+    newLog->entryTime = createTimeStruct(t);
+    newLog->type = 0;
+
+    newLog->reg = v->registration;
+
+    newLog->parkName = p->name;
+    addLog(newLog, v, p);
+
+    return newLog;
+    } 
 
 void commandP(ParkingSystem* system, Buffer* buffer) {   
     char *name, *maxCapacity, *billingValue15, *billingValueAfter1Hour, *maxDailyValue;
@@ -615,105 +744,6 @@ void commandE(ParkingSystem* system, Buffer* buffer) {
     date = NULL;
     free(time);
     time = NULL;
-}
-
-// Logs are added to the list in order of entry
-Log *addLogVehicle(Vehicle *v, Log *l) {
-    LogNode *newLog = (LogNode *)malloc(sizeof(LogNode));
-    if (newLog == NULL) {
-        return NULL;
-    }
-    
-    newLog->log = l;
-    newLog->next = NULL;
-    newLog->prev = NULL;
-
-    if (v->lHead == NULL) {
-        // If the list is empty, set both head and tail to the new node
-        v->lHead = newLog;
-        v->lTail = newLog;
-    } else {
-        // Otherwise, append the new node to the tail
-        v->lTail->next = newLog;
-        newLog->prev = v->lTail;
-        v->lTail = newLog; // Update the tail pointer
-    }
-    return l;
-}
-
-void addLogPark(Park *p, Log *l) {
-    LogNode *newLog = (LogNode *)malloc(sizeof(LogNode));
-    if (newLog == NULL) {
-        return;
-    }
-    newLog->log = l;
-    newLog->next = NULL;
-    newLog->prev = NULL;
-    p->isSorted = 0;
-
-    if (p->lHead == NULL) {
-        p->lHead = newLog;
-        p->lTail = newLog;
-    } else {
-        // Otherwise, append the new node to the tail
-        p->lTail->next = newLog;
-        newLog->prev = p->lTail;
-        p->lTail = newLog; // Update the tail pointer
-    }
-}
-
-Log *updateEntryLog(Log *l, char *date, char *time, Park *park) {
-
-    // Allocate memory for exitDate and exitTime and copy the new values
-    l->exitDate = createDateStruct(date);
-    if (l->exitDate == NULL) {
-        // Handle allocation failure
-        return NULL;
-    }
-
-    l->exitTime = createTimeStruct(time);
-    if (l->exitTime == NULL) {
-        // Handle allocation failure
-        free(l->exitDate);  // Free previously allocated memory
-        return NULL;
-    }
-
-    // Update other fields of the Log struct
-    l->value = calculateValue(l, park);
-    l->type = 1;
-
-    return l;
-}
-
-Log *changeLog(Vehicle *v, Park *p, char *d, char *t, int type) {
-    if (type == 0) {
-        Log *newLog = (Log *)malloc(sizeof(Log));
-        if (newLog == NULL) {
-            return NULL;
-        }
-
-        newLog->entryDate = createDateStruct(d);
-        newLog->entryTime = createTimeStruct(t);
-        newLog->type = 0;
-
-        newLog->reg = v->registration;
-
-        newLog->parkName = p->name;
-
-        // Add the new log to vehicle's log list
-        newLog = addLogVehicle(v, newLog);
-
-        // Add the new log to park's log list
-        addLogPark(p, newLog);
-
-        return newLog;
-
-    } else if (type == 1) {
-
-        Log *l = updateEntryLog(v->lastLog, d, t, p);
-        return l;
-    }
-    return NULL;
 }
 
 void commandS(ParkingSystem* system, Buffer* buffer) {
