@@ -91,8 +91,12 @@ typedef struct ParkingSystem {
 
 
 ParkingSystem* init();
+void initParksArray(ParkingSystem* system);
+void initHashTable(ParkingSystem* system);
+
+int isParkFull(ParkingSystem* sys, char* name);
 void printParks(ParkingSystem* system);
-Park* parkExists(ParkingSystem* sys, char* name);
+Park* getPark(ParkingSystem* sys, char* name);
 int isParkFull(ParkingSystem* sys, char* name);
 void addPark(ParkingSystem *system, ParkingNode *parking);
 Vehicle *createVehicle(ParkingSystem *system, char *reg);

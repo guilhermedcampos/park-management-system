@@ -6,21 +6,22 @@
 #include "constants.h"
 #include "projectaux.h"
 
-int bufferIndex = 0;
-
-
-/*
-TO-DO
-define constants for error messages
-
-
-*/
-
+/**
+ * @brief Initializes the parking system.
+ *
+ * Initializes the parking system by allocating memory for the system structure,
+ * initializing its fields, and setting up arrays for parks and hash tables.
+ *
+ * @return A pointer to the initialized parking system if successful, otherwise NULL.
+ */
 ParkingSystem* init() {
+    // Allocate memory for the parking system
     ParkingSystem *system = (ParkingSystem *)malloc(sizeof(ParkingSystem));
     if (system == NULL) {
-        return NULL;
+        return NULL; // Memory allocation failed
     }
+
+    // Initialize fields of the parking system structure
     system->pHead = NULL;
     system->vHead = NULL;
     system->vTail = NULL;
@@ -28,66 +29,86 @@ ParkingSystem* init() {
     system->lastTime = NULL;
     system->numParks = 0;
 
-    // Initialize parks array to NULL
-    for (int i = 0; i < MAX_PARKING_LOTS; i++) {
-        system->parks[i] = NULL;
-    }
-
-    // Initialize hashTable to NULL
-    for (int i = 0; i < HASH_TABLE_SIZE; i++) {
-        system->hashTable[i] = NULL;
-    }
+    // Initialize the parks array and the hash table
+    initParksArray(system);
+    initHashTable(system);
 
     return system;
 }
 
-void printParks(ParkingSystem* system) {
+/**
+ * @brief Initializes the parks array in the parking system.
+ *
+ * Initializes the parks array in the parking system.
+ *
+ * @param system A pointer to the parking system.
+ */
+void initParksArray(ParkingSystem *system) {
     for (int i = 0; i < MAX_PARKING_LOTS; i++) {
-        if (system->parks[i] != NULL) {
-            printf("%s %d %d\n", system->parks[i]->name, system->parks[i]->maxCapacity, system->parks[i]->maxCapacity - system->parks[i]->currentLots);
-        }
+        system->parks[i] = NULL;
     }
 }
 
-/* Returns park, or Null if it doesn't exist */
-Park* parkExists(ParkingSystem* sys, char* name) {
-    ParkingNode *cur = sys->pHead;
-
-    while (cur != NULL) {
-        if (strcmp(cur->parking->name, name) == 0) {
-            return cur->parking;
-        }
-        cur = cur->next;
+/**
+ * @brief Initializes the hash table in the parking system.
+ *
+ * Initializes the hash table in the parking system.
+ *
+ * @param system A pointer to the parking system.
+ */
+void initHashTable(ParkingSystem *system) {
+    // Set all buckets of the hash table to NULL
+    for (int i = 0; i < HASH_TABLE_SIZE; i++) {
+        system->hashTable[i] = NULL;
     }
-    return NULL;
 }
 
-/* Returns 1 if full, 0 if not full */
-int isParkFull(ParkingSystem* sys, char* name) {
-    ParkingNode *cur = sys->pHead;
-    while (cur != NULL) {
-        if (strcmp(cur->parking->name, name) == 0) {
-            if (cur->parking->currentLots == cur->parking->maxCapacity) {
-                return 1;
-            }
-        }
-        cur = cur->next;
+/**
+ * @brief Adds a vehicle to the hash table in the parking system.
+ *
+ * Adds a vehicle to the hash table in the parking system. 
+ *
+ * @param system A pointer to the parking system.
+ * @param vehicle A pointer to the vehicle to be added.
+ */
+void addToHashTable(ParkingSystem *system, Vehicle *vehicle) {
+    // Calculate the index for the vehicle based on its registration number
+    unsigned int index = hash(vehicle->registration);
+    
+    // Allocate memory for a new node
+    VehicleHashNode *newNode = (VehicleHashNode *)malloc(sizeof(VehicleHashNode));
+    if (newNode == NULL) {
+        // Handle memory allocation error
+        return;
     }
-    return 0;
+    
+    // Initialize the new node with the vehicle and insert it into the appropriate bucket
+    newNode->vehicle = vehicle;
+    newNode->next = system->hashTable[index];
+    system->hashTable[index] = newNode;
 }
 
+/**
+ * @brief Adds a park to the array of parks in the parking system.
+ *
+ * Adds a park to the array of parks in the parking system. It searches for the first
+ * available slot in the array and inserts the park into that slot.
+ *
+ * @param system A pointer to the parking system.
+ * @param park A pointer to the park to be added.
+ */
 void addParkToArray(ParkingSystem *system, Park *park) {
+    // Iterate through the array of parks to find the first available slot
     for (int i = 0; i < MAX_PARKING_LOTS; i++) {
         if (system->parks[i] == NULL) {
+            // Insert the park into the first available slot and return
             system->parks[i] = park;
             return;
         }
     }
 }
 
-void addPark(ParkingSystem *system, ParkingNode *parking) {
-
-    addParkToArray(system, parking->parking);
+void addParkToList(ParkingSystem *system, ParkingNode *parking) {
     // Iterate through the list to find an empty spot
     if (system->pHead == NULL) {
         system->pHead = parking;
@@ -101,6 +122,37 @@ void addPark(ParkingSystem *system, ParkingNode *parking) {
         parking->prev = cur;
         parking->next = NULL;
     }
+}
+
+
+
+
+void printParks(ParkingSystem* system) {
+    for (int i = 0; i < MAX_PARKING_LOTS; i++) {
+        if (system->parks[i] != NULL) {
+            printf("%s %d %d\n", system->parks[i]->name, system->parks[i]->maxCapacity, system->parks[i]->maxCapacity - system->parks[i]->currentLots);
+        }
+    }
+}
+
+/* Returns park, or Null if it doesn't exist */
+Park* getPark(ParkingSystem* sys, char* name) {
+    ParkingNode *cur = sys->pHead;
+
+    while (cur != NULL) {
+        if (strcmp(cur->parking->name, name) == 0) {
+            return cur->parking;
+        }
+        cur = cur->next;
+    }
+    return NULL;
+}
+
+void addPark(ParkingSystem *system, ParkingNode *parking) {
+
+    addParkToArray(system, parking->parking);
+    addParkToList(system, parking);
+    
     system->numParks++;
 }
 
@@ -205,20 +257,6 @@ unsigned int hash(const char *reg) {
     return hashValue % HASH_TABLE_SIZE;
 }
 
-
-// Function to add a vehicle to the hash table
-void addToHashTable(ParkingSystem *system, Vehicle *vehicle) {
-    unsigned int index = hash(vehicle->registration);
-    VehicleHashNode *newNode = (VehicleHashNode *)malloc(sizeof(VehicleHashNode));
-    if (newNode == NULL) {
-        // Handle memory allocation error
-        return;
-    }
-    newNode->vehicle = vehicle;
-    newNode->next = system->hashTable[index];
-    system->hashTable[index] = newNode;
-}
-
 void addVehicle(ParkingSystem *system, Vehicle *vehicle) {
     // Initialize the vehicle node pointers
     VehicleNode *vehicleNode = (VehicleNode *)malloc(sizeof(VehicleNode));
@@ -276,7 +314,7 @@ void commandP(ParkingSystem* system, Buffer* buffer) {
         printParks(system);
     } else {
         // Checks if the parking lot already exists
-        if (parkExists(system, name) != NULL) {
+        if (getPark(system, name) != NULL) {
             printf("%s: parking already exists.\n", name);
         } else {
             maxCapacity = nextWord(buffer);
@@ -308,7 +346,7 @@ void commandR(ParkingSystem* system, Buffer* buffer) {
     char *name;
 
     name = nextWord(buffer);
-    Park *p = parkExists(system, name);
+    Park *p = getPark(system, name);
     if (p != NULL) {
         freeParkLogs(system, p);
         removePark(system, name);
@@ -329,7 +367,7 @@ void commandE(ParkingSystem* system, Buffer* buffer) {
     time = nextWord(buffer);
     // Check if the entry is valid (park exists, park is not full, registration is valid, time is valid)
     if (isValidRequest(system, name, reg, date, time, 0)) {
-        Park *park = parkExists(system, name);
+        Park *park = getPark(system, name);
         Vehicle *vehicle = getVehicle(system, reg);
         if (vehicle == NULL) {
             Vehicle *v = createVehicle(system, reg);
@@ -544,7 +582,7 @@ void commandS(ParkingSystem* system, Buffer* buffer) {
 
     // Check if the exit is valid (registration is valid, time is valid)
     if (isValidRequest(system, name, reg, date, time, 1)) {
-        Park *park = parkExists(system, name);
+        Park *park = getPark(system, name);
         Vehicle *vehicle = getVehicle(system, reg);
         exitPark(system, park, vehicle, date, time);
     } 
@@ -713,7 +751,7 @@ void commandF(ParkingSystem* system, Buffer* buffer) {
     name = nextWord(buffer);
     date = nextWord(buffer);
 
-    Park *park = parkExists(system, name);
+    Park *park = getPark(system, name);
     if (park == NULL) {
         printf("%s: no such parking.\n", name);
         return;

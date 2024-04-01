@@ -80,7 +80,7 @@ char *timeToString(Time *time){
 }
 
 int isValidRequest(ParkingSystem *system, char *name, char *reg, char *date, char *time, int type) {
-    Park *park = parkExists(system, name);
+    Park *park = getPark(system, name);
 
     if (park == NULL) {
         printf("%s: no such parking.\n", name);
@@ -186,6 +186,21 @@ int isValidRegistration(char *reg) {
     // If all checks pass, the registration is valid
     return 0;
 }
+
+/* Returns 1 if full, 0 if not full */
+int isParkFull(ParkingSystem* sys, char* name) {
+    ParkingNode *cur = sys->pHead;
+    while (cur != NULL) {
+        if (strcmp(cur->parking->name, name) == 0) {
+            if (cur->parking->currentLots == cur->parking->maxCapacity) {
+                return 1;
+            }
+        }
+        cur = cur->next;
+    }
+    return 0;
+}
+
 
 int isVehicleParked(ParkingSystem *system, char *reg) {
     Vehicle *v = getVehicle(system, reg);
