@@ -39,8 +39,6 @@ ParkingSystem* init() {
 /**
  * @brief Initializes the parks array in the parking system.
  *
- * Initializes the parks array in the parking system.
- *
  * @param system A pointer to the parking system.
  */
 void initParksArray(ParkingSystem *system) {
@@ -51,8 +49,6 @@ void initParksArray(ParkingSystem *system) {
 
 /**
  * @brief Initializes the hash table in the parking system.
- *
- * Initializes the hash table in the parking system.
  *
  * @param system A pointer to the parking system.
  */
@@ -65,8 +61,6 @@ void initHashTable(ParkingSystem *system) {
 
 /**
  * @brief Adds a vehicle to the hash table in the parking system.
- *
- * Adds a vehicle to the hash table in the parking system. 
  *
  * @param system A pointer to the parking system.
  * @param vehicle A pointer to the vehicle to be added.
@@ -91,9 +85,6 @@ void addToHashTable(ParkingSystem *system, Vehicle *vehicle) {
 /**
  * @brief Adds a park to the array of parks in the parking system.
  *
- * Adds a park to the array of parks in the parking system. It searches for the first
- * available slot in the array and inserts the park into that slot.
- *
  * @param system A pointer to the parking system.
  * @param park A pointer to the park to be added.
  */
@@ -108,22 +99,136 @@ void addParkToArray(ParkingSystem *system, Park *park) {
     }
 }
 
+/**
+ * @brief Adds a parking node to the linked list of parks in the parking system.
+ *
+ * @param system A pointer to the parking system.
+ * @param parking A pointer to the parking node to be added.
+ */
 void addParkToList(ParkingSystem *system, ParkingNode *parking) {
     // Iterate through the list to find an empty spot
     if (system->pHead == NULL) {
+        // If the list is empty, set the parking node as the head
         system->pHead = parking;
         parking->next = NULL;
     } else {
+        // Otherwise, iterate through the list to find the last node
         ParkingNode *cur = system->pHead;
         while (cur->next != NULL) {
             cur = cur->next;
         }
+        // Insert the parking node at the end of the list
         cur->next = parking;
         parking->prev = cur;
         parking->next = NULL;
     }
 }
 
+/**
+ * @brief Adds a park to the parking system.
+ *
+ * @param system A pointer to the parking system.
+ * @param parking A pointer to the parking node containing the park to be added.
+ */
+void addPark(ParkingSystem *system, ParkingNode *parking) {
+    // Add the park to the array of parks
+    addParkToArray(system, parking->parking);
+
+    // Add the park to the linked list of parks
+    addParkToList(system, parking);
+
+    // Increment the count of parks in the system
+    system->numParks++;
+}
+
+/**
+ * @brief Updates the array of parks in the parking system.
+ *
+ * @param system A pointer to the parking system.
+ * @param index The index from which elements are to be shifted.
+ */
+void updateParksArray(ParkingSystem *system, int index) {
+    // Shift elements to the left starting from the index
+    for (int i = index; i < MAX_PARKING_LOTS - 1; i++) {
+        system->parks[i] = system->parks[i + 1];
+    }
+
+    // Set the last element to NULL (as it's shifted left)
+    system->parks[MAX_PARKING_LOTS - 1] = NULL;
+}
+
+/**
+ * @brief Removes a park from the array of parks in the parking system.
+ *
+ * @param system A pointer to the parking system.
+ * @param name The name of the park to be removed.
+ */
+void removeParkFromArray(ParkingSystem *system, char *name) {
+    for (int i = 0; i < MAX_PARKING_LOTS; i++) {
+        if (system->parks[i] != NULL && strcmp(system->parks[i]->name, name) == 0) {
+            // First element of the list, shift left the array after removing first element
+            updateParksArray(system, i);
+        }
+    }
+}
+
+/**
+ * @brief Removes a park node from the list in the parking system.
+ *
+ * This function removes the park node with the specified name from the list in the parking system.
+ *
+ * @param system A pointer to the parking system.
+ * @param name The name of the park to be removed.
+ */
+void removeParkFromList(ParkingSystem *system, char *name) {
+    ParkingNode *cur = system->pHead; /**< Current node pointer */
+    ParkingNode *prev = NULL; /**< Previous node pointer */
+    
+    // Iterate through the list to find the node with the specified name
+    while (cur != NULL) {
+        if (strcmp(cur->parking->name, name) == 0) {
+            // If the node to be removed is the head of the list
+            if (prev == NULL) {
+                system->pHead = cur->next;
+            } else {
+                prev->next = cur->next;
+            }
+
+            // If the node to be removed is not the last node in the list
+            if (cur->next != NULL) {
+                cur->next->prev = prev;
+            }
+            
+            // Free memory for the park node and its name
+            free(cur->parking->name);
+            free(cur->parking);
+            free(cur);
+            return;
+        }
+        prev = cur;
+        cur = cur->next;
+    }
+}
+
+/**
+ * @brief Removes a park from the parking system.
+ *
+ * @param system A pointer to the parking system.
+ * @param name The name of the park to be removed.
+ */
+void removePark(ParkingSystem *system, char *name) {
+    // If the list of parks is empty, return
+    if (system->pHead == NULL) {
+        return;
+    }
+
+    // Remove the park from the array and the linked list
+    removeParkFromArray(system, name);
+    removeParkFromList(system, name);
+    
+    // Decrement the number of parks in the system
+    system->numParks--;
+}
 
 
 
@@ -148,81 +253,16 @@ Park* getPark(ParkingSystem* sys, char* name) {
     return NULL;
 }
 
-void addPark(ParkingSystem *system, ParkingNode *parking) {
-
-    addParkToArray(system, parking->parking);
-    addParkToList(system, parking);
-    
-    system->numParks++;
-}
-
-void updateParksArray(ParkingSystem *system, int index) {
-
-    // Shift elements to the left starting from the index
-    for (int i = index; i < MAX_PARKING_LOTS - 1; i++) {
-        system->parks[i] = system->parks[i + 1];
-    }
-
-    // Set the last element to NULL (as it's shifted left)
-    system->parks[MAX_PARKING_LOTS - 1] = NULL;
-}
-
-
-void removePark(ParkingSystem *system, char *name) {
-
-    // Update the parks array
-    for (int i = 0; i < MAX_PARKING_LOTS; i++) {
-        if (system->parks[i] != NULL && strcmp(system->parks[i]->name, name) == 0) {
-            // First element of the list, shift left the array after removing first element
-            updateParksArray(system, i);
-        }
-    }
-
-
-    // Remove all logs of vehicles in the park
-    if (system->pHead == NULL) {
-        return;
-    }
-
-    ParkingNode *cur = system->pHead;
-    ParkingNode *prev = NULL;
-    while (cur != NULL) {
-        if (strcmp(cur->parking->name, name) == 0) {
-            // If the node to be removed is the head of the list
-            if (prev == NULL) {
-                system->pHead = cur->next;
-            } else {
-                prev->next = cur->next;
-            }
-
-            // If the node to be removed is not the last node in the list
-            if (cur->next != NULL) {
-                cur->next->prev = prev;
-            }
-            system->numParks--;
-            free(cur->parking->name);
-            cur->parking->name = NULL;
-            free(cur->parking);
-            cur->parking = NULL;
-            free(cur);
-            cur = NULL;
-            return;
-        }
-        prev = cur;
-        cur = cur->next;
-    }
-}
-
-void createPark(ParkingSystem *system, char *name, char *maxCapacity, char *billingValue15, char *billingValueAfter1Hour, char *maxDailyValue) {
+ParkingNode *createPark(char *name, char *maxCapacity, char *billingValue15, char *billingValueAfter1Hour, char *maxDailyValue) {
     ParkingNode *newParking = (ParkingNode *)malloc(sizeof(ParkingNode));
     if (newParking == NULL) {
-        return;
+        return NULL;
     }
 
     newParking->parking = (Park *)malloc(sizeof(Park));
     if (newParking->parking == NULL) {
         free(newParking);
-        return;
+        return NULL;
     }
 
     // Allocate memory for the name field and copy the string
@@ -230,7 +270,7 @@ void createPark(ParkingSystem *system, char *name, char *maxCapacity, char *bill
     if (newParking->parking->name == NULL) {
         free(newParking->parking);
         free(newParking);
-        return;
+        return NULL;
     }
 
     newParking->next = NULL;
@@ -243,8 +283,7 @@ void createPark(ParkingSystem *system, char *name, char *maxCapacity, char *bill
     newParking->parking->billingValue15 = atof(billingValue15);
     newParking->parking->billingValueAfter1Hour = atof(billingValueAfter1Hour);
     newParking->parking->maxDailyValue = atof(maxDailyValue);
-
-    addPark(system, newParking);
+    return newParking;
 }
 
 
@@ -322,7 +361,11 @@ void commandP(ParkingSystem* system, Buffer* buffer) {
             billingValueAfter1Hour = nextWord(buffer);
             maxDailyValue = nextWord(buffer);
             if (isValidParkRequest(system->numParks, atoi(maxCapacity), atof(billingValue15), atof(billingValueAfter1Hour), atof(maxDailyValue))) {
-                createPark(system, name, maxCapacity, billingValue15, billingValueAfter1Hour, maxDailyValue);
+                ParkingNode *park = createPark(name, maxCapacity, billingValue15, billingValueAfter1Hour, maxDailyValue);
+                if (park != NULL) {
+                    addPark(system, park);
+                }
+                
             } 
             free(maxCapacity);
             free(billingValue15);
