@@ -814,42 +814,67 @@ void showParkRevenue(Park* p, Date* date) {
     }
 }
 
-void commandP(ParkingSystem* system, Buffer* buffer) {   
-    char *name, *maxCapacity, *quarterCost, *afterHourCost, *dailyCost;
+/**
+ * @brief Processes a new park request, creating a new Park.
+ *
+ * @param system A pointer to the parking system.
+ * @param buffer A pointer to the buffer containing park information.
+ * @param name The name of the park.
+ */
+void newParkRequest(ParkingSystem* system, Buffer* buffer, char* name) {
+    char *maxCapacity, *quarterCost, *afterHourCost, *dailyCost;
 
+    // Extract park information from the buffer
+    maxCapacity = nextWord(buffer);
+    quarterCost = nextWord(buffer);
+    afterHourCost = nextWord(buffer);
+    dailyCost = nextWord(buffer);
+    // Check if the park request is valid
+    if (isValidParkRequest(system, name, atoi(maxCapacity), atof(quarterCost), atof(afterHourCost), atof(dailyCost))) {
+        ParkNode *park = createPark(name, maxCapacity, quarterCost, afterHourCost, dailyCost);
+        if (park != NULL) {
+            addPark(system, park);  // Add the new park to the parking system
+        }
+    } 
+    free(maxCapacity);
+    free(quarterCost);
+    free(afterHourCost);
+    free(dailyCost);
+}
+
+/**
+ * @brief Creates a park or prints all parks in the system.
+ *
+ * @param system A pointer to the parking system.
+ * @param buffer A pointer to the buffer containing the command and its arguments.
+ */
+void commandP(ParkingSystem* system, Buffer* buffer) {   
+    char *name; // Declare a variable to store the park name
     name = nextWord(buffer);
 
     if (name == NULL) {
-        // If there are no more arguments, list the parking lots
-        printParks(system);
+        printParks(system); // Print all parks in the system
     } else {
-            maxCapacity = nextWord(buffer);
-            quarterCost = nextWord(buffer);
-            afterHourCost = nextWord(buffer);
-            dailyCost = nextWord(buffer);
-            if (isValidParkRequest(system, name, atoi(maxCapacity), atof(quarterCost), atof(afterHourCost), atof(dailyCost))) {
-                ParkNode *park = createPark(name, maxCapacity, quarterCost, afterHourCost, dailyCost);
-                if (park != NULL) {
-                    addPark(system, park);
-                }
-            } 
-            free(maxCapacity);
-            free(quarterCost);
-            free(afterHourCost);
-            free(dailyCost);
-        free(name);
+        newParkRequest(system, buffer, name); // Process a new park request
     }
+    free(name);
 }
 
+/**
+ * @brief Processes a request to remove a park from the parking system.
+ *
+ * @param system A pointer to the parking system.
+ * @param buffer A pointer to the buffer containing the park name to be removed.
+ */
 void commandR(ParkingSystem* system, Buffer* buffer) {
-    char *name;
+    char *name; // Declare a variable to store the park name
 
     name = nextWord(buffer);
-    Park *p = getPark(system, name);
+    Park *p = getPark(system, name); // Get the park by name
     if (p != NULL) {
-        freeParkLogs(system, p);
-        removePark(system, name);
-        printRemainingParks(system);
+        freeParkLogs(system, p); // Free memory for logs associated with the park
+        removePark(system, name); // Remove the park from the system
+        printRemainingParks(system); // Print the remaining parks in the system
 
     } else {
         printf("%s: no such parking.\n", name);

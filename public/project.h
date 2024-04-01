@@ -105,6 +105,7 @@ void printRemainingParks(ParkingSystem* system);
 Park* getPark(ParkingSystem* sys, char* name);
 ParkNode *createPark(char *name, char *maxCapacity, char *quarterCost, char *afterHourCost, char *dailyCost);
 Park *createParkData(char *name, char *maxCapacity, char *quarterCost, char *afterHourCost, char *dailyCost);
+void newParkRequest(ParkingSystem* system, Buffer* buffer, char* name);
 
 void addVehicleToList(ParkingSystem *system, Vehicle *vehicle); 
 unsigned int hash(const char *reg);
