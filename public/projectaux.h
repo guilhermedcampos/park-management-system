@@ -7,7 +7,6 @@
 #include <string.h>
 #include <stdlib.h>
 
-
 char *dateToString(Date *date);
 char *timeToString(Time *time);
 int isValidDate(Date *date);
