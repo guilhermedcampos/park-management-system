@@ -6,7 +6,12 @@
 #include <string.h>
 #include <stdlib.h>
 
-int isValidParkRequest(int nParks, int cap, double x, double y, double z) {
+int isValidParkRequest(ParkingSystem *system, char* name, int cap, double x, double y, double z) {
+    // Checks if the parking lot already exists
+    if (getPark(system, name) != NULL) {
+        printf("%s: parking already exists.\n", name);
+        return 0;
+    }
 
     if (cap == 0) {
         printf("%d: invalid capacity.\n", cap);
@@ -19,7 +24,7 @@ int isValidParkRequest(int nParks, int cap, double x, double y, double z) {
         return 0;
     }
 
-    if (nParks == MAX_PARKING_LOTS ) {
+    if (system->numParks == MAX_PARKING_LOTS ) {
         printf("too many parks.\n");
         return 0;
     }
@@ -540,7 +545,7 @@ void quicksort(LogNode **arr, int low, int high) {
 }
 
 
-LogNode *sortListExitDate(Park *p) {
+void sortListExitDate(Park *p) {
     // Find number of elements in linked list
     int n = 0;
     LogNode *current = p->lHead;
@@ -552,7 +557,7 @@ LogNode *sortListExitDate(Park *p) {
     // Transform linked list into array
     LogNode **arr = (LogNode **)malloc(n * sizeof(LogNode *));
     if (arr == NULL) {
-        return NULL; // Allocation failed
+        return; // Allocation failed
     }
     current = p->lHead;
     for (int i = 0; i < n; i++) {
@@ -574,7 +579,7 @@ LogNode *sortListExitDate(Park *p) {
     p->lHead = arr[0];
     free(arr);
 
-    return p->lHead;
+    return;
 }
 
 size_t dateInMinutes(Date *d, Time *t) {
@@ -636,15 +641,15 @@ double calculateValue(Log *log, Park *park) {
     size_t minsInDay = 24 * 60;
     size_t diff = getTimeDiff(log->entryTime, log->entryDate, log->exitTime, log->exitDate);
     size_t days = diff / minsInDay;
-    double completeDayRev = park->maxDailyValue * days;
+    double completeDayRev = park->dailyCost * days;
     size_t remainingQuarters = ((diff % minsInDay) + 14) / 15;
     double remainingRev = 0;
     if (remainingQuarters <= 4) {
-        remainingRev = park->billingValue15 * remainingQuarters;
+        remainingRev = park->quarterCost * remainingQuarters;
     } else {
-        remainingRev = 4 * park->billingValue15 + (remainingQuarters - 4) * park->billingValueAfter1Hour;
+        remainingRev = 4 * park->quarterCost + (remainingQuarters - 4) * park->afterHourCost;
     }
-    completeDayRev += min(remainingRev, park->maxDailyValue);
+    completeDayRev += min(remainingRev, park->dailyCost);
     return completeDayRev;
 }
 

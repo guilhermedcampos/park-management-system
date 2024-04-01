@@ -268,13 +268,13 @@ Park* getPark(ParkingSystem* sys, char* name) {
  *
  * @param name The name of the park.
  * @param maxCapacity The maximum capacity of the park.
- * @param billingValue15 The billing value for the first 15 minutes.
- * @param billingValueAfter1Hour The billing value after the first hour.
- * @param maxDailyValue The maximum daily billing value.
+ * @param quarterCost The billing value for the first 15 minutes.
+ * @param afterHourCost The billing value after the first hour.
+ * @param dailyCost The maximum daily billing value.
  * @return A pointer to the newly created park node if successful, otherwise NULL.
  */
-ParkNode *createPark(char *name, char *maxCapacity, char *billingValue15, char *billingValueAfter1Hour, char *maxDailyValue) {
-    Park *newPark = createParkData(name, maxCapacity, billingValue15, billingValueAfter1Hour, maxDailyValue);
+ParkNode *createPark(char *name, char *maxCapacity, char *quarterCost, char *afterHourCost, char *dailyCost) {
+    Park *newPark = createParkData(name, maxCapacity, quarterCost, afterHourCost, dailyCost);
     if (newPark == NULL) {
         return NULL;
     }
@@ -300,12 +300,12 @@ ParkNode *createPark(char *name, char *maxCapacity, char *billingValue15, char *
  *
  * @param name The name of the park.
  * @param maxCapacity The maximum capacity of the park.
- * @param billingValue15 The billing value for the first 15 minutes.
- * @param billingValueAfter1Hour The billing value after the first hour.
- * @param maxDailyValue The maximum daily billing value.
+ * @param quarterCost The billing value for the first 15 minutes.
+ * @param afterHourCost The billing value after the first hour.
+ * @param dailyCost The maximum daily billing value.
  * @return A pointer to the newly created park structure if successful, otherwise NULL.
  */
-Park *createParkData(char *name, char *maxCapacity, char *billingValue15, char *billingValueAfter1Hour, char *maxDailyValue) {
+Park *createParkData(char *name, char *maxCapacity, char *quarterCost, char *afterHourCost, char *dailyCost) {
     Park *newPark = (Park *)malloc(sizeof(Park));   // Allocate memory for the park structure
     if (newPark == NULL) {
         return NULL;
@@ -320,9 +320,9 @@ Park *createParkData(char *name, char *maxCapacity, char *billingValue15, char *
     newPark->lHead = NULL;
     newPark->maxCapacity = atoi(maxCapacity);
     newPark->currentLots = 0;
-    newPark->billingValue15 = atof(billingValue15);
-    newPark->billingValueAfter1Hour = atof(billingValueAfter1Hour);
-    newPark->maxDailyValue = atof(maxDailyValue);
+    newPark->quarterCost = atof(quarterCost);
+    newPark->afterHourCost = atof(afterHourCost);
+    newPark->dailyCost = atof(dailyCost);
 
     return newPark;
 }
@@ -727,6 +727,11 @@ void printVehicleLogs(Vehicle *v) {
     }
 }
 
+/**
+ * @brief Prints logs sorted by date and calculates revenue.
+ *
+ * @param head A pointer to the head of the log list.
+ */
 void printLogsByDate(LogNode *head) {
     LogNode *cur = head;
     int prevDay = -1;
@@ -757,71 +762,60 @@ void printLogsByDate(LogNode *head) {
         cur = cur->next;
     }
 
-
     // Print the last date and accumulated revenue
     if (prevDay != -1 && prevMonth != -1 && prevYear != -1) {
         printf("%02d-%02d-%04d %.2f\n", prevDay, prevMonth, prevYear, totalRevenue);
     }
 }
 
+/**
+ * @brief Prints revenue for logs corresponding to a specific date.
+ *
+ * @param cur A pointer to the current log node.
+ * @param date A pointer to the date for which revenue is to be printed.
+ */
+void printRevenue(LogNode *cur, Date *date) {
+    // Check if the provided date is valid and if the log represents an exit
+    if (isValidDate(date) && cur->log->type == 1) {
+        // Check if the log's exit date matches the provided date
+        if (isLogDateValid(date, cur->log->exitDate) && isSameDate(cur->log->exitDate, date)) {
+            char *t = timeToString(cur->log->exitTime); // Convert exit time to string
+            // Print registration number, exit time, and value
+            printf("%s %s %.2f\n", cur->log->reg, t, cur->log->value); 
+            free(t); // Free dynamically allocated memory
+        }
+    } 
+}
 
+/**
+ * @brief Shows revenue information for a park.
+ *
+ * @param p A pointer to the park for which revenue information is to be shown.
+ * @param date A pointer to the date for which revenue information is to be shown. Pass NULL
+ *             to show revenue for all logs associated with the park.
+ */
 void showParkRevenue(Park* p, Date* date) {
-    LogNode *cur;
-    if (p->isSorted == 0) {
-        cur = sortListExitDate(p);
-        p->isSorted = 1;
-    } else {
-        cur = p->lHead;
-    }
-
-    if (cur == NULL) {
-        return;
-    }
+    LogNode *cur = p->lHead; // Initialize current log node pointer
     
     while (cur != NULL) {
+        // Check if the log is associated with the current park
         if (strcmp(cur->log->parkName, p->name) == 0) {
+            // If no date is provided, print revenue information for all logs
             if (date == NULL) {
                 if (cur->log->type == 1) {
-                    printLogsByDate(cur);
+                    printLogsByDate(cur); // Print revenue information for all logs by date
                     break;
                 } 
             } else {
-                if (isValidDate(date) && cur->log->type == 1) {
-                    if (isLogDateValid(date, cur->log->exitDate) && isSameDate(cur->log->exitDate, date)) {
-                        char *t = timeToString(cur->log->exitTime);
-                        printf("%s %s %.2f\n", cur->log->reg, t, cur->log->value);
-                        free(t);
-                    }
-                } 
+                printRevenue(cur, date); // Print revenue information for logs corresponding to the provided date
             }
         }
-        cur = cur->next;
-    }
-}
-
-void printParkLogs(Park* p) {
-    LogNode *cur = p->lHead;
-    if (cur == NULL) {
-        return;
-    }
-    while (cur != NULL) {
-            if (cur->log->type == 1) {
-                char *dEntry = dateToString(cur->log->entryDate);
-                char *tEntry = timeToString(cur->log->entryTime);
-                char *dExit = dateToString(cur->log->exitDate);
-                char *tExit = timeToString(cur->log->exitTime);
-                printf("%s %s %s %s %s %.2f\n", cur->log->reg, dEntry, tEntry, dExit, tExit, cur->log->value);
-                free(dEntry);
-                free(tEntry);
-                free(dExit);
-                free(tExit);
-            }
-        cur = cur->next;
+        cur = cur->next; // Move to the next log node
     }
 }
 
 void commandP(ParkingSystem* system, Buffer* buffer) {   
-    char *name, *maxCapacity, *billingValue15, *billingValueAfter1Hour, *maxDailyValue;
+    char *name, *maxCapacity, *quarterCost, *afterHourCost, *dailyCost;
 
     name = nextWord(buffer);
 
@@ -829,26 +823,20 @@ void commandP(ParkingSystem* system, Buffer* buffer) {
         // If there are no more arguments, list the parking lots
         printParks(system);
     } else {
-        // Checks if the parking lot already exists
-        if (getPark(system, name) != NULL) {
-            printf("%s: parking already exists.\n", name);
-        } else {
             maxCapacity = nextWord(buffer);
-            billingValue15 = nextWord(buffer);
-            billingValueAfter1Hour = nextWord(buffer);
-            maxDailyValue = nextWord(buffer);
-            if (isValidParkRequest(system->numParks, atoi(maxCapacity), atof(billingValue15), atof(billingValueAfter1Hour), atof(maxDailyValue))) {
-                ParkNode *park = createPark(name, maxCapacity, billingValue15, billingValueAfter1Hour, maxDailyValue);
+            quarterCost = nextWord(buffer);
+            afterHourCost = nextWord(buffer);
+            dailyCost = nextWord(buffer);
+            if (isValidParkRequest(system, name, atoi(maxCapacity), atof(quarterCost), atof(afterHourCost), atof(dailyCost))) {
+                ParkNode *park = createPark(name, maxCapacity, quarterCost, afterHourCost, dailyCost);
                 if (park != NULL) {
                     addPark(system, park);
                 }
-                
             } 
             free(maxCapacity);
-            free(billingValue15);
-            free(billingValueAfter1Hour);
-            free(maxDailyValue);
-        }
+            free(quarterCost);
+            free(afterHourCost);
+            free(dailyCost);
         free(name);
     }
 }
@@ -957,6 +945,16 @@ void commandF(ParkingSystem* system, Buffer* buffer) {
         printf("%s: no such parking.\n", name);
         return;
     }
+
+    if (park->lHead == NULL) {
+        return;
+    }
+
+    if (park->isSorted == 0) {
+        sortListExitDate(park);
+        park->isSorted = 1;
+    } 
+
     if (date == NULL) {
         showParkRevenue(park, NULL);
     } else {

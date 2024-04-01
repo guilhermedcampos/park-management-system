@@ -8,9 +8,9 @@
 #include <stdlib.h>
 
 LogNode *sortLogListName(Vehicle *vehicle);
-LogNode *sortListExitDate(Park *park);
+void sortListExitDate(Park *park);
 
-int isValidParkRequest(int nParks, int cap, double x, double y, double z);
+int isValidParkRequest(ParkingSystem *system, char *name, int cap, double x, double y, double z);
 int isValidDate(Date *date);
 int isValidTime(Time *time);
 int isSameDate(Date *d1, Date *d2);

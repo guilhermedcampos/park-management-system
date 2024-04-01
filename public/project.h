@@ -51,9 +51,9 @@ typedef struct Park {
     char *name;
     int maxCapacity;
     int currentLots;
-    double billingValue15;
-    double billingValueAfter1Hour;
-    double maxDailyValue;
+    double quarterCost;
+    double afterHourCost;
+    double dailyCost;
     int isSorted;
     // logs of entries and exits in the park
     LogNode *lHead;
@@ -103,8 +103,8 @@ void removePark(ParkingSystem *system, char *name);
 void printParks(ParkingSystem* system);
 void printRemainingParks(ParkingSystem* system);
 Park* getPark(ParkingSystem* sys, char* name);
-ParkNode *createPark(char *name, char *maxCapacity, char *billingValue15, char *billingValueAfter1Hour, char *maxDailyValue);
-Park *createParkData(char *name, char *maxCapacity, char *billingValue15, char *billingValueAfter1Hour, char *maxDailyValue);
+ParkNode *createPark(char *name, char *maxCapacity, char *quarterCost, char *afterHourCost, char *dailyCost);
+Park *createParkData(char *name, char *maxCapacity, char *quarterCost, char *afterHourCost, char *dailyCost);
 
 void addVehicleToList(ParkingSystem *system, Vehicle *vehicle); 
 unsigned int hash(const char *reg);
@@ -126,6 +126,8 @@ Log *createLog(Vehicle *v, Park *p, char *d, char *t);
 
 void printExits(LogNode *cur, char *dEntry, char *tEntry);
 void printVehicleLogs(Vehicle *v);
+void printLogsByDate(LogNode *head);
+void printRevenue(LogNode *cur, Date *date);
 void showParkRevenue(Park* p, Date* date);
 
 void commandP(ParkingSystem* system, Buffer* buffer);
