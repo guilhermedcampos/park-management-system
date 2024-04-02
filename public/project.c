@@ -499,7 +499,7 @@ Vehicle *createVehicle(System *sys, char *reg) {
  * @param v A pointer to the vehicle entering the park.
  * @param date The date of entry in "YYYY-MM-DD" format.
  * @param time The time of entry in "HH:MM" format.
- * @return 0 if the operation is successful, -1 if memory allocation fails.
+ * @return SUCCESS if the operation is successful.
  */
 int enterPark(System *sys, Park *p, Vehicle *v, char *date, char *time) {
 
@@ -508,7 +508,7 @@ int enterPark(System *sys, Park *p, Vehicle *v, char *date, char *time) {
     v->isParked = 1;
     p->currentLots++;
     v->lastLog = createLog(v, p, date, time);
-    return 0;
+    return SUCCESS;
 }
 
 /**
@@ -550,10 +550,10 @@ int exitPark(System *sys, Park *p, Vehicle *v, char *date, char *time) {
     p->currentLots--;
     Log *l = updateEntryLog(v->lastLog, date, time, p);
     if (l == NULL) {
-        return 1;
+        return FAILURE;
     }
     printExit(v);
-    return 0;
+    return SUCCESS;
 }
 
 /**
@@ -1256,7 +1256,7 @@ void processRequest(System *sys, Buffer *buffer) {
             break;
         case 'q':
             terminate(sys, buffer);
-            exit(0);
+            exit(SUCCESS);
         default:
             break;
     }
@@ -1265,7 +1265,7 @@ void processRequest(System *sys, Buffer *buffer) {
 /**
  * @brief The main function of the program.
  *
- * @return 0 upon successful execution.
+ * @return SUCCESS upon successful execution.
  */
 int main() {
     // Initializes the buffer
@@ -1278,10 +1278,10 @@ int main() {
         exit(1);
     }
     
-    while (1) {
+    while (TRUE) {
         // Reads the input and stores it in the buffer
         buffer = getBuffer(buffer);
         processRequest(sys, buffer);
     }
-    return 0;
+    return SUCCESS;
 }
