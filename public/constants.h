@@ -34,6 +34,8 @@
 #define FALSE 0
 #define SUCCESS 1
 #define FAILURE 0
+#define SORTED 1
+#define UNSORTED 0
 
 /*
  * Status of vehicle.
