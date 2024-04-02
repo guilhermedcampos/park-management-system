@@ -28,7 +28,7 @@
 #define ERR_INVALID_EXIT "%s: invalid vehicle exit.\n"
 
 /*
- * Booleans.
+ * Booleans and Invalid.
 */
 #define TRUE 1
 #define FALSE 0
@@ -36,6 +36,7 @@
 #define FAILURE 0
 #define SORTED 1
 #define UNSORTED 0
+#define INVALID -1
 
 /*
  * Status of vehicle.
