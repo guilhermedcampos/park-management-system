@@ -426,23 +426,23 @@ int isValidRequest(System *sys, char *name, char *reg, char *date, char *time, i
         printf(ERR_NO_PARK, name);
         return FALSE;
     }
-    if (type == 0) {
+    if (type == ENTRY) {
         if (park->currentLots == park->maxCapacity) {
             printf(ERR_PARK_FULL, park->name);
             return FALSE;
         }
     }
-    if (!isValidRegistration(reg) || (!isValidRegistration(reg) && type == 1)) {
+    if (!isValidRegistration(reg) || (!isValidRegistration(reg) && type == EXIT)) {
         printf(ERR_INVALID_REG, reg);
         return FALSE;
     }
-    if (type == 0) {
+    if (type == ENTRY) {
         if (isVehicleParked(sys, reg)) {
             printf(ERR_INVALID_ENTRY, reg);
             return FALSE;
         }
     }
-    if (type == 1) {
+    if (type == EXIT) {
         if (!isVehicleInParkExit(sys, reg, name)) {
             printf(ERR_INVALID_EXIT, reg);
             return FALSE;
@@ -669,7 +669,7 @@ void freeParkLogs(System *sys, Park *p) {
     while (cur != NULL) {
         LogNode *temp = cur;
         cur = cur->next;
-        if (temp->log->type == 0) {
+        if (temp->log->type == ENTRY) {
             Vehicle *v = getVehicle(sys, temp->log->reg);
             if (v != NULL) {
                 v->isParked = 0;
@@ -844,7 +844,7 @@ int partition(LogNode **arr, int low, int high) {
     LogNode *pivot = arr[high];
     int i = low - 1;
     for (int j = low; j < high; j++) {
-        if (arr[j]->log->type == 1 && pivot->log->type == 1) {
+        if (arr[j]->log->type == EXIT && pivot->log->type == EXIT) {
             if (isDateBefore(arr[j]->log->exitDate, pivot->log->exitDate, arr[j]->log->exitTime, pivot->log->exitTime)) {
                 i++;
                 LogNode *temp = arr[i];
