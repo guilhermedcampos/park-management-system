@@ -772,9 +772,9 @@ void printVehicleLogs(Vehicle *v) {
  */
 void printLogsByDate(LogNode *head) {
     LogNode *cur = head;
-    int prevDay = -1;
-    int prevMonth = -1;
-    int prevYear = -1;
+    int prevDay = INVALID;
+    int prevMonth = INVALID;
+    int prevYear = INVALID;
     double totalRevenue = 0.0;
 
     while (cur != NULL) {
