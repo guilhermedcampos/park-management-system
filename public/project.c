@@ -689,7 +689,7 @@ Log *updateEntryLog(Log *l, char *date, char *time, Park *park) {
     }
 
     l->value = calculateValue(l, park);
-    l->type = 1; // Update the type to indicate it's an exit log
+    l->type = EXIT; // Update the type to indicate it's an exit log
     return l;
 }
 
@@ -712,7 +712,7 @@ Log *createLog(Vehicle *v, Park *p, char *d, char *t) {
     newLog->entryTime = createTimeStruct(t);
     newLog->exitDate = NULL;
     newLog->exitTime = NULL;
-    newLog->type = 0;
+    newLog->type = ENTRY;
 
     newLog->reg = v->registration;
     newLog->parkName = p->name;
@@ -778,7 +778,7 @@ void printLogsByDate(LogNode *head) {
     double totalRevenue = 0.0;
 
     while (cur != NULL) {
-        if (cur->log->type == 0) {
+        if (cur->log->type == ENTRY) {
             cur = cur->next;
             continue;
         }
@@ -840,7 +840,7 @@ void showParkRevenue(Park* p, Date* date) {
         if (strcmp(cur->log->parkName, p->name) == 0) {
             // If no date is provided, print revenue information for all logs
             if (date == NULL) {
-                if (cur->log->type == 1) {
+                if (cur->log->type == EXIT) {
                     printLogsByDate(cur); // Print revenue information for all logs by date
                     break;
                 } 
