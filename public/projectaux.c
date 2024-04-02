@@ -1,3 +1,7 @@
+/*
+ * iaed-24 - ist1106909 - project
+ * Auxiliar source file with the auxiliar functions.
+ */
 #include "project.h"
 #include "constants.h"
 #include "projectaux.h"

@@ -1,3 +1,7 @@
+/*
+ * iaed-24 - ist1106909 - project
+ * Header file with all  the structs and main functions prototypes.
+ */
 #ifndef PROJECT_H
 #define PROJECT_H
 
@@ -118,10 +122,18 @@ typedef struct System {
     Time *lastTime;                             /**< Last time recorded in the system. */
 } System;
 
+
+/*
+ *  Initialization functions
+ */
 Buffer *getBuffer(Buffer *buffer);
 System* init();
 void initParksArray(System* sys);
 void initHashTable(System* sys);
+
+/*
+ *  Park related functions
+ */
 void addParkToArray(System *sys, Park *park);
 void addParkToList(System *sys, ParkNode *parking);
 void addPark(System *sys, ParkNode *parking);
@@ -136,6 +148,9 @@ ParkNode *createPark(char *name, char *maxCapacity, char *quarterCost, char *aft
 Park *createParkData(char *name, char *maxCapacity, char *quarterCost, char *afterHourCost, char *dailyCost);
 void newParkRequest(System* sys, Buffer* buffer, char* name);
 
+/*
+ *  Vehicle related functions
+ */
 void addVehicleToList(System *sys, Vehicle *vehicle); 
 unsigned int hash(const char *reg);
 void addToHashTable(System *sys, Vehicle *vehicle);
@@ -144,17 +159,26 @@ Vehicle *getVehicle(System *sys, char *reg);
 Vehicle *createVehicleData(char *reg);
 Vehicle *createVehicle(System *sys, char *reg);
 
+/*
+ *  Requests related functions
+ */
 int enterPark(System *sys, Park *p, Vehicle *v, char *date, char *time);
 void printExit(Vehicle *v);
 int exitPark(System *sys, Park *p, Vehicle *v, char *date, char *time);
 void updateSystem(System *sys, char *date, char *time);
 
+/*
+ *  Log related functions
+ */
 Log *addLogToVehicle(Vehicle *v, Log *l);
 void addLogToPark(Park *p, Log *log);
 void addLog(Log *newLog, Vehicle *v, Park *p);
 Log *updateEntryLog(Log *l, char *date, char *time, Park *park);
 Log *createLog(Vehicle *v, Park *p, char *d, char *t);
 
+/*
+ *  Print and revenue related functions
+ */
 void printExits(LogNode *cur, char *dEntry, char *tEntry);
 void printVehicleLogs(Vehicle *v);
 void printLogsByDate(LogNode *head);
@@ -163,6 +187,9 @@ void showParkRevenue(Park* p, Date* date);
 void processRevenueCheck(System *sys, Park *park, char *date);
 double calculateValue(Log *log, Park *park);
 
+/*
+ *  Command functions
+ */
 void commandP(System* sys, Buffer* buffer);
 void commandR(System* sys, Buffer* buffer);
 void commandE(System* sys, Buffer* buffer);
@@ -170,6 +197,9 @@ void commandS(System* sys, Buffer* buffer);
 void commandV(System* sys, Buffer* buffer);
 void commandF(System* sys, Buffer* buffer);
 
+/*
+ *  Free memory functions
+ */
 void freeArgs(char *name, char *reg, char *time, char *date);
 void freeHashTable(System *sys);
 void freeLogNode(LogNode *node);

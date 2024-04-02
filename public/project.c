@@ -1,3 +1,7 @@
+/*
+ * iaed-24 - ist1106909 - project
+ * Main source file with the main functions.
+ */
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -1253,12 +1257,16 @@ void processRequest(System *sys, Buffer *buffer) {
         case 'q':
             terminate(sys, buffer);
             exit(0);
-            break;
         default:
             break;
     }
 }
 
+/**
+ * @brief The main function of the program.
+ *
+ * @return 0 upon successful execution.
+ */
 int main() {
     // Initializes the buffer
     Buffer *buffer = (Buffer *)malloc(sizeof(Buffer));

@@ -1,3 +1,7 @@
+/*
+ * iaed-24 - ist1106909 - project
+ * Header file with all constants
+ */
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
