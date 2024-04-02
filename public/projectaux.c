@@ -664,7 +664,7 @@ void removeVehicleLog(System *sys, Park *p, char *reg) {
  */
 void freeParkLogs(System *sys, Park *p) {
     LogNode *cur = p->lHead;
-    p->isSorted = 0;
+    p->isSorted = UNSORTED;
 
     while (cur != NULL) {
         LogNode *temp = cur;
