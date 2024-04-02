@@ -636,7 +636,7 @@ void addLogToPark(Park *p, Log *l) {
     newLog->log = l;
     newLog->next = NULL;
     newLog->prev = NULL;
-    p->isSorted = 0;
+    p->isSorted = UNSORTED;
 
     if (p->lHead == NULL) {
         p->lHead = newLog;
@@ -1051,9 +1051,9 @@ void commandF(System* sys, Buffer* buffer) {
     Park *park = getPark(sys, name); // Retrieve park information
 
     if (isValidRevenueCheck(park, name)) {
-        if (park->isSorted == 0) { // If list is not sorted, sort it
+        if (park->isSorted == UNSORTED) { // If list is not sorted, sort it
             sortListExitDate(park);
-            park->isSorted = 1;
+            park->isSorted = SORTED;
         } 
         
         if (date == NULL) { // Display park revenue daily
