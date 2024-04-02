@@ -636,7 +636,7 @@ void addLogToPark(Park *p, Log *l) {
     newLog->log = l;
     newLog->next = NULL;
     newLog->prev = NULL;
-    p->isSorted = UNSORTED;
+    p->isSorted = FALSE;
 
     if (p->lHead == NULL) {
         p->lHead = newLog;
@@ -708,11 +708,12 @@ Log *createLog(Vehicle *v, Park *p, char *d, char *t) {
         return NULL;
     }
 
+    // Initialize the log fields
     newLog->entryDate = createDateStruct(d);
     newLog->entryTime = createTimeStruct(t);
     newLog->exitDate = NULL;
     newLog->exitTime = NULL;
-    newLog->type = ENTRY;
+    newLog->type = ENTRY; 
 
     newLog->reg = v->registration;
     newLog->parkName = p->name;
@@ -754,7 +755,7 @@ void printVehicleLogs(Vehicle *v) {
         // If its an entry log, print only entry info
         char *dEntry = dateToString(cur->log->entryDate);
         char *tEntry = timeToString(cur->log->entryTime);
-        if (cur->log->type == 0) {
+        if (cur->log->type == ENTRY) {
             printf("%s %s %s\n", cur->log->parkName, dEntry, tEntry);
             free(dEntry);
             free(tEntry);
@@ -772,9 +773,9 @@ void printVehicleLogs(Vehicle *v) {
  */
 void printLogsByDate(LogNode *head) {
     LogNode *cur = head;
-    int prevDay = INVALID;
-    int prevMonth = INVALID;
-    int prevYear = INVALID;
+    int prevDay = INV;
+    int prevMonth = INV;
+    int prevYear = INV;
     double totalRevenue = 0.0;
 
     while (cur != NULL) {
@@ -787,7 +788,7 @@ void printLogsByDate(LogNode *head) {
         int curYear = cur->log->exitDate->year;
 
         // If the current date is different from the previous one, print accumulated revenue
-        if ((curDay != prevDay || curMonth != prevMonth || curYear != prevYear) && prevDay != -1 && prevMonth != -1 && prevYear != -1) {
+        if ((curDay != prevDay || curMonth != prevMonth || curYear != prevYear) && prevDay != INV && prevMonth != INV && prevYear != INV) {
             printf("%02d-%02d-%04d %.2f\n", prevDay, prevMonth, prevYear, totalRevenue);
             totalRevenue = 0.0; // Reset accumulated revenue for the new date
         }
@@ -801,7 +802,7 @@ void printLogsByDate(LogNode *head) {
     }
 
     // Print the last date and accumulated revenue
-    if (prevDay != -1 && prevMonth != -1 && prevYear != -1) {
+    if (prevDay != INV && prevMonth != INV && prevYear != INV) {
         printf("%02d-%02d-%04d %.2f\n", prevDay, prevMonth, prevYear, totalRevenue);
     }
 }
@@ -814,7 +815,7 @@ void printLogsByDate(LogNode *head) {
  */
 void printRevenue(LogNode *cur, Date *date) {
     // Check if the provided date is valid and if the log represents an exit
-    if (isValidDate(date) && cur->log->type == 1) {
+    if (isValidDate(date) && cur->log->type == EXIT) {
         // Check if the log's exit date matches the provided date
         if (isLogDateBefore(date, cur->log->exitDate) && isSameDate(cur->log->exitDate, date)) {
             char *t = timeToString(cur->log->exitTime); // Convert exit time to string
@@ -1051,9 +1052,9 @@ void commandF(System* sys, Buffer* buffer) {
     Park *park = getPark(sys, name); // Retrieve park information
 
     if (isValidRevenueCheck(park, name)) {
-        if (park->isSorted == UNSORTED) { // If list is not sorted, sort it
+        if (!park->isSorted) { // If list is not sorted, sort it
             sortListExitDate(park);
-            park->isSorted = SORTED;
+            park->isSorted = TRUE;
         } 
         
         if (date == NULL) { // Display park revenue daily
@@ -1256,7 +1257,7 @@ void processRequest(System *sys, Buffer *buffer) {
             break;
         case 'q':
             terminate(sys, buffer);
-            exit(SUCCESS);
+            exit(0);
         default:
             break;
     }
@@ -1275,10 +1276,10 @@ int main() {
     // Initializes the parking system
     System *sys = init();
     if (sys == NULL) {
-        exit(1);
+        exit(FAILURE);
     }
     
-    while (TRUE) {
+    while (1) {
         // Reads the input and stores it in the buffer
         buffer = getBuffer(buffer);
         processRequest(sys, buffer);

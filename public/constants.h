@@ -12,6 +12,7 @@
 #define BUFSIZE 8192          // Maximum buffer size
 #define REGISTRATION_LENGTH 8 // Maximum registration length
 #define HASH_TABLE_SIZE 1000  // Hash table size
+#define INV -1                // Invalid value
 
 /*
  * Error messages.
@@ -26,22 +27,26 @@
 #define ERR_TOO_MANY_PARKS "too many parks.\n"
 #define ERR_INVALID_ENTRY "%s: invalid vehicle entry.\n"
 #define ERR_INVALID_EXIT "%s: invalid vehicle exit.\n"
+#define ERR_NO_ENTRIES "%s: no entries found in any parking.\n"
 
 /*
- * Booleans and Invalid.
+ * Booleans.
 */
 #define TRUE 1
 #define FALSE 0
 #define SUCCESS 1
 #define FAILURE 0
-#define SORTED 1
-#define UNSORTED 0
-#define INVALID -1
 
 /*
- * Status of vehicle.
+ * Type of log.
  */
 #define ENTRY 0
 #define EXIT 1
+
+/*
+ * Type of pairs in a registration.
+ */
+#define LETTER 0
+#define NUMBER 1
 
 #endif // CONSTANTS_H

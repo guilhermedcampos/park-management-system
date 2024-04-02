@@ -152,15 +152,16 @@ int isLogTimeBefore(Time *t1, Time *t2) {
  */
 int isDateBefore(Date *d1, Date *d2, Time *t1, Time *t2) {
     int val = isLogDateBefore(d1, d2);
-    if (val == TRUE) {
+    if (val == 1) {
         return TRUE;
     } else if (val == 2) {
-        if (isLogTimeBefore(t1, t2) == TRUE) {
+        if (isLogTimeBefore(t1, t2) == 1) {
             return TRUE;
         }
-        return TRUE;
+        return FALSE;
     }
-    return TRUE;
+    return FALSE;
+
 }
 
 /**
@@ -231,7 +232,7 @@ int daysByMonth(int month) {
         case 10: return 31;
         case 11: return 30;
         case 12: return 31;
-        default: return 0;
+        default: return FALSE;
     }
 
 }
@@ -417,7 +418,7 @@ int isValidDateRequest(System *sys, char *date, char *time) {
  * @param reg Pointer to a character array representing the vehicle registration.
  * @param date Pointer to a character array representing the date of the request.
  * @param time Pointer to a character array representing the time of the request.
- * @param type Integer representing the type of request (0 for entry, 1 for exit).
+ * @param type Integer representing the type of request.
  * @return Returns 1 if the request is valid, 0 otherwise.
  */
 int isValidRequest(System *sys, char *name, char *reg, char *date, char *time, int type) {
@@ -459,13 +460,8 @@ int isValidRequest(System *sys, char *name, char *reg, char *date, char *time, i
  * @return Returns 1 if the vehicle has valid logs for printing, 0 otherwise.
  */
 int isValidPrintLogsRequest(Vehicle *v, char *reg) {
-    if (v == NULL) {
-        printf("%s: no entries found in any parking.\n", reg);
-        return FALSE;
-    }
-
-    if (v->lHead == NULL) {
-        printf("%s: no entries found in any parking.\n", v->registration);
+    if (v == NULL || v->lHead == NULL) {
+        printf(ERR_NO_ENTRIES, reg);
         return FALSE;
     }
     return TRUE;
@@ -480,7 +476,7 @@ int isValidPrintLogsRequest(Vehicle *v, char *reg) {
  */
 int isValidRevenueCheck(Park *park, char *name) {
     if (park == NULL) { // Check if park exists
-        printf("%s: no such parking.\n", name);
+        printf(ERR_NO_PARK, name);
         return FALSE;
     }
 
@@ -499,9 +495,9 @@ int isValidRevenueCheck(Park *park, char *name) {
  */
 int isValidPair(char cur, char next) {
     if ((cur >= 'A' && cur <= 'Z') && (next >= 'A' && next <= 'Z')) {
-        return 0;
+        return LETTER;
     } else if ((cur >= '0' && cur <= '9') && (next >= '0' && next <= '9')) {
-        return 1;
+        return NUMBER;
     } else {
         return 2;
     }
@@ -516,7 +512,7 @@ int isValidPair(char cur, char next) {
 int isValidRegistration(char *reg) {
     // Check if the length of the registration is valid
     if (strlen(reg) != REGISTRATION_LENGTH) {
-        return FALSE;
+        return 0;
     }
 
     // Flags to track groups of letters and digits
@@ -524,7 +520,7 @@ int isValidRegistration(char *reg) {
     int digitGroup = 0;
 
     if (reg[2] != '-' || reg[5] != '-') {
-        return FALSE;
+        return 0;
     }
 
     // Iterate through each character in the registration
@@ -534,11 +530,11 @@ int isValidRegistration(char *reg) {
 
         int res;
         if ((res = isValidPair(cur, next)) == 2) { 
-            return FALSE;
-        } else if (res == 0) {
+            return 0;
+        } else if (res == LETTER) {
             letterGroup++;
             i +=2;
-        } else {
+        } else if (res == NUMBER){
             digitGroup++;
             i += 2;
         }
@@ -546,11 +542,11 @@ int isValidRegistration(char *reg) {
 
     // Check if the registration contains at least one pair of letters and one pair of digits
     if ((letterGroup == 2 && digitGroup == 1) || (letterGroup == 1 && digitGroup == 2) ) {
-        return FALSE;
+        return TRUE;
     }
 
     // If all checks pass, the registration is valid
-    return TRUE;
+    return 0;
 }
 
 /**
@@ -607,7 +603,7 @@ int isVehicleInParkExit(System *sys, char *reg, char *name) {
     if (v == NULL) {
         return FALSE;
     } if (v->parkName != NULL) {
-        if ((strcmp(v->parkName, name) == 0) && v->isParked == TRUE) {
+        if ((strcmp(v->parkName, name) == 0) && v->isParked == 1) {
             return TRUE;
         }
         return FALSE;
@@ -664,7 +660,7 @@ void removeVehicleLog(System *sys, Park *p, char *reg) {
  */
 void freeParkLogs(System *sys, Park *p) {
     LogNode *cur = p->lHead;
-    p->isSorted = UNSORTED;
+    p->isSorted = FALSE;
 
     while (cur != NULL) {
         LogNode *temp = cur;
@@ -672,7 +668,7 @@ void freeParkLogs(System *sys, Park *p) {
         if (temp->log->type == ENTRY) {
             Vehicle *v = getVehicle(sys, temp->log->reg);
             if (v != NULL) {
-                v->isParked = 0;
+                v->isParked = FALSE;
                 v->parkName = NULL;
             }
         }
