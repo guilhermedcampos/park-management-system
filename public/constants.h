@@ -35,5 +35,10 @@
 #define SUCCESS 1
 #define FAILURE 0
 
+/*
+ * Status of vehicle.
+ */
+#define ENTRY 0
+#define EXIT 1
 
 #endif // CONSTANTS_H
