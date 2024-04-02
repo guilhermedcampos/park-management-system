@@ -892,7 +892,7 @@ void processRevenueCheck(System *sys, Park *park, char *date) {
     if (isValidDate(d) && isLogDateBefore(d, sys->lastDate)) { // Validate date 
         showParkRevenue(park, d);
     } else {
-        printf("invalid date.\n");
+        printf(ERR_INVALID_DATE);
     }
     free(d);
 }
@@ -955,7 +955,7 @@ void commandR(System* sys, Buffer* buffer) {
         printRemainingParks(sys); // Print the remaining parks in the system.
 
     } else {
-        printf("%s: no such parking.\n", name);
+        printf(ERR_NO_PARK, name);
     }
     free(name);
     name = NULL;
@@ -1023,7 +1023,7 @@ void commandV(System* sys, Buffer* buffer) {
 
     // Check if registration is valid
     if (reg == NULL || !isValidRegistration(reg)) {
-        printf("%s: invalid licence plate.\n", reg);
+        printf(ERR_INVALID_REG, reg);
         return;
     }
     

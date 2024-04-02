@@ -364,19 +364,19 @@ int isValidLog(System *sys, Time *time, Date *date) {
  */
 int isValidParkRequest(System *sys, char* name, int cap, double x, double y, double z) {
     if (getPark(sys, name) != NULL) { // Checks if the parking lot already exists
-        printf("%s: parking already exists.\n", name);
+        printf(ERR_PARK_EXISTS, name);
         return 0;
     }
     if (cap == 0) { // Check for invalid capacity
-        printf("%d: invalid capacity.\n", cap);
+        printf(ERR_INVALID_CAP, cap);
         return 0;
     }
     if (x <= 0 || y <= 0 || z <= 0 || x >= y|| y>= z) { // Check for invalid costs
-        printf("invalid cost.\n");
+        printf(ERR_INVALID_COST);
         return 0;
     }
     if (sys->numParks == MAX_PARKING_LOTS ) { // Check if reached the maximum number
-        printf("too many parks.\n");
+        printf(ERR_TOO_MANY_PARKS);
         return 0;
     }
     return 1;
@@ -397,32 +397,32 @@ int isValidRequest(System *sys, char *name, char *reg, char *date, char *time, i
     Park *park = getPark(sys, name);
 
     if (park == NULL) {
-        printf("%s: no such parking.\n", name);
+        printf(ERR_NO_PARK, name);
         return 0;
     }
 
     if (type == 0) {
         if (park->currentLots == park->maxCapacity) {
-            printf("%s: parking is full.\n", park->name);
+            printf(ERR_PARK_FULL, park->name);
             return 0;
         }
     }
 
     if (!isValidRegistration(reg) || (!isValidRegistration(reg) && type == 1)) {
-        printf("%s: invalid licence plate.\n", reg);
+        printf(ERR_INVALID_REG, reg);
         return 0;
     }
 
     if (type == 0) {
         if (isVehicleParked(sys, reg)) {
-            printf("%s: invalid vehicle entry.\n", reg);
+            printf(ERR_INVALID_ENTRY, reg);
             return 0;
         }
     }
 
     if (type == 1) {
         if (!isVehicleInParkExit(sys, reg, name)) {
-            printf("%s: invalid vehicle exit.\n", reg);
+            printf(ERR_INVALID_EXIT, reg);
             return 0;
         }
     }
@@ -430,18 +430,8 @@ int isValidRequest(System *sys, char *name, char *reg, char *date, char *time, i
     Time *t = createTimeStruct(time);
     Date *d = createDateStruct(date);
 
-    if (!isValidTime(t)) {
-        printf("invalid date.\n");
-        return 0;
-    }
-
-    if (!isValidDate(d)) {
-        printf("invalid date.\n");
-        return 0;
-    }
-
-    if (!isValidLog(sys, t, d)) {
-        printf("invalid date.\n");
+    if (!isValidTime(t) || !isValidDate(d) || !isValidLog(sys, t, d)) {
+        printf(ERR_INVALID_DATE);
         return 0;
     }
 
