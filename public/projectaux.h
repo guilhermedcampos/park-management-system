@@ -38,6 +38,7 @@ Date *createDateStruct(char *date);
  */
 int isValidLog(System *sys, Time *time, Date *date);
 int isValidParkRequest(System *sys, char* name, int cap, double x, double y, double z);
+int isValidDateRequest(System *sys, char *date, char *time);
 int isValidRequest(System *sys, char *name, char *reg, char *date, char *time, int type);
 int isValidPrintLogsRequest(Vehicle *v, char *reg);
 int isValidRevenueCheck(Park *park, char *name);

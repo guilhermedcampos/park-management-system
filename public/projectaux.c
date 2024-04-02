@@ -383,6 +383,34 @@ int isValidParkRequest(System *sys, char* name, int cap, double x, double y, dou
 }
 
 /**
+ * @brief Validates a date request.
+ *
+ * This function validates a date request by checking if the provided date and time are valid,
+ * and if the date and time are log-valid within the system.
+ *
+ * @param sys Pointer to the parking system.
+ * @param date The date string to validate.
+ * @param time The time string to validate.
+ * @return 1 if the date request is valid, 0 otherwise.
+ */
+int isValidDateRequest(System *sys, char *date, char *time) {
+    // Create time and date structures
+    Time *t = createTimeStruct(time);
+    Date *d = createDateStruct(date);
+
+    // Check if time, date, and log are valid
+    if (!isValidTime(t) || !isValidDate(d) || !isValidLog(sys, t, d)) {
+        printf(ERR_INVALID_DATE);
+        return 0;
+    }
+
+    // Free allocated memory and return result
+    free(t);
+    free(d);
+    return 1;
+}
+
+/**
  * @brief Checks if a request (entry or exit) is valid.
  *
  * @param sys Pointer to the ParkingSystem structure.
@@ -395,49 +423,33 @@ int isValidParkRequest(System *sys, char* name, int cap, double x, double y, dou
  */
 int isValidRequest(System *sys, char *name, char *reg, char *date, char *time, int type) {
     Park *park = getPark(sys, name);
-
     if (park == NULL) {
         printf(ERR_NO_PARK, name);
         return 0;
     }
-
     if (type == 0) {
         if (park->currentLots == park->maxCapacity) {
             printf(ERR_PARK_FULL, park->name);
             return 0;
         }
     }
-
     if (!isValidRegistration(reg) || (!isValidRegistration(reg) && type == 1)) {
         printf(ERR_INVALID_REG, reg);
         return 0;
     }
-
     if (type == 0) {
         if (isVehicleParked(sys, reg)) {
             printf(ERR_INVALID_ENTRY, reg);
             return 0;
         }
     }
-
     if (type == 1) {
         if (!isVehicleInParkExit(sys, reg, name)) {
             printf(ERR_INVALID_EXIT, reg);
             return 0;
         }
     }
-
-    Time *t = createTimeStruct(time);
-    Date *d = createDateStruct(date);
-
-    if (!isValidTime(t) || !isValidDate(d) || !isValidLog(sys, t, d)) {
-        printf(ERR_INVALID_DATE);
-        return 0;
-    }
-
-    free(t);
-    free(d);
-    return 1;
+    return isValidDateRequest(sys, date, time);
 }
 
 /**
