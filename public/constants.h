@@ -11,6 +11,7 @@
 #define MAX_PARKING_LOTS 20   // Maximum number of parking lots
 #define BUFSIZE 8192          // Maximum buffer size
 #define REGISTRATION_LENGTH 8 // Maximum registration length
+#define MAX_DATE_LENGTH 10    // Maximum date length
 #define HASH_TABLE_SIZE 1000  // Hash table size
 #define INV -1                // Invalid value
 

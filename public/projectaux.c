@@ -46,7 +46,7 @@ char *timeToString(Time *time){
  * @brief Checks if the given Time structure is valid.
  *
  * @param time Pointer to the Time structure to be validated.
- * @return Returns 1 if the Time structure is valid, 0 otherwise.
+ * @return Returns TRUE if the Time structure is valid, FALSE otherwise.
  */
 int isValidTime(Time *time) {
     if (time == NULL) {
@@ -65,7 +65,7 @@ int isValidTime(Time *time) {
  * @brief Checks if the given Date structure is valid.
  *
  * @param date Pointer to the Date structure to be validated.
- * @return Returns 1 if the Date structure is valid, 0 otherwise.
+ * @return Returns TRUE if the Date structure is valid, FALSE otherwise.
  */
 int isValidDate(Date *date) {
     if (date == NULL) {
@@ -90,7 +90,7 @@ int isValidDate(Date *date) {
  *
  * @param d1 Pointer to the first Date structure.
  * @param d2 Pointer to the second Date structure.
- * @return Returns 1 if both Date structures represent the same date, 0 otherwise.
+ * @return Returns TRUE if both Date structures represent the same date, FALSE otherwise.
  */
 int isSameDate(Date *d1, Date *d2) {
     if (d1->day == d2->day && d1->month == d2->month && d1->year == d2->year) {
@@ -104,7 +104,7 @@ int isSameDate(Date *d1, Date *d2) {
  *
  * @param d1 Pointer to the first Date structure.
  * @param d2 Pointer to the second Date structure.
- * @return Returns 1 if the first date is before the second date, 0 otherwise.
+ * @return Returns TRUE if the first date is before the second date, FALSE otherwise.
  */
 int isLogDateBefore(Date *d1, Date *d2) {
 
@@ -126,7 +126,7 @@ int isLogDateBefore(Date *d1, Date *d2) {
  *
  * @param t1 Pointer to the first Time structure.
  * @param t2 Pointer to the second Time structure.
- * @return Returns 1 if the first time is before the second time, 0 otherwise.
+ * @return Returns TRUE if the first time is before the second time, FALSE otherwise.
  */
 int isLogTimeBefore(Time *t1, Time *t2) {
 
@@ -148,14 +148,14 @@ int isLogTimeBefore(Time *t1, Time *t2) {
  * @param d2 Pointer to the second Date structure.
  * @param t1 Pointer to the first Time structure.
  * @param t2 Pointer to the second Time structure.
- * @return Returns 1 if the first date is before the second date, 0 otherwise.
+ * @return Returns TRUE if the first date is before the second date, FALSE otherwise.
  */
 int isDateBefore(Date *d1, Date *d2, Time *t1, Time *t2) {
     int val = isLogDateBefore(d1, d2);
     if (val == 1) {
         return TRUE;
     } else if (val == 2) {
-        if (isLogTimeBefore(t1, t2) == 1) {
+        if (isLogTimeBefore(t1, t2)) {
             return TRUE;
         }
         return FALSE;
@@ -255,7 +255,7 @@ double min(double a, double b) {
  * @return A pointer to the created Date structure.
  */
 Date *createDateStruct(char *date) {
-    if (strlen(date) != 10) {
+    if (strlen(date) != MAX_DATE_LENGTH) {
         return NULL;
     }
 
@@ -341,7 +341,7 @@ Time *createTimeStruct(char *time) {
  * @param sys Pointer to the ParkingSystem structure.
  * @param time Pointer to the Time structure representing the time to compare.
  * @param date Pointer to the Date structure representing the date to compare.
- * @return Returns 1 if the date of the last log in the system is sooner, 0 otherwise.
+ * @return Returns TRUE if the date of the last log in the system is sooner, FALSE otherwise.
  */
 int isValidLog(System *sys, Time *time, Date *date) {
     if (sys->lastDate == NULL || sys->lastTime == NULL) {
@@ -360,7 +360,7 @@ int isValidLog(System *sys, Time *time, Date *date) {
  * @param x Double representing the cost per quarter-hour.
  * @param y Double representing the cost per hour after the first hour.
  * @param z Double representing the cost per 24 hours.
- * @return Returns 1 if the park request is valid, 0 otherwise.
+ * @return Returns TRUE if the park request is valid, FALSE otherwise.
  */
 int isValidParkRequest(System *sys, char* name, int cap, double x, double y, double z) {
     if (getPark(sys, name) != NULL) { // Checks if the parking lot already exists
@@ -391,7 +391,7 @@ int isValidParkRequest(System *sys, char* name, int cap, double x, double y, dou
  * @param sys Pointer to the parking system.
  * @param date The date string to validate.
  * @param time The time string to validate.
- * @return 1 if the date request is valid, 0 otherwise.
+ * @return TRUE if the date request is valid, FALSE otherwise.
  */
 int isValidDateRequest(System *sys, char *date, char *time) {
     // Create time and date structures
@@ -419,7 +419,7 @@ int isValidDateRequest(System *sys, char *date, char *time) {
  * @param date Pointer to a character array representing the date of the request.
  * @param time Pointer to a character array representing the time of the request.
  * @param type Integer representing the type of request.
- * @return Returns 1 if the request is valid, 0 otherwise.
+ * @return Returns TRUE if the request is valid, FALSE otherwise.
  */
 int isValidRequest(System *sys, char *name, char *reg, char *date, char *time, int type) {
     Park *park = getPark(sys, name);
@@ -457,7 +457,7 @@ int isValidRequest(System *sys, char *name, char *reg, char *date, char *time, i
  *
  * @param v Pointer to the Vehicle structure.
  * @param reg Pointer to a character array representing the vehicle registration.
- * @return Returns 1 if the vehicle has valid logs for printing, 0 otherwise.
+ * @return Returns TRUE if the vehicle has valid logs for printing, FALSE otherwise.
  */
 int isValidPrintLogsRequest(Vehicle *v, char *reg) {
     if (v == NULL || v->lHead == NULL) {
@@ -472,7 +472,7 @@ int isValidPrintLogsRequest(Vehicle *v, char *reg) {
  *
  * @param park Pointer to the Park structure.
  * @param name Pointer to a character array representing the park name.
- * @return Returns 1 if the revenue check is valid, 0 otherwise.
+ * @return Returns TRUE if the revenue check is valid, FALSE otherwise.
  */
 int isValidRevenueCheck(Park *park, char *name) {
     if (park == NULL) { // Check if park exists
@@ -507,12 +507,12 @@ int isValidPair(char cur, char next) {
  * @brief Checks if a vehicle registration string is valid.
  *
  * @param reg The vehicle registration string to be validated.
- * @return Returns 1 if the registration string is valid, and 0 otherwise.
+ * @return Returns TRUE if the registration string is valid, and FALSE otherwise.
  */
 int isValidRegistration(char *reg) {
     // Check if the length of the registration is valid
     if (strlen(reg) != REGISTRATION_LENGTH) {
-        return 0;
+        return FALSE;
     }
 
     // Flags to track groups of letters and digits
@@ -520,7 +520,7 @@ int isValidRegistration(char *reg) {
     int digitGroup = 0;
 
     if (reg[2] != '-' || reg[5] != '-') {
-        return 0;
+        return FALSE;
     }
 
     // Iterate through each character in the registration
@@ -530,7 +530,7 @@ int isValidRegistration(char *reg) {
 
         int res;
         if ((res = isValidPair(cur, next)) == 2) { 
-            return 0;
+            return TRUE;
         } else if (res == LETTER) {
             letterGroup++;
             i +=2;
@@ -545,8 +545,8 @@ int isValidRegistration(char *reg) {
         return TRUE;
     }
 
-    // If all checks pass, the registration is valid
-    return 0;
+    // Return false if the registration does not meet last condition
+    return FALSE;
 }
 
 /**
@@ -554,7 +554,7 @@ int isValidRegistration(char *reg) {
  *
  * @param sys The parking system containing the parking lot.
  * @param name The name of the parking lot to check.
- * @return Returns 1 if the parking lot is full, and 0 if it is not full.
+ * @return Returns TRUE if the parking lot is full, and 0 if it is not full.
  */
 int isParkFull(System* sys, char* name) {
     ParkNode *cur = sys->pHead;
@@ -574,7 +574,7 @@ int isParkFull(System* sys, char* name) {
  *
  * @param sys The parking system containing the parking lots.
  * @param reg The registration number of the vehicle to check.
- * @return Returns 1 if the vehicle is parked, and 0 if it is not parked.
+ * @return Returns TRUE if the vehicle is parked, and 0 if it is not parked.
  */
 int isVehicleParked(System *sys, char *reg) {
     Vehicle *v = getVehicle(sys, reg);
@@ -583,7 +583,7 @@ int isVehicleParked(System *sys, char *reg) {
         return FALSE;
     } 
     
-    if (v->parkName == NULL && v->isParked == 0) {
+    if (v->parkName == NULL && v->isParked == FALSE) {
         return FALSE;
     } 
 
@@ -596,14 +596,14 @@ int isVehicleParked(System *sys, char *reg) {
  * @param sys The parking system containing the parking lots.
  * @param reg The registration number of the vehicle to check.
  * @param name The name of the park from which the vehicle is expected to exit.
- * @return Returns 1 if the vehicle is eligible for exit, and 0 otherwise.
+ * @return Returns TRUE if the vehicle is eligible for exit, and FALSE otherwise.
  */
 int isVehicleInParkExit(System *sys, char *reg, char *name) {
     Vehicle *v = getVehicle(sys, reg);
     if (v == NULL) {
         return FALSE;
     } if (v->parkName != NULL) {
-        if ((strcmp(v->parkName, name) == 0) && v->isParked == 1) {
+        if ((strcmp(v->parkName, name) == 0) && v->isParked == TRUE) {
             return TRUE;
         }
         return FALSE;

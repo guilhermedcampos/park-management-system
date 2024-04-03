@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "typeinfo": "c",
-        "constants.h": "c"
+        "constants.h": "c",
+        "stdio.h": "c"
     }
 }

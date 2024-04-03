@@ -466,7 +466,7 @@ Vehicle *createVehicleData(char *reg) {
 
     // Initialize other fields
     vehicle->parkName = NULL;
-    vehicle->isParked = 0;
+    vehicle->isParked = FALSE;
     vehicle->lHead = NULL;
     vehicle->lTail = NULL;
     vehicle->lastLog = NULL;
@@ -505,7 +505,7 @@ int enterPark(System *sys, Park *p, Vehicle *v, char *date, char *time) {
 
     updateSystem(sys, date, time);
     v->parkName = p->name;
-    v->isParked = 1;
+    v->isParked = TRUE;
     p->currentLots++;
     v->lastLog = createLog(v, p, date, time);
     return SUCCESS;
@@ -546,7 +546,7 @@ void printExit(Vehicle *v) {
 int exitPark(System *sys, Park *p, Vehicle *v, char *date, char *time) {
     updateSystem(sys, date, time);  
     v->parkName = NULL;
-    v->isParked = 0;    
+    v->isParked = FALSE;    
     p->currentLots--;
     Log *l = updateEntryLog(v->lastLog, date, time, p);
     if (l == NULL) {
@@ -1279,7 +1279,7 @@ int main() {
         exit(FAILURE);
     }
     
-    while (1) {
+    while (TRUE) {
         // Reads the input and stores it in the buffer
         buffer = getBuffer(buffer);
         processRequest(sys, buffer);
