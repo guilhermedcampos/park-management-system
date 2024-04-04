@@ -5,13 +5,11 @@
 #ifndef PROJECTAUX_H
 #define PROJECTAUX_H
 
-
 #include "project.h"
 
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-
 
 /*
  * Date and time related functions
