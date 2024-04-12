@@ -1,6 +1,6 @@
 /*
  * iaed-24 - ist1106909 - project
- * Header file with all  the structs and main functions prototypes.
+ * Header file with all  the structs and the main functions prototypes.
  */
 #ifndef PROJECT_H
 #define PROJECT_H

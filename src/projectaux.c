@@ -6,10 +6,6 @@
 #include "constants.h"
 #include "projectaux.h"
 
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-
 /**
  * @brief Converts a Date structure to a string representation.
  *

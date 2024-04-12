@@ -4,6 +4,8 @@ The project develops a parking management system capable of defining parking lot
 
 Memory allocation is a critical aspect of this project. In the provided code, memory allocation plays a significant role in various functions, such as initializing the parking system, creating new parks and vehicles, and managing logs of vehicle entries and exits. When the system terminates all memory allocated is free'ed.
 
+The project also utilizes linked lists for managing logs, parks, and vehicles, alongside a hashtable for efficient vehicle retrieval.  
+
 ## Specifications of the problem
 
 Each parking lot is identified by a name, a maximum capacity, and a billing regime. There can only be 20 total parks in the system at the same time. The name of the parking lot can contain whitespace and is delimited by quotes when it contains whitespace characters. The billing amount is calculated in 15-minute intervals, with a rate X for the first 4 periods and a rate Y for subsequent periods, up to a daily maximum of Z. The daily maximum rate is applied to each complete 24-hour period a vehicle remains in the parking lot. On February 29th, the parking lot is closed, and no charges are applied for that day. Each vehicle is identified by a license plate consisting of three pairs of characters separated by '-'. The entry of a vehicle reduces the number of available spaces in the parking lot, and the exit frees up a space. Entry and exit records must follow chronological order, and a vehicle can only be registered in another parking lot after exiting the current one.
@@ -65,11 +67,11 @@ Once the program is running, these are the possible commands. Their actions are 
 
             s <parking_name> <plate> <date> <hour> 
         
-        v	Lists vehicle entries and exits
+        v	Lists vehicle entries and exits, sorted by parking name, date and hour of entry
 
             v <plate>
         
-        f	Shows parking lot billing
+        f	Shows parking lot billing, sorted by exit date
 
             f <parking_name> [ <date> ]
         
